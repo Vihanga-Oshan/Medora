@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.navbar {
+    height: 40;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    background-color: #ffffff;
+}
+
+.logo-brand {
+    display: flex;
+    align-items: center;
+    padding-top:10px;
+
+
+}
+
+.logo {
+    height: 49px;
+}
+
+.small-brand {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+}
+
+.container {
+    display: flex;
+    height: calc(100vh - 60px); /* Full screen minus navbar height */
+    width: 100vw;
+}
+
+/* Left panel with image */
+.left-panel {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+.form-image {
+    width: 94%;
+    height: 88vh;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10PX;
+}
+
+.right-panel {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+.form-card {
+    background: white;
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 20px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.medical-info-icon {
+    width: 63px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.form-title {
+    text-align: center;
+    font-size: 1.9rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Labels and inputs */
+form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 00;
+    font-size: 0.95rem;
+}
+
+form textarea,
+form input[type="text"] {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #ffffff;
+    resize: vertical;
+}
+
+form textarea {
+    min-height: 80px;
+}
+
+/* Checkbox */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.8rem;
+    font-size: 0.95rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #4080BF;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #155ab6;
+}

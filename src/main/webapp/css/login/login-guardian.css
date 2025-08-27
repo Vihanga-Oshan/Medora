@@ -1,0 +1,168 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html, body {
+    height: 100vh;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+/* Navbar */
+.navbar {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    padding-top: 5px;
+    background-color: #ffffff;
+}
+
+.logo-brand {
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.logo {
+    height: 49px;
+}
+
+.small-brand {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+}
+
+/* Container */
+.container {
+    display: flex;
+    height: calc(100vh - 60px);
+    width: 100vw;
+}
+
+/* Left Panel */
+.left-panel {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+.register-image {
+    width: 94%;
+    height: 88vh;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+/* Right Panel */
+.right-panel {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+.form-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 60%;
+    max-width: 600px;
+    height: 75vh;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+.welcome-icon {
+    width: 55px;
+    display: block;
+    margin: 0 auto 10px;
+}
+/* Header */
+.form-header h2 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+/* Toggle Buttons */
+.toggle-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    background-color: #edf1f5;
+    padding: 6px;
+    border-radius: 12px;
+}
+
+.toggle-buttons button {
+    flex: 1;
+    padding: 0.7rem;
+    margin: 0 4px;
+    border: none;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: black;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-buttons .active {
+    background-color: #4080bf;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-buttons .not-active:hover {
+    background-color: #e0e6eb;
+}
+
+/* Inputs */
+form input[type="text"],
+form input[type="password"] {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #4080bf;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #255fa8;
+}
+
+.forgot-password {
+    text-align: center;
+    margin-top: 12px;
+}
+
+.forgot-password a {
+    font-size: 14px;
+    color: #333;
+    text-decoration: none;
+}
+
