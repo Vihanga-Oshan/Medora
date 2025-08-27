@@ -1,0 +1,156 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #ffffff;
+}
+
+.navbar {
+    display: flex;
+    height:50px;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #ffffff;
+
+}
+
+.logo {
+    width: 49px;
+
+}
+
+.brand-name {
+    font-size: 20px;
+    color: #black;
+    font-weight: bold;
+}
+.logo-brand{
+    display: flex;
+    align-items: center;
+    padding-top:10px;
+}
+.container {
+    display: flex;
+    height: calc(100vh - 60px); /* Subtract navbar height */
+}
+
+/* Placeholder that matches image size of left layout */
+.left-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.guardian-logo{
+    width: 100%;
+    height: 88vh;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+
+
+.right-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    padding: 40px;
+}
+
+.register-form {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 65%;
+    max-width: 600px;
+    height: 88vh;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+.create-acc-icon {
+    width: 55px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.register-form h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.toggle-buttons {
+   gap:10px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    background-color: #edf1f5;
+    padding: 6px;
+    border-radius: 8px;
+
+}
+
+.toggle {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    border-radius: 10px;
+    cursor: pointer;
+
+
+}
+.toggle:hover{
+    border-color: #4080bf;
+}
+
+
+.toggle.active {
+    background-color: #4080bf;
+
+    color:white;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+    font-size: 14px;
+}
+
+.checkbox input {
+    margin-right: 10px;
+}
+
+.register-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4080bf;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.register-button:hover {
+    background-color: #155ab6;
+}

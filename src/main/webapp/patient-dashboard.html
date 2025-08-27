@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Medora • Pharmacist Dashboard</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="brand">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="brand-mark">+</div>
+        <div class="brand-name">Medora</div>
+    </div>
+
+    <nav class="nav">
+        <a class="nav-item active" href="#"><span class="nav-ico"></span><span class="nav-text">Dashboard</span></a>
+        <a class="nav-item " href="#"><span class="nav-ico"></span><span class="nav-text">Scheduling</span></a>
+        <a class="nav-item" href="#"><span class="nav-ico"></span><span class="nav-text">Prescriptions</span></a>
+        <a class="nav-item" href="#"><span class="nav-ico"></span><span class="nav-text">Reports</span></a>
+        <a class="nav-item" href="#"><span class="nav-ico"></span><span class="nav-text">Patients</span></a>
+
+
+        <a class="nav-item" href="#"><span class="nav-ico"></span><span class="nav-text">Notifications</span></a>
+        <a class="nav-item" href="#"><span class="nav-ico">⚙️</span><span class="nav-text">Application Settings</span></a>
+
+        <div class="nav-spacer"></div>
+
+        <a class="nav-item help" href="#"><span class="nav-ico">❓</span><span class="nav-text">Get Technical Help</span></a>
+        <div class="nav-footer"><span>Medora ©</span><span>v1.12</span></div>
+    </nav>
+</aside>
+
+<!-- Main -->
+<main class="main">
+    <header class="topbar">
+        <div class="user">
+            <img class="avatar" src="https://i.pravatar.cc/48?img=8" alt="avatar" />
+            <div class="user-meta">
+                <div class="role">Super Pharmacist</div>
+            </div>
+        </div>
+        <div class="greeting">
+            <span class="dot"></span>
+            <div class="greet-text">
+                <div class="hi">Good Morning</div>
+                <div class="sub" id="datetime">—</div>
+            </div>
+        </div>
+    </header>
+
+    <section class="page">
+        <h1 class="page-title">Dashboard</h1>
+
+        <!-- Cards -->
+        <div class="cards">
+            <div class="card">
+                <div class="card-number" id="pendingPrescriptions">21</div>
+                <div class="card-label">Pending Prescriptions</div>
+                <button class="link" data-action="see-all" data-target="prescriptions">See All</button>
+            </div>
+            <div class="card">
+                <div class="card-number" id="pendingSchedules">19</div>
+                <div class="card-label">Pending Schedules</div>
+                <button class="link" data-action="see-all" data-target="schedules">See All</button>
+            </div>
+            <div class="card">
+                <div class="card-number" id="newPatients">10</div>
+                <div class="card-label">New patients (last 24 hrs)</div>
+                <button class="link" data-action="see-all" data-target="patients">See All</button>
+            </div>
+        </div>
+
+        <!-- Patients to Check -->
+        <div class="table-wrap">
+            <div class="table-head">
+                <h2>Patients to Check</h2>
+                <button class="link small" data-action="see-all" data-target="patients-check">See All</button>
+            </div>
+            <table class="table" id="table-check">
+                <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Chronic Condition</th>
+                    <th class="right">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td data-label="Patient Name">Alex Kumar</td>
+                    <td data-label="Chronic Condition"><span class="badge">Diabetes</span></td>
+                    <td data-label="Action" ><a href="#" class="link small">Check</a></td>
+                </tr>
+                <tr>
+                    <td data-label="Patient Name">Sara Rohan</td>
+                    <td data-label="Chronic Condition"><span class="badge">Hypertension</span></td>
+                    <td data-label="Action" ><a href="#" class="link small">Check</a></td>
+                </tr>
+                <tr>
+                    <td data-label="Patient Name">Manoj Nair</td>
+                    <td data-label="Chronic Condition"><span class="badge">Asthma</span></td>
+                    <td data-label="Action" ><a href="#" class="link small">Check</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Patients to Schedule -->
+        <div class="table-wrap">
+            <div class="table-head">
+                <h2>Patients to Schedule</h2>
+                <button class="link small" data-action="see-all" data-target="patients-schedule">See All</button>
+            </div>
+            <table class="table" id="table-schedule">
+                <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Chronic Condition</th>
+                    <th class="right">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td data-label="Patient Name">Vihan Senanayake</td>
+                    <td data-label="Chronic Condition"><span class="badge">Diabetes</span></td>
+                    <td data-label="Action" ><a href="#" class="link small">Schedule</a></td>
+                </tr>
+                <tr>
+                    <td data-label="Patient Name">Dinesh Kumar</td>
+                    <td data-label="Chronic Condition"><span class="badge">Hypertension</span></td>
+                    <td data-label="Action" ><a href="#" class="link small">Schedule</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Minimal JS for mobile sidebar + clock -->
+<script>
+    const body = document.body;
+    const hb = document.getElementById('hamburger');
+
+    // Toggle sidebar: on mobile -> drawer; on desktop -> collapse not needed because grid uses fixed 260px
+    hb?.addEventListener('click', () => {
+        body.classList.toggle('sidebar-open');
+    });
+
+    // Close drawer when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!body.classList.contains('sidebar-open')) return;
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && !sidebar.contains(e.target) && e.target !== hb) {
+            body.classList.remove('sidebar-open');
+        }
+    });
+    // Esc closes
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') body.classList.remove('sidebar-open'); });
+
+    // Simple datetime
+    function updateClock(){
+        const el = document.getElementById('datetime');
+        if(!el) return;
+        const now = new Date();
+        el.textContent = now.toLocaleString();
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+</script>
+</body>
+</html>

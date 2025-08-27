@@ -1,0 +1,251 @@
+/* ===============================
+   Medora Dashboard • styles.css
+   =============================== */
+
+/* Theme tokens */
+:root{
+    --bg:#0b1420;
+    --sidebar:#0f1b2a;
+    --line:#1f2d43;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --ink:#0f172a;
+    --brand:#2d8cff;
+    --brand-2:#8ac6ff;
+    --accent:#1677ff;
+
+    --table-stripe:#fafbfd;
+    --table-head:#f5f7fb;
+    --shadow:0 8px 28px rgba(16,24,40,.08);
+
+    --sidebar-w:260px;
+    --sidebar-w-collapsed:74px;
+}
+
+/* Base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+    margin:0;
+    font-family:"General Sans",system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
+    background:#f6f8fb;
+    color:var(--ink);
+    overflow-x:hidden;
+}
+
+/* ========== Sidebar (FIXED) ========== */
+.sidebar{
+    background:var(--sidebar);
+    color:#cbd5e1;
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column;
+    min-width:0;
+
+    position:fixed;              /* stays put while page scrolls */
+    left:0; top:0; width:var(--sidebar-w); height:100vh;
+    overflow:auto;               /* its own scroll if long */
+    z-index:1000;
+}
+
+/* Brand row */
+.sidebar .brand{
+    display:flex; align-items:center; gap:.75rem;
+    padding:1rem .75rem; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:var(--sidebar); z-index:2;
+}
+
+/* Hamburger */
+.hamburger{
+    background:transparent;border:0;cursor:pointer;padding:.5rem;border-radius:.6rem;
+    display:grid;place-items:center;
+}
+.hamburger:hover{background:#132033}
+.hamburger span{display:block;width:18px;height:2px;background:#cbd5e1;margin:3px 0;border-radius:2px}
+
+.brand-mark{
+    width:28px;height:28px;border-radius:8px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff;display:grid;place-items:center;font-weight:700;
+}
+.brand-name{font-weight:700;letter-spacing:.2px}
+
+/* Nav */
+.nav{display:flex;flex-direction:column;height:100%}
+.nav-item, .nav-group>summary{
+    display:flex;gap:.75rem;align-items:center;color:#cbd5e1;text-decoration:none;
+    padding:.75rem 1rem;border-radius:.6rem;margin:.2rem .5rem; cursor:pointer; list-style:none;
+}
+.nav-group>summary::-webkit-details-marker{display:none}
+.nav-item.active{background:#16253a}
+.nav-item:hover, .nav-group>summary:hover{background:#152238}
+.nav-ico{width:22px;text-align:center;opacity:.9}
+.nav-text{transition:opacity .2s}
+.nav-group{margin:.2rem .25rem}
+.nav-sub{
+    display:block;color:#9fb0c8;text-decoration:none;padding:.45rem 2.75rem;margin:.1rem .75rem;border-radius:.5rem;
+}
+.nav-sub:hover{background:#132033}
+.nav-spacer{flex:1}
+.nav-item.help{color:#e2e8f0}
+.nav-footer{
+    display:flex;justify-content:space-between;gap:1rem;
+    font-size:12px;color:#7f8ea8;padding:.75rem 1rem;border-top:1px solid var(--line);
+    position:sticky; bottom:0; background:var(--sidebar);
+}
+
+/* ===== Desktop collapsed visuals (toggle .sidebar-collapsed on <body> and .collapsed on .sidebar) ===== */
+.sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
+body.sidebar-collapsed .nav-text,
+body.sidebar-collapsed .brand-name{display:none}
+body.sidebar-collapsed .nav-item,
+body.sidebar-collapsed .nav-group>summary{justify-content:center}
+body.sidebar-collapsed .nav-sub{display:none}
+body.sidebar-collapsed .nav-footer{justify-content:center}
+
+/* ========== Main layout (reserve space for fixed sidebar) ========== */
+.main{
+    display:flex; flex-direction:column; min-width:0;
+    margin-left:var(--sidebar-w);        /* keep content out from under fixed sidebar */
+    transition:margin-left .25s ease;
+}
+body.sidebar-collapsed .main{ margin-left:var(--sidebar-w-collapsed); }
+
+/* Topbar */
+.topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#fff;border-bottom:1px solid #eef2f7;padding:.75rem 1rem;
+    flex-wrap:wrap;
+}
+.user{display:flex;align-items:center;gap:.75rem}
+.avatar{width:36px;height:36px;border-radius:999px}
+.role{font-weight:600;font-size:.95rem}
+.greeting{display:flex;align-items:center;gap:.65rem}
+.greeting .dot{width:10px;height:10px;border-radius:999px;background:#facc15;box-shadow:0 0 0 3px #fff inset}
+.greet-text .hi{font-weight:600}
+.greet-text .sub{color:#64748b;font-size:.85rem}
+
+/* Page & cards */
+.page{padding:1.25rem 1.25rem 2rem}
+.page-title{margin:0 0 1rem 0}
+.cards{
+    display:grid;grid-template-columns:repeat(auto-fit, minmax(220px,1fr));gap:1rem;margin:1rem 0 1.5rem;
+}
+.card{
+    background:#fff;border:1px solid #e9eef5;border-radius:14px;padding:1rem;box-shadow:0 1px 0 rgba(16,24,40,.04);
+}
+.card-number{font-size:28px;font-weight:800;margin:.25rem 0;color:#111827}
+.card-label{color:#6b7280;margin-bottom:.75rem}
+.link{
+    background:#ecf5ff;color:var(--accent);border:1px solid #d9ecff;border-radius:10px;padding:.45rem .9rem;font-weight:600;
+    cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem; line-height:1;
+}
+.link.small{padding:.35rem .7rem;font-size:.9rem}
+.link:hover{filter:brightness(.98)}
+
+/* ========== Tables ========== */
+.table-wrap{
+    background:#fff;border:1px solid #e9eef5;border-radius:14px;margin:1.25rem 0;overflow:hidden;
+    box-shadow:var(--shadow);
+}
+.table-head{
+    display:flex;justify-content:space-between;align-items:center;padding:.9rem 1rem;border-bottom:1px solid #eef2f7;
+    background:linear-gradient(180deg,#fff, #fbfcff);
+}
+.table-head h2{margin:0;font-size:1.05rem}
+.table{
+    width:100%; border-collapse:separate; border-spacing:0; font-size:.95rem;
+}
+.table thead th{
+    position:sticky; top:0; z-index:1;
+    background:var(--table-head);
+    color:#374151; font-weight:700; text-align:left;
+    padding:.85rem 1rem; border-bottom:1px solid #e9eef5;
+    text-transform:uppercase; font-size:.78rem; letter-spacing:.04em;
+}
+.table tbody td{
+    padding:.85rem 1rem; border-bottom:1px solid #f0f3f8; color:#111827; vertical-align:middle;
+}
+.table tbody tr:nth-child(odd){ background:var(--table-stripe) }
+.table tbody tr:hover{ background:#f1f6ff; transition:background .15s ease }
+.right{text-align:right}
+
+/* Name + initials chip */
+.td-name{display:flex;align-items:center;gap:.6rem;font-weight:600}
+.mini{
+    width:28px;height:28px;border-radius:999px;background:#e5edff;color:#1e40af;
+    display:grid;place-items:center;font-weight:700;font-size:.8rem;
+}
+
+/* Condition badge */
+.badge{
+    display:inline-flex;align-items:center;padding:.22rem .55rem;border-radius:999px;font-size:.78rem;font-weight:600;
+    background:#eef2ff;color:#2743fd;border:1px solid #e1e6ff;
+}
+
+/* Responsive table → cards */
+@media (max-width: 760px){
+    .table thead{display:none}
+    .table tbody tr{
+        display:grid; grid-template-columns:1fr auto; gap:.35rem 1rem;
+        padding:.75rem 1rem; border-bottom:1px solid #eef2f7; background:#fff;
+        border-radius:12px; margin:.5rem 1rem;
+        box-shadow:0 1px 0 rgba(16,24,40,.04);
+    }
+    .table tbody td{padding:.25rem 0;border:0}
+    .table tbody td[data-label]::before{
+        content:attr(data-label);
+        display:block; font-size:.72rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.04em;
+        margin-bottom:.15rem; font-weight:700;
+    }
+}
+
+/* ========== Mobile: off-canvas sidebar ========== */
+@media (max-width: 980px){
+    /* Give content full width; the sidebar floats above as a drawer */
+    .main{ margin-left:0 !important; }
+
+    .sidebar{
+        left:-280px; width:var(--sidebar-w);
+        box-shadow:0 10px 30px rgba(0,0,0,.25);
+        transition:left .25s ease;
+        z-index:1100;
+    }
+    body.sidebar-open .sidebar{ left:0 }
+
+    /* Dim backdrop */
+    body.sidebar-open::after{
+        content:""; position:fixed; inset:0;
+        background:rgba(2,6,23,.45); backdrop-filter:blur(1px);
+        z-index:1090;
+    }
+
+    /* Floating hamburger so you can open the drawer when hidden */
+    .sidebar .hamburger{
+        position:fixed; top:10px; left:10px; z-index:1200;
+        background:rgba(15,27,42,.9);
+        border:1px solid rgba(255,255,255,.12);
+        box-shadow:0 6px 18px rgba(0,0,0,.25);
+    }
+    .sidebar .hamburger span{background:#e5edf7}
+    body.sidebar-open .sidebar .hamburger{
+        position:absolute; top:14px; left:10px; background:transparent; border-color:transparent; box-shadow:none;
+    }
+
+    /* Prevent overlap with floating button on very narrow screens */
+    .topbar{ padding-left:3.25rem; }
+}
+
+/* Tiny phones */
+@media (max-width: 420px){
+    .card-number{font-size:24px}
+    .table thead th, .table tbody td{ padding:.7rem .8rem }
+}
+
+/* Utilities */
+.muted{color:#6b7280}
+.nowrap{white-space:nowrap}
+
+/* Optional: nicer scrollbars (WebKit-only) */
+.sidebar::-webkit-scrollbar{width:10px}
+.sidebar::-webkit-scrollbar-thumb{background:#0e2036;border-radius:8px}
+.sidebar::-webkit-scrollbar-track{background:#0a1626}
