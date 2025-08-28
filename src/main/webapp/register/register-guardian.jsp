@@ -35,20 +35,20 @@
 
     <!-- Right-side form content -->
     <div class="right-side">
-        <form class="register-form">
+        <form class="register-form" method="post" action="${pageContext.request.contextPath}/RegisterGuardianServlet">
             <img src="../assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
             <h2>Create your account</h2>
 
             <div class="toggle-buttons">
-                <button type="button" class ="toggle" onclick="window.location.href='register-patient1.jsp'">Register as Patient</button>
+                <button type="button" class="toggle" onclick="window.location.href='register-patient1.jsp'">Register as Patient</button>
                 <button type="button" class="toggle active">Register as Guardian</button>
             </div>
 
-            <input type="text" placeholder="User name" required />
-            <input type="text" placeholder="NIC" required />
-            <input type="email" placeholder="Email" required />
-            <input type="password" placeholder="Password" required />
-            <input type="password" placeholder="Confirm Password" required />
+            <input type="text" name="g_name" placeholder="User name" required />
+            <input type="text" name="nic" placeholder="NIC" required />
+            <input type="text" name="contact_number" placeholder="Contact Number" required />
+            <input type="email" name="email" placeholder="Email" />
+            <input type="password" name="password" placeholder="Password" required />
 
             <div class="checkbox">
                 <input type="checkbox" id="agree" required />
@@ -57,6 +57,7 @@
 
             <button type="submit" class="register-button">Register</button>
         </form>
+
     </div>
 
 </main>

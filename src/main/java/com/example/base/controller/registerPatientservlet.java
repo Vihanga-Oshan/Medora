@@ -5,9 +5,12 @@ import com.example.base.dao.patientDAO;
 import com.example.base.db.dbconnection;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
+
+@WebServlet("/registerPatientservlet")
 
 public class registerPatientservlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

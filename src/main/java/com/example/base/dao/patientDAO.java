@@ -11,7 +11,7 @@ public class patientDAO {
     }
 
     public void insertPatient(patient patient) throws SQLException {
-        String sql = "INSERT INTO patient (full_name, gender, age, nic, email, emergency_contact) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO patient (Name, gender, age, nic, email, Emergency_contact) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setString(1, patient.getFullName());
         stmt.setString(2, patient.getGender());

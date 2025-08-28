@@ -17,12 +17,22 @@
 
     <servlet>
         <servlet-name>RegisterPatientServlet</servlet-name>
-        <servlet-class>com.example.base.controller.RegisterPatientServlet</servlet-class>
+        <servlet-class>com.example.base.controller.registerPatientServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>RegisterPatientServlet</servlet-name>
         <url-pattern>/RegisterPatientServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RegisterGuardianServlet</servlet-name>
+        <servlet-class>com.example.base.controller.RegisterGuardianServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RegisterGuardianServlet</servlet-name>
+        <url-pattern>/RegisterGuardianServlet</url-pattern>
     </servlet-mapping>
 
     <servlet>

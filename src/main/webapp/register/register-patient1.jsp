@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <form method="post" action="${pageContext.request.contextPath}/RegisterPatientServlet">
+      <form method="post" action="${pageContext.request.contextPath}/registerPatientServlet">
         <input type="text" placeholder="Full Name" required />
         <div class="gender-selection">
           <label><input type="radio" name="gender" checked /> Male</label>
