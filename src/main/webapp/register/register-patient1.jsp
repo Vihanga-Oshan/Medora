@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <form>
+      <form method="post" action="${pageContext.request.contextPath}/RegisterPatientServlet">
         <input type="text" placeholder="Full Name" required />
         <div class="gender-selection">
           <label><input type="radio" name="gender" checked /> Male</label>
@@ -51,6 +51,7 @@
         <input type="password" placeholder="Confirm Password" required />
        <button type="button" class="submit-btn" onclick="window.location.href='register-patient2.jsp'">Continue</button>
       </form>
+
     </div>
   </div>
 </div>

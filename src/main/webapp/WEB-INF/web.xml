@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>Abc</servlet-name>
-        <servlet-class>com.example.base.AddServlet</servlet-class>
+        <servlet-class>com.example.base.controller.AddServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -15,10 +15,19 @@
         <url-pattern>/add</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>RegisterPatientServlet</servlet-name>
+        <servlet-class>com.example.base.controller.RegisterPatientServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RegisterPatientServlet</servlet-name>
+        <url-pattern>/RegisterPatientServlet</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>sqr</servlet-name>
-        <servlet-class>com.example.base.sqServlet</servlet-class>
+        <servlet-class>com.example.base.controller.sqServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

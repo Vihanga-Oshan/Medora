@@ -1,6 +1,4 @@
-package com.example.base;
-
-import org.jetbrains.annotations.NotNull;
+package com.example.base.controller;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
