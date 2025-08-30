@@ -5,6 +5,7 @@
       <map>
         <entry key="file://$PROJECT_DIR$/src/main/webapp/index.html" value="file://$PROJECT_DIR$/src/main/webapp" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/register/register-guardian.jsp" value="file://$PROJECT_DIR$/src/main/webapp/register" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/views/auth/login.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/auth" />
       </map>
     </option>
   </component>

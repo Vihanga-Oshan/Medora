@@ -1,4 +1,4 @@
-package com.example.base;
+package com.example.base.controller;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

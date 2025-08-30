@@ -1,4 +1,4 @@
-package com.example.base;
+package com.example.base.controller;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

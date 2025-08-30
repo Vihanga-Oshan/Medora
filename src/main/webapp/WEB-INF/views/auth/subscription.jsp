@@ -12,12 +12,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Medora Plans</title>
-  <link rel="stylesheet" href="../css/register/subscription.css" />
+  <link rel="stylesheet" href="../../../css/register/subscription.css" />
 </head>
 <body>
 <header class="header">
   <div class="logo-brand">
-    <img src="../assets/logo.png" alt="Medora Logo" class="logo" />
+    <img src="../../../assets/logo.png" alt="Medora Logo" class="logo" />
     <span class="small-brand">Medora</span>
   </div>
   <h1>Our Plans For Medora</h1>
