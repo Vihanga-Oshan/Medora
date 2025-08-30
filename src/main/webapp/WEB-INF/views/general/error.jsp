@@ -8,7 +8,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>gdgegd</title>
+    <title>gggggg</title>
 </head>
 
 <div style="flex: content;flex: auto">
