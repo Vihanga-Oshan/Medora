@@ -12,13 +12,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Medora</title>
-  <link rel="stylesheet" href="../../css/login/login-guardian.css" />
+  <link rel="stylesheet" href="../../../css/login/login-guardian.css" />
 </head>
 <body>
 
 <header class="navbar">
   <div class="logo-brand">
-    <img src="../../assets/logo.png" alt="Medora Logo" class="logo" />
+    <img src="../../../assets/logo.png" alt="Medora Logo" class="logo" />
     <span class="small-brand">Medora</span>
   </div>
 </header>
@@ -26,13 +26,13 @@
 <div class="container">
 
   <div class="left-panel">
-    <img src="../../assets/login-guardian.jpg" alt="login image" class="register-image" />
+    <img src="../../../assets/login-guardian.jpg" alt="login image" class="register-image" />
   </div>
 
   <div class="right-panel">
     <div class="form-card">
       <div class="form-header">
-        <img src="../../assets/welcome.png" alt="welcome icon" class="welcome-icon" />
+        <img src="../../../assets/welcome.png" alt="welcome icon" class="welcome-icon" />
         <h2>Welcome back</h2>
         <div class="toggle-buttons">
           <button class="not-active" onclick="window.location.href='login.jsp'">Login as Patient</button>

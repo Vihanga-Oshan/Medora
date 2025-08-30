@@ -34,8 +34,8 @@
                 <h2>Welcome back</h2>
 
                 <div class="toggle-buttons">
-                    <button class="active" onclick="window.location.href='login.jsp'">Login as Patient</button>
-                    <button class="not-active" onclick="window.location.href='login-guardian.jsp'">Login as Guardian</button>
+                    <button class="active" onclick="location.href='${cp}/login'">Login as Patient</button>
+                    <button class="not-active" onclick="location.href='${cp}/login'">Login as Guardian</button>
 
                 </div>
             </div>

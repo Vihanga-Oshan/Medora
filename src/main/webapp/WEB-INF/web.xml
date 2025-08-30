@@ -12,7 +12,7 @@
 
     <servlet-mapping>
         <servlet-name>RegisterPatientServlet</servlet-name>
-        <url-pattern>/RegisterPatientServlet</url-pattern>
+        <url-pattern>/register</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -33,7 +33,7 @@
 
     <servlet-mapping>
         <servlet-name>LoginGuardianServlet</servlet-name>
-        <url-pattern>/LoginGuardianservlet</url-pattern>
+        <url-pattern>/guardian/login</url-pattern>
     </servlet-mapping>
 
 

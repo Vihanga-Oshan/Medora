@@ -16,7 +16,7 @@ public class PatientLoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         // show the login page
-        req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
         // (Recommended: move to /WEB-INF/views/auth/login.jsp for security, see note below)
     }
 
@@ -38,7 +38,7 @@ public class PatientLoginServlet extends HttpServlet {
         } else {
             request.setAttribute("error", "Invalid NIC or password.");
             // Forward back to the correct JSP path (absolute from context root)
-            request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         }
     }
 }
