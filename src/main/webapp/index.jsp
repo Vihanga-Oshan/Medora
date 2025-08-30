@@ -35,7 +35,7 @@
       </span>
 
             <div class="hero-buttons">
-                <button class="login-btn" onclick="location.href='${cp}/register'">Register</button>
+                <button class="login-btn" onclick="location.href='${cp}/register/patient'">Register</button>
                 <button class="login-btn" onclick="location.href='${cp}/login'">Login</button>
             </div>
         </div>

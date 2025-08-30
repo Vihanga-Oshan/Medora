@@ -4,38 +4,7 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
-
-    <servlet>
-        <servlet-name>RegisterPatientServlet</servlet-name>
-        <servlet-class>com.example.base.controller.registerPatientservlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>RegisterPatientServlet</servlet-name>
-        <url-pattern>/register</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>RegisterGuardianServlet</servlet-name>
-        <servlet-class>com.example.base.controller.RegisterGuardianServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>RegisterGuardianServlet</servlet-name>
-        <url-pattern>/RegisterGuardianServlet</url-pattern>
-    </servlet-mapping>
-
-
-    <servlet>
-        <servlet-name>LoginGuardianServlet</servlet-name>
-        <servlet-class>com.example.base.controller.LoginGuardianservlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>LoginGuardianServlet</servlet-name>
-        <url-pattern>/guardian/login</url-pattern>
-    </servlet-mapping>
-
+    <display-name>Medora</display-name>
 
     <listener>
         <listener-class>com.example.base.listener.CleanupListener</listener-class>
