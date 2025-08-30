@@ -1,30 +1,31 @@
+/* Global Reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 html, body {
-    height: 100%;
-    background-color: #ffffff;
+    height: 100vh;
     overflow: hidden;
+    background-color: #ffffff;
 }
 
+/* Header/Nav Bar */
 .navbar {
-    height: 40;
+    height: 40px;
     display: flex;
     align-items: center;
     padding: 0 30px;
+    padding-top: 5px;
     background-color: #ffffff;
 }
 
 .logo-brand {
     display: flex;
     align-items: center;
-    padding-top:10px;
-
-
+    padding-top: 10px;
 }
 
 .logo {
@@ -37,13 +38,14 @@ html, body {
     color: black;
 }
 
+/* Main Layout */
 .container {
     display: flex;
-    height: calc(100vh - 60px); /* Full screen minus navbar height */
+    height: calc(100vh - 60px);
     width: 100vw;
 }
 
-/* Left panel with image */
+/* Left Panel */
 .left-panel {
     width: 50%;
     display: flex;
@@ -52,14 +54,16 @@ html, body {
     background-color: #ffffff;
 }
 
+.register-image,
 .form-image {
     width: 94%;
     height: 88vh;
     object-fit: cover;
     border-radius: 8px;
-    margin-bottom: 10PX;
+    margin-bottom: 10px;
 }
 
+/* Right Panel */
 .right-panel {
     width: 50%;
     display: flex;
@@ -69,49 +73,95 @@ html, body {
 }
 
 .form-card {
-    background: white;
+    background: #ffffff;
+    border-radius: 12px;
     padding: 2rem;
-    width: 100%;
-    max-width: 500px;
-    border-radius: 20px;
+    width: 60%;
+    max-width: 600px;
+    height: 88vh;
+    overflow-y: auto;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
+.create-acc-icon,
 .medical-info-icon {
-    width: 63px;
+    width: 55px;
     display: block;
     margin: 0 auto 10px;
 }
 
+.form-header h2,
 .form-title {
     text-align: center;
-    font-size: 1.9rem;
+    font-size: 30px;
+    margin-bottom: 1rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
 }
 
-/* Labels and inputs */
-form label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 00;
-    font-size: 0.95rem;
+.toggle-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    background-color: #edf1f5;
+    padding: 6px;
+    border-radius: 8px;
 }
 
-form textarea,
-form input[type="text"] {
-    width: 100%;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+.toggle-buttons button {
+    flex: 1;
+    padding: 0.5rem;
+    margin: 0 5px;
+    border: none;
+    border-radius: 8px;
     background-color: #ffffff;
-    resize: vertical;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-buttons button.active {
+    background-color: #4080bf;
+    color: white;
+}
+
+.not-active:hover {
+    border-color: #4080bf;
+}
+
+/* Form Elements */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #ffffff;
 }
 
 form textarea {
     min-height: 80px;
+    resize: vertical;
+}
+
+form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+/* Gender Radio */
+.gender-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+}
+
+.gender-selection label {
+    font-size: 14px;
 }
 
 /* Checkbox */
@@ -131,8 +181,8 @@ form textarea {
 /* Submit Button */
 .submit-btn {
     width: 100%;
-    padding: 15px;
-    background-color: #4080BF;
+    padding: 0.75rem;
+    background-color: #4080bf;
     color: white;
     border: none;
     border-radius: 12px;
@@ -140,6 +190,7 @@ form textarea {
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    margin-top: 15px;
 }
 
 .submit-btn:hover {

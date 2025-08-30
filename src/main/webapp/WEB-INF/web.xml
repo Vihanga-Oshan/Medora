@@ -6,18 +6,8 @@
          version="4.0">
 
     <servlet>
-        <servlet-name>Abc</servlet-name>
-        <servlet-class>com.example.base.controller.AddServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>Abc</servlet-name>
-        <url-pattern>/add</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>RegisterPatientServlet</servlet-name>
-        <servlet-class>com.example.base.controller.registerPatientServlet</servlet-class>
+        <servlet-class>com.example.base.controller.registerPatientservlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -35,14 +25,21 @@
         <url-pattern>/RegisterGuardianServlet</url-pattern>
     </servlet-mapping>
 
+
     <servlet>
-        <servlet-name>sqr</servlet-name>
-        <servlet-class>com.example.base.controller.sqServlet</servlet-class>
+        <servlet-name>LoginGuardianServlet</servlet-name>
+        <servlet-class>com.example.base.controller.LoginGuardianservlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>sqr</servlet-name>
-        <url-pattern>/sq</url-pattern>
+        <servlet-name>LoginGuardianServlet</servlet-name>
+        <url-pattern>/LoginGuardianservlet</url-pattern>
     </servlet-mapping>
+
+
+    <listener>
+        <listener-class>com.example.base.listener.CleanupListener</listener-class>
+    </listener>
+
 
 </web-app>

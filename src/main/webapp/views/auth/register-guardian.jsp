@@ -12,14 +12,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Medora - Guardian Registration</title>
-    <link rel="stylesheet" href="../css/register/register-guardian.css" />
+    <link rel="stylesheet" href="../../css/register/register-guardian.css" />
 </head>
 <body>
 
 <!-- Navbar -->
 <header class="navbar">
     <div class="logo-brand">
-        <img src="../assets/logo.png" alt="Medora Logo" class="logo" />
+        <img src="../../assets/logo.png" alt="Medora Logo" class="logo" />
         <h1 class="brand-name">Medora</h1>
     </div>
 </header>
@@ -29,18 +29,18 @@
 
     <!-- Left-side blank image space (same size as left page image) -->
     <div class="left-side">
-        <img src="../assets/reg-guardian.webp"  class="guardian-logo" />
+        <img src="../../assets/reg-guardian.webp" class="guardian-logo" />
         <div class="image-placeholder"></div>
     </div>
 
     <!-- Right-side form content -->
     <div class="right-side">
         <form class="register-form" method="post" action="${pageContext.request.contextPath}/RegisterGuardianServlet">
-            <img src="../assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
+            <img src="../../assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
             <h2>Create your account</h2>
 
             <div class="toggle-buttons">
-                <button type="button" class="toggle" onclick="window.location.href='register-patient1.jsp'">Register as Patient</button>
+                <button type="button" class="toggle" onclick="window.location.href='register-patient.jsp'">Register as Patient</button>
                 <button type="button" class="toggle active">Register as Guardian</button>
             </div>
 
