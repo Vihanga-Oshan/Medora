@@ -35,7 +35,7 @@
 
                 <div class="toggle-buttons">
                     <button class="active" onclick="location.href='${cp}/login'">Login as Patient</button>
-                    <button class="not-active" onclick="location.href='${cp}/login'">Login as Guardian</button>
+                    <button class="not-active" onclick="location.href='${cp}/loginguardian'">Login as Guardian</button>
 
                 </div>
             </div>
