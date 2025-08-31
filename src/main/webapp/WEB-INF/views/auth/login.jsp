@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Medora</title>
+    <title>Medoraa</title>
 
     <!-- Use context path; avoids ../../ breakage -->
     <link rel="stylesheet" href="${cp}/css/login/login-patient.css" />
