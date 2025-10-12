@@ -8,8 +8,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create Patient Account - Medora</title>
-  <!-- Use context path (no ../../../) -->
   <link rel="stylesheet" href="${cp}/css/register/register-patient.css" />
+  <!-- Optional: tiny error styles (if not already in your CSS) -->
+  <style>
+    .invalid{ outline:2px solid #e11d48; }
+    .input-error{ color:#e11d48; font-size:.9rem; margin-top:4px; display:block; }
+  </style>
 </head>
 <body>
 
@@ -31,32 +35,59 @@
         <img src="${cp}/assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
         <h2>Create Account</h2>
         <div class="toggle-buttons">
-          <button class="active">Register as Patient</button>
-          <!-- Link to a controller route for guardian (create it later) -->
-          <button class="not-active" onclick="location.href='${cp}/register/guardian'">Register as Guardian</button>
+          <button class="active" type="button">Register as Patient</button>
+          <button class="not-active" type="button" onclick="location.href='${cp}/register/guardian'">Register as Guardian</button>
         </div>
       </div>
 
-      <!-- Show a global error if present -->
+      <!-- Show server error if present -->
       <c:if test="${not empty error}">
         <p style="color:#e11d48;margin:.5rem 0">${error}</p>
       </c:if>
 
-      <form method="post" action="${cp}/register/patient" id="patientForm">
+      <!-- FORM -->
+      <form
+              method="post"
+              action="${cp}/register/patient"
+              id="patientForm"
+              novalidate
+              onsubmit="return window.patientValidate && window.patientValidate(this);"
+      >
         <!-- STEP 1 -->
         <div id="step1">
-          <input type="text"   name="name"             placeholder="Full Name" required value="${param.name}"/>
+          <div class="field">
+            <input type="text" name="name" placeholder="Full Name" autocomplete="name"
+                   required value="${param.name}"/>
+          </div>
 
-          <div class="gender-selection">
+          <div class="gender-selection" style="margin:.5rem 0 1rem">
             <label><input type="radio" name="gender" value="Male"   ${param.gender == 'Male' ? 'checked' : ''}/> Male</label>
             <label><input type="radio" name="gender" value="Female" ${param.gender == 'Female' ? 'checked' : ''}/> Female</label>
           </div>
 
-          <input type="text"   name="emergencyContact" placeholder="Emergency Contact Number" required value="${param.emergencyContact}"/>
-          <input type="text"   name="nic"              placeholder="NIC" required value="${param.nic}"/>
-          <input type="email"  name="email"            placeholder="Email" required value="${param.email}"/>
-          <input type="password" name="password"       id="password"         placeholder="Password" required />
-          <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required />
+          <div class="field">
+            <input type="text" name="emergencyContact" placeholder="Emergency Contact Number"
+                   inputmode="tel" autocomplete="tel" required value="${param.emergencyContact}"/>
+          </div>
+
+          <div class="field">
+            <input type="text" name="nic" placeholder="NIC" inputmode="numeric" autocomplete="off"
+                   required value="${param.nic}"/>
+          </div>
+
+          <div class="field">
+            <input type="email" name="email" placeholder="Email" autocomplete="email"
+                   required value="${param.email}"/>
+          </div>
+
+          <div class="field">
+            <input type="password" name="password" id="password" placeholder="Password"
+                   autocomplete="new-password" required />
+          </div>
+
+          <div class="field">
+            <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required />
+          </div>
 
           <button type="button" class="submit-btn" onclick="nextStep()">Next</button>
         </div>
@@ -64,17 +95,25 @@
         <!-- STEP 2 -->
         <div id="step2" style="display:none;">
           <label for="allergies">If you have any Allergies:</label>
-          <textarea id="allergies" name="allergies">${param.allergies}</textarea>
+          <div class="field">
+            <textarea id="allergies" name="allergies">${param.allergies}</textarea>
+          </div>
 
           <label for="chronic">If you have any Chronic Issues:</label>
-          <textarea id="chronic" name="chronic">${param.chronic}</textarea>
+          <div class="field">
+            <textarea id="chronic" name="chronic">${param.chronic}</textarea>
+          </div>
 
           <label for="guardian">If you have a guardian:</label>
-          <input type="text" id="guardian" name="guardianNic" placeholder="NIC of the Guardian" value="${param.guardianNic}"/>
+          <div class="field">
+            <input type="text" id="guardian" name="guardianNic" placeholder="NIC of the Guardian" value="${param.guardianNic}"/>
+          </div>
 
-          <div class="checkbox-group">
-            <input type="checkbox" id="privacy" name="privacy" required />
-            <label for="privacy">I agree to the Privacy Policies</label>
+          <div class="checkbox-group field">
+            <label>
+              <input type="checkbox" id="privacy" name="privacy" required />
+              I agree to the Privacy Policies
+            </label>
           </div>
 
           <button type="button" class="submit-btn" onclick="previousStep()">Back</button>
@@ -85,21 +124,23 @@
   </div>
 </div>
 
-<!-- JavaScript logic -->
+<!-- Load validator (cache-bust to avoid stale) -->
+<script src="${cp}/js/form-validation.js?v=7" defer></script>
+
+<!-- Step control: uses patientValidate(form, true) to gate step 1 -->
 <script>
   function nextStep(){
-    const pw = document.getElementById('password').value;
-    const cpw = document.getElementById('confirmPassword').value;
-    if (pw !== cpw) { alert('Passwords do not match'); return; }
-    document.getElementById('step1').style.display='none';
-    document.getElementById('step2').style.display='';
+    const form = document.getElementById('patientForm');
+    if (window.patientValidate && window.patientValidate(form, true)) {
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = '';
+    }
   }
   function previousStep(){
-    document.getElementById('step2').style.display='none';
-    document.getElementById('step1').style.display='';
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step1').style.display = '';
   }
 </script>
-<!-- Or include your file via context path -->
-<!-- <script src="${cp}/js/register-patient.js"></script> -->
+
 </body>
 </html>

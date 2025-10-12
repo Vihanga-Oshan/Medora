@@ -14,7 +14,7 @@ public class LoginGuardianservlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Show the guardian login page (JSP lives under WEB-INF)
+        // Show the guardian login page
         req.getRequestDispatcher("/WEB-INF/views/auth/login-guardian.jsp").forward(req, resp);
     }
 
@@ -25,16 +25,14 @@ public class LoginGuardianservlet extends HttpServlet {
         String nic = request.getParameter("nic");
         String password = request.getParameter("password");
 
-        Guardian guardian = GuardianDAO.validate(nic, password); // keep your DAO call
+        Guardian guardian = GuardianDAO.validate(nic, password);
 
         if (guardian != null) {
             HttpSession session = request.getSession(true);
             session.setAttribute("guardian", guardian);
-            // Redirect to a controller route, not a JSP file
             response.sendRedirect(request.getContextPath() + "/guardian/dashboard");
         } else {
             request.setAttribute("error", "Invalid NIC or password.");
-            // Forward back to the JSP under WEB-INF
             request.getRequestDispatcher("/WEB-INF/views/auth/login-guardian.jsp")
                     .forward(request, response);
         }

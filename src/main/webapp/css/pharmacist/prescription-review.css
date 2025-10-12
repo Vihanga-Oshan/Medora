@@ -1,0 +1,243 @@
+:root {
+    --primary-color: #007acc;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --sidebar-width: 240px;
+    --header-height: 60px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    background-color: #f3f4f6;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: #1e293b;
+    color: white;
+    padding: 1.5rem;
+    position: fixed;
+    height: 100vh;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+.nav-item {
+    display: block;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: 0.5rem;
+    transition: all 0.3s;
+}
+
+.nav-item:hover, .nav-item.active {
+    background-color: #2d3748;
+    color: white;
+}
+
+.main {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 2rem;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.prescription-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.prescription-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+.prescription-card.fade-out {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.prescription-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.patient-name {
+    font-weight: 600;
+}
+
+.upload-date {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.prescription-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+}
+
+.prescription-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.patient-details {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.patient-details p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.prescription-actions {
+    padding: 1rem;
+}
+
+.pharmacist-note {
+    width: 100%;
+    height: 80px;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    resize: vertical;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.approve-btn, .reject-btn {
+    flex: 1;
+    padding: 0.625rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s;
+    color: white;
+}
+
+.approve-btn {
+    background-color: var(--success-color);
+}
+
+.reject-btn {
+    background-color: var(--danger-color);
+}
+
+.approve-btn:hover {
+    background-color: #059669;
+}
+
+.reject-btn:hover {
+    background-color: #dc2626;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal img {
+    max-width: 90%;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 1rem 2rem;
+    border-radius: 0.375rem;
+    color: white;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    background-color: var(--success-color);
+}
+
+.notification.error {
+    background-color: var(--danger-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

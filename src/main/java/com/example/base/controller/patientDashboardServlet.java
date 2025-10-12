@@ -17,6 +17,7 @@ public class patientDashboardServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
-        req.getRequestDispatcher("/views/patient/dashboard.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/views/patient/patient-dashboard.jsp").forward(req, resp);
+
     }
 }

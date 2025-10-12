@@ -166,3 +166,9 @@ form input[type="password"] {
     text-decoration: none;
 }
 
+
+/* simple validation styles */
+/* simple validation styles */
+.invalid { outline: 2px solid #e11d48; }
+.input-error { color:#e11d48; font-size:.9rem; margin-top:4px; display:block; }
+

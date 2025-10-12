@@ -31,7 +31,14 @@
             <p style="color:#e11d48;margin:.5rem 0">${error}</p>
         </c:if>
 
-        <form class="register-form" method="post" action="${cp}/register/guardian">
+        <form
+                id="guardianForm"
+                class="register-form"
+                method="post"
+                action="${cp}/register/guardian"
+                novalidate
+                onsubmit="return window.guardianValidate && window.guardianValidate(this);"
+        >
             <img src="${cp}/assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
             <h2>Create your account</h2>
 
@@ -40,21 +47,47 @@
                 <button type="button" class="toggle active">Register as Guardian</button>
             </div>
 
-            <input type="text"   name="g_name"          placeholder="User name"       required value="${param.g_name}" />
-            <input type="text"   name="nic"             placeholder="NIC"             required value="${param.nic}" />
-            <input type="text"   name="contact_number"  placeholder="Contact Number"  required value="${param.contact_number}" />
-            <input type="email"  name="email"           placeholder="Email"           value="${param.email}" />
-            <input type="password" name="password"      placeholder="Password"        required />
+            <div class="field">
+                <input type="text" name="g_name" placeholder="User name" autocomplete="name"
+                       required value="${param.g_name}" />
+            </div>
 
-            <div class="checkbox">
-                <input type="checkbox" id="agree" name="agree" required />
-                <label for="agree">I agree to the Privacy Policies</label>
+            <div class="field">
+                <input type="text" name="nic" placeholder="NIC" inputmode="numeric" autocomplete="off"
+                       required value="${param.nic}" />
+            </div>
+
+            <div class="field">
+                <input type="text" name="contact_number" placeholder="Contact Number" inputmode="tel" autocomplete="tel"
+                       required value="${param.contact_number}" />
+            </div>
+
+            <div class="field">
+                <input type="email" name="email" placeholder="Email" autocomplete="email"
+                       value="${param.email}" />
+            </div>
+
+            <div class="field">
+                <input type="password" name="password" placeholder="Password" autocomplete="new-password"
+                       required />
+            </div>
+
+            <div class="checkbox field">
+                <label>
+                    <input type="checkbox" id="agree" name="agree" required />
+                    I agree to the Privacy Policies
+                </label>
             </div>
 
             <button type="submit" class="register-button">Register</button>
         </form>
+
     </div>
 </main>
+
+<script src="${cp}/js/form-validation.js?v=1" defer></script>
+
+
 
 </body>
 </html>
