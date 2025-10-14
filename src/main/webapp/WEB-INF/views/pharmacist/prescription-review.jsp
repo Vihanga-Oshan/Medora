@@ -60,15 +60,29 @@
       <div class="patient-details">
         <h3>Patient Details</h3>
         <div class="details-box">
-          <p><strong>Full Name:</strong> ${patientName}</p>
-          <p><strong>DOB:</strong> ${patientDOB}</p>
-          <p><strong>MRN:</strong> ${patientMRN}</p>
-          <p><strong>Prescribed By:</strong> ${prescribedBy}</p>
-          <p><strong>Medication:</strong> ${medication}</p>
-          <p><strong>Quantity:</strong> ${quantity}</p>
+          <p><strong>Full Name:</strong> ${patient.name}</p>
+          <p><strong>DOB:</strong> <!-- You don't store DOB, so use NIC or skip -->
+            <c:choose>
+              <c:when test="${not empty patient.nic}">
+                NIC: ${patient.nic}
+              </c:when>
+              <c:otherwise>
+                Not provided
+              </c:otherwise>
+            </c:choose>
+          </p>
+          <p><strong>Emergency Contact:</strong> ${empty patient.emergencyContact ? 'Not provided' : patient.emergencyContact}</p>
+          <p><strong>Email:</strong> ${empty patient.email ? 'Not provided' : patient.email}</p>
+          <p><strong>Allergies:</strong> ${empty patient.allergies ? 'None' : patient.allergies}</p>
+          <p><strong>Chronic Conditions:</strong> ${empty patient.chronicIssues ? 'None' : patient.chronicIssues}</p>
+
+          <!-- Guardian info (optional) -->
+          <c:if test="${not empty patient.guardianNic}">
+            <p><strong>Guardian NIC:</strong> ${patient.guardianNic}</p>
+          </c:if>
         </div>
 
-        <!-- ✅ Action Buttons MOVED HERE -->
+        <!-- Action Buttons -->
         <div class="action-buttons" style="margin-top: 20px; text-align: center;">
           <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post" style="display: inline;">
             <input type="hidden" name="prescriptionId" value="${prescription.id}">

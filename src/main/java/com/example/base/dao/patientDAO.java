@@ -55,4 +55,27 @@ public class patientDAO {
         stmt.setString(9, patient.getGuardianNic());
         stmt.executeUpdate();
     }
+    // Add this method to patientDAO.java
+    public patient getPatientByNIC(String nic) throws SQLException {
+        String sql = "SELECT * FROM patient WHERE nic = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nic);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    patient p = new patient();
+                    p.setNic(rs.getString("nic"));
+                    p.setName(rs.getString("name"));
+                    p.setGender(rs.getString("gender"));
+                    p.setEmergencyContact(rs.getString("emergency_contact"));
+                    p.setEmail(rs.getString("email"));
+                    p.setAllergies(rs.getString("allergies"));
+                    p.setChronicIssues(rs.getString("chronic_issues"));
+                    p.setGuardianNic(rs.getString("guardian_nic"));
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
 }
