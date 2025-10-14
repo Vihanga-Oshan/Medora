@@ -1,0 +1,80 @@
+/* Page Header with Search Bar */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px 20px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #222;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #e6eef7;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 400px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 14px;
+}
+
+.search-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background-color: #0056b3;
+}
+
+/* Footer "See All" Link */
+.see-all-footer {
+    text-align: right;
+    padding: 10px 30px 20px;
+}
+
+.see-all-footer .see-all-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.see-all-footer .see-all-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 0 15px 20px;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .see-all-footer {
+        padding: 10px 15px 20px;
+    }
+}

@@ -60,5 +60,9 @@
     </div>
 </div>
 
+<script src="${cp}/js/form-validation.js?v=1" defer></script>
+
+
+
 </body>
 </html>
