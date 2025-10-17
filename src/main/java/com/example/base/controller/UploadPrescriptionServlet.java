@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.util.UUID;
 
-@WebServlet("/upload-prescription")
+@WebServlet("/patient/upload-prescription")
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024, // 1 MB
         maxFileSize = 5 * 1024 * 1024,    // 5 MB

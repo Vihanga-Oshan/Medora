@@ -17,7 +17,7 @@
         <!-- Header -->
         <header class="header">
             <div class="user-info">
-                <img src="https://via.placeholder.com/40" alt="User Avatar" class="avatar">
+                <img src="${pageContext.request.contextPath}/assets/register-patient1.jpg" alt="User Avatar" class="avatar">
                 <span class="user-role">Super Pharmacist</span>
             </div>
             <div class="greeting">

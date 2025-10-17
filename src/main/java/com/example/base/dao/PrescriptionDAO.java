@@ -1,5 +1,6 @@
 package com.example.base.dao;
 
+import com.example.base.db.dbconnection;
 import com.example.base.model.Prescription;
 
 import java.sql.*;
@@ -58,7 +59,7 @@ public class PrescriptionDAO {
     public int getPendingPrescriptionCount() throws SQLException {
         String sql = "SELECT COUNT(*) FROM prescriptions WHERE status = 'PENDING'";
         try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -71,7 +72,7 @@ public class PrescriptionDAO {
         List<Prescription> prescriptions = new ArrayList<>();
         String sql = "SELECT * FROM prescriptions WHERE status = 'PENDING' ORDER BY upload_date DESC";
         try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Prescription p = new Prescription();
                 p.setId(rs.getInt("id"));
@@ -87,15 +88,49 @@ public class PrescriptionDAO {
     }
 
     // ✅ Update prescription status (APPROVE / REJECT)
-    public void updatePrescriptionStatus(int prescriptionId, String status) throws SQLException {
+    public void updatePrescriptionStatus(int prescriptionId, String status) {
+        String sql = "UPDATE prescriptions SET status = ? WHERE id = ?"; // Use correct table name
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            // build debug SQL for logging (replaces ? with parameter literals safely)
+            String debugSql = sql;
+            Object[] params = new Object[] { status, prescriptionId };
+            for (Object p : params) {
+                String literal;
+                if (p == null) {
+                    literal = "NULL";
+                } else if (p instanceof String) {
+                    literal = "'" + ((String) p).replace("'", "''") + "'";
+                } else {
+                    literal = p.toString();
+                }
+                debugSql = debugSql.replaceFirst("\\?", java.util.regex.Matcher.quoteReplacement(literal));
+            }
+            System.out.println("DEBUG SQL (updatePrescriptionStatus): " + debugSql);
+
+            stmt.setString(1, status);
+            stmt.setInt(2, prescriptionId);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Or use logging
+        }
+    }
+
+
+
+    public void updateStatus(int prescriptionId, String status) {
         String sql = "UPDATE prescriptions SET status = ? WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
             stmt.setInt(2, prescriptionId);
             stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Log error for debugging
         }
-    }
 
+
+    }
     public Prescription getPrescriptionById(int id) throws SQLException {
         String sql = "SELECT * FROM prescriptions WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -105,14 +140,40 @@ public class PrescriptionDAO {
                     Prescription p = new Prescription();
                     p.setId(rs.getInt("id"));
                     p.setPatientNic(rs.getString("patient_nic"));
-                    p.setFileName(rs.getString("file_name"));
                     p.setFilePath(rs.getString("file_path"));
-                    p.setUploadDate(rs.getTimestamp("upload_date").toLocalDateTime());
-                    p.setStatus(rs.getString("status"));
+                    p.setFileName(rs.getString("file_name"));
+                    p.setUploadDate(rs.getTimestamp("upload_date").toLocalDateTime());  // or the correct column name
+                    // set other fields as needed
                     return p;
                 }
             }
         }
         return null;
     }
+    public List<Prescription> getPrescriptionsByStatus(String status) throws SQLException {
+        List<Prescription> prescriptions = new ArrayList<>();
+        String sql = "SELECT * FROM prescriptions WHERE status = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Prescription p = new Prescription();
+                p.setId(rs.getInt("id"));
+                p.setPatientNic(rs.getString("patient_nic"));
+                p.setFilePath(rs.getString("file_path"));
+                p.setFileName(rs.getString("file_name"));
+                p.setUploadDate(rs.getTimestamp("upload_date").toLocalDateTime());
+                p.setStatus(rs.getString("status"));
+                prescriptions.add(p);
+            }
+        }
+        return prescriptions;
+    }
+
+
+
+
+
 }

@@ -10,6 +10,13 @@ public class Prescription {
     private LocalDateTime uploadDate;
     private String status;
 
+    @Override
+    public String toString() {
+        return "Prescription{id=" + id + ", patientNic=" + patientNic
+                + ", filePath=" + filePath + ", fileName=" + fileName + "}";
+    }
+
+
     // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

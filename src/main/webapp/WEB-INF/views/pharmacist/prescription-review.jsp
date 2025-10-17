@@ -86,12 +86,12 @@
         <div class="action-buttons" style="margin-top: 20px; text-align: center;">
           <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post" style="display: inline;">
             <input type="hidden" name="prescriptionId" value="${prescription.id}">
-            <input type="hidden" name="action" value="REJECT">
+            <input type="hidden" name="action" value="REJECTED">
             <button type="submit" class="btn btn-reject">Reject</button>
           </form>
           <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post" style="display: inline; margin-left: 10px;">
             <input type="hidden" name="prescriptionId" value="${prescription.id}">
-            <input type="hidden" name="action" value="APPROVE">
+            <input type="hidden" name="action" value="APPROVED">
             <button type="submit" class="btn btn-approve">Approve</button>
           </form>
         </div>

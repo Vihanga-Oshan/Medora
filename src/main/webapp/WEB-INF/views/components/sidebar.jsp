@@ -4,7 +4,7 @@
     String userRole = (String) request.getAttribute("userRole");
     if (userRole == null) userRole = "Super Pharmacist";
 %>
-
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/dashboard-style.css">
 <aside class="sidebar">
     <div class="logo-section">
         <div class="logo-icon">✚</div>
@@ -14,8 +14,8 @@
     <nav class="main-nav">
         <ul>
             <li><a href="<%= request.getContextPath() %>/pharmacist/dashboard" class="nav-item <%= request.getRequestURI().endsWith("dashboard") ? "active" : "" %>"><span class="icon">📋</span> Dashboard</a></li>
-            <li><a href="<%= request.getContextPath() %>/pharmacist/prescription-review" class="nav-item <%= request.getRequestURI().endsWith("prescription-review") ? "active" : "" %>"><span class="icon">💊</span> Prescription Review</a></li>
-            <li><a href="#" class="nav-item"><span class="icon">📅</span> Scheduling</a></li>
+            <li><a href="<%= request.getContextPath() %>/pharmacist/prescription-review" class="nav-item"><span class="icon">💊</span> Prescription Review</a></li>
+            <li><a href="${pageContext.request.contextPath}/pharmacist/approved-prescriptions" class="nav-item"><i class="icon">✔️</i><span>Approved Prescriptions</span></a></li>
             <li><a href="#" class="nav-item"><span class="icon">👤</span> Patients</a></li>
             <li><a href="#" class="nav-item"><span class="icon">📈</span> Reports</a></li>
             <li><a href="#" class="nav-item"><span class="icon">🔔</span> Notifications</a></li>
