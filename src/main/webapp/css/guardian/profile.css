@@ -1,0 +1,26 @@
+.patient-card {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .patient-card:hover {
+    background: #fafafa;
+  }
+  
+  .patient-card .badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+  }
+  
+  .patient-card span[style*="color: #ff4d4d"] {
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  
+  .patient-card span[style*="color: #ff4d4d"]:hover {
+    color: #cc0000;
+  }

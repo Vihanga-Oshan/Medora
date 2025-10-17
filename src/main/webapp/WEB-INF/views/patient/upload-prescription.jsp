@@ -21,7 +21,7 @@
     <h2 class="card-title">Upload New Prescription</h2>
     <p class="card-subtitle">Upload a clear image or PDF of your prescription for pharmacist validation</p>
 
-    <form action="${pageContext.request.contextPath}/upload-prescription" method="post" enctype="multipart/form-data">\
+    <form action="${pageContext.request.contextPath}/patient/upload-prescription" method="post" enctype="multipart/form-data">\
     <label for="prescriptionFile" class="upload-area">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 16V12M12 12V8M12 12H8M12 12H16" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

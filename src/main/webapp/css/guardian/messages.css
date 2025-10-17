@@ -1,0 +1,24 @@
+.message-item {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  
+  .message-item:hover {
+    background: #fafafa;
+  }
+  
+  .input {
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(0, 150, 255, 0.2);
+  }

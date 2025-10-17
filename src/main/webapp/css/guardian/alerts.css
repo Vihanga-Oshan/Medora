@@ -1,0 +1,12 @@
+.alert-item {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .alert-item:hover {
+    background: #fafafa;
+  }

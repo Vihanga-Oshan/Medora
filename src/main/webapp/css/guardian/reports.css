@@ -1,0 +1,11 @@
+.report-summary-item {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .report-summary-item:hover {
+    background: #fafafa;
+  }

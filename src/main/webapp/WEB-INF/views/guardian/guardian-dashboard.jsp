@@ -1,354 +1,127 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: User
-  Date: 9/2/2025
-  Time: 10:34 AM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="css/vars.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/guardian/home.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guardian Dashboard | Medora</title>
 
-
-  <style>
-    a,
-    button,
-    input,
-    select,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      border: none;
-      text-decoration: none;
-      background: none;
-
-      -webkit-font-smoothing: antialiased;
-    }
-
-    menu, ol, ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-  </style>
-  <title>Home</title>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/guardian/dashboard.css"/>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/components/header.css"/>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/guardian/main.css"/>
 </head>
 <body>
-<div class="guardian">
-  <div class="rectangle-619"></div>
-  <div class="group-330">
-    <div class="rectangle-625"></div>
-    <div class="ellipse-5"></div>
-    <div class="_3">3</div>
-    <div class="ellipse-4"></div>
+
+<jsp:include page="/WEB-INF/views/components/header-guardian.jsp" />
+
+<main class="container">
+  <h1 class="section-title">Guardian Dashboard</h1>
+  <p class="section-subtitle">Monitor your patients' medication adherence and health status</p>
+
+  <!-- Stats Cards -->
+  <div class="flex justify-between mb-2">
+    <div class="card" style="border-left: 4px solid var(--primary-blue);">
+      <h3>Total Patients</h3>
+      <div class="flex align-center justify-between">
+        <span class="big-stat">3</span> <span>👥</span>
+      </div>
+      <p class="text-sm">Active monitoring</p>
+    </div>
+
+    <div class="card" style="border-left: 4px solid #ff4d4d;">
+      <h3>Active Alerts</h3>
+      <div class="flex align-center justify-between">
+        <span class="big-stat">2</span> <span>🔔</span>
+      </div>
+      <p class="text-sm">Require attention</p>
+    </div>
+
+    <div class="card" style="border-left: 4px solid #4CAF50;">
+      <h3>Avg Adherence</h3>
+      <div class="flex align-center justify-between">
+        <span class="big-stat">88%</span> <span>📈</span>
+      </div>
+      <p class="text-sm">Across all patients</p>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--primary-blue);">
+      <h3>This Week</h3>
+      <div class="flex align-center justify-between">
+        <span class="big-stat">24</span> <span>⚡</span>
+      </div>
+      <p class="text-sm">Doses tracked</p>
+    </div>
   </div>
-  <img class="teeth-1" src="${pageContext.request.contextPath}/assets/images-guardian/teeth-10.svg" />
-  <div class="group-329">
-    <div class="rectangle-626"></div>
-    <div class="ellipse-52"></div>
-    <div class="group-1000001057">
-      <div class="ellipse-1097"></div>
-      <div class="time-1">
-        <img class="group" src="${pageContext.request.contextPath}/assets/images-guardian/group0.svg" />
+
+  <!-- Recent Alerts -->
+  <div class="card" style="background-color: #fdf2f2; border: 1px solid #fbbfbf;">
+    <div class="flex justify-between align-center mb-2">
+      <h2><span>❗</span> Recent Alerts</h2>
+      <a href="${pageContext.request.contextPath}/guardian/alerts" class="btn btn-outline">View All →</a>
+    </div>
+
+    <div class="alert-item mb-2">
+      <div class="flex justify-between align-center">
+        <div>
+          <strong>Robert Chen</strong> <span class="badge badge-high">high</span>
+          <div class="text-sm">Atorvastatin 20mg</div>
+          <div class="text-xs">Missed 2 hours ago</div>
+        </div>
+        <button class="btn btn-outline">View</button>
       </div>
     </div>
-    <div class="_7">7</div>
-    <div class="total-missed-doses-this-week">Total Missed Doses This Week</div>
-  </div>
-  <div class="rectangle-632"></div>
-  <div class="group-1000001053">
-    <div class="rectangle-631"></div>
-    <div class="group-1000001052">
-      <div class="rectangle-658"></div>
-      <div class="liam-harper-missed-his-medication-at-1-pm">
-        Liam Harper missed his medication at 1pm
-      </div>
-    </div>
-    <div class="group-10000010532">
-      <div class="rectangle-6582"></div>
-      <div class="liam-harper-missed-his-medication-at-1-pm2">
-        Liam Harper missed his medication at 1pm
-      </div>
-    </div>
-    <div class="frame-3">
-      <div class="see-all">see all --&gt;</div>
-    </div>
-    <div class="group-1000001046">
-      <div class="rectangle-656"></div>
-      <div class="robert-william-missed-his-medication-at-5-pm">
-        Robert william missed his medication at 5pm
-      </div>
-    </div>
-    <div class="group-1000001047">
-      <div class="rectangle-657"></div>
-      <div class="sofia-missed-her-medication-at-2-pm">
-        Sofia missed her Medication at 2pm
+
+    <div class="alert-item">
+      <div class="flex justify-between align-center">
+        <div>
+          <strong>Eleanor Rodriguez</strong> <span class="badge badge-medium">medium</span>
+          <div class="text-sm">Metformin 500mg</div>
+          <div class="text-xs">Missed Yesterday at 8:00 PM</div>
+        </div>
+        <button class="btn btn-outline">View</button>
       </div>
     </div>
   </div>
-  <div class="group-1000001054">
-    <div class="rectangle-6312"></div>
-    <div class="group-1000001052">
-      <div class="rectangle-6583"></div>
-      <div class="liam-harper-has-medication-at-1-pm">
-        Liam Harper has medication at 1pm
-      </div>
-    </div>
-    <div class="group-10000010532">
-      <div class="rectangle-6584"></div>
-      <div class="liam-harper-has-medication-at-1-pm2">
-        Liam Harper has medication at 1pm
-      </div>
-    </div>
-    <div class="frame-32">
-      <div class="see-all">see all --&gt;</div>
-    </div>
-    <div class="group-1000001046">
-      <div class="rectangle-6562"></div>
-      <div class="robert-william-has-medication-at-5-pm">
-        Robert william has medication at 5pm
-      </div>
-    </div>
-    <div class="group-1000001047">
-      <div class="rectangle-6572"></div>
-      <div class="sofia-has-medication-at-2-pm">
-        Sofia has medication at 2pm
-      </div>
-    </div>
-    <div class="upcoming">Upcoming</div>
+
+  <!-- Patient Cards -->
+  <div class="flex justify-between align-center mb-2">
+    <h2>Your Patients</h2>
+    <a href="${pageContext.request.contextPath}/guardian/patients" class="btn btn-outline">View All Patients →</a>
   </div>
-  <div class="medications">Medications</div>
-  <div class="rectangle-6322"></div>
-  <div class="iconly-light-outline-shield-done">
-    <img class="shield-done" src="${pageContext.request.contextPath}/assets/images-guardian/shield-done0.svg" />
-  </div>
-  <div class="you-can-now-monitor-your-patient-s-medication-adherence">
-    You can now monitor your patient&#039;s medication adherence.
-  </div>
-  <div class="rectangle-660"></div>
-  <div
-          class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567"
-  >
-      <span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span"
-        >
-          AGE :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span2"
-        >
-          66
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span"
-        >
-          <br />
-          CHRONIC CONDITION :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span2"
-        >
-          Asthma
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span"
-        >
-          <br />
-          ALLERGIES :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span2"
-        >
-          Paracetamol
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span"
-        >
-          <br />
-          CONTACT NUMBER :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-4567-span2"
-        >
-          071 - 123 4567
-        </span>
-      </span>
-  </div>
-  <div class="depth-10-frame-1">
-    <div class="depth-11-frame-0">
-      <div class="view-details">View Details</div>
-    </div>
-  </div>
-  <img class="rectangle-661" src="${pageContext.request.contextPath}/assets/images-guardian/rectangle-6610.png" />
-  <div class="rectangle-6602"></div>
-  <div
-          class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672"
-  >
-      <span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span"
-        >
-          AGE :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span2"
-        >
-          66
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span"
-        >
-          <br />
-          CHRONIC CONDITION :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span2"
-        >
-          Asthma
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span"
-        >
-          <br />
-          ALLERGIES :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span2"
-        >
-          Paracetamol
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span"
-        >
-          <br />
-          CONTACT NUMBER :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45672-span2"
-        >
-          071 - 123 4567
-        </span>
-      </span>
-  </div>
-  <div class="depth-10-frame-12">
-    <div class="depth-11-frame-0">
-      <div class="view-details">View Details</div>
-    </div>
-  </div>
-  <img class="rectangle-6612" src="${pageContext.request.contextPath}/assets/images-guardian/rectangle-6611.png" />
-  <div class="rectangle-6603"></div>
-  <div
-          class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673"
-  >
-      <span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span"
-        >
-          AGE :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span2"
-        >
-          66
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span"
-        >
-          <br />
-          CHRONIC CONDITION :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span2"
-        >
-          Asthma
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span"
-        >
-          <br />
-          ALLERGIES :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span2"
-        >
-          Paracetamol
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span"
-        >
-          <br />
-          CONTACT NUMBER :
-        </span>
-        <span
-                class="age-66-chronic-condition-asthma-allergies-paracetamol-contact-number-071-123-45673-span2"
-        >
-          071 - 123 4567
-        </span>
-      </span>
-  </div>
-  <div class="depth-10-frame-13">
-    <div class="depth-11-frame-0">
-      <div class="view-details">View Details</div>
-    </div>
-  </div>
-  <img class="rectangle-6613" src="${pageContext.request.contextPath}/assets/images-guardian/rectangle-6612.png" />
-  <div class="mrs-paula">Mrs. Paula</div>
-  <div class="mrs-jenniefer">Mrs. Jenniefer</div>
-  <div class="depth-3-frame-0">
-    <div class="depth-4-frame-0">
-      <img class="depth-4-frame-02" src="${pageContext.request.contextPath}/assets/images-guardian/depth-4-frame-01.png" />
-    </div>
-    <div class="depth-4-frame-1">
-      <div class="medora">Medora</div>
-    </div>
-  </div>
-  <div class="frame-5"></div>
-  <div class="line-48"></div>
-  <div class="all-rights-reserved-medora-com-terms-and-conditions-apply">
-    All rights reserved ® medora.com | Terms and conditions apply!
-  </div>
-  <div class="frame-120">
-    <img class="facebook" src="${pageContext.request.contextPath}/assets/images-guardian/facebook0.svg" />
-    <img class="instagram" src="${pageContext.request.contextPath}/assets/images-guardian/instagram0.svg" />
-    <img class="youtube" src="${pageContext.request.contextPath}/assets/images-guardian/youtube0.svg" />
-    <img class="linkedin" src="${pageContext.request.contextPath}/assets/images-guardian/linkedin0.svg" />
-    <img class="twitter" src="${pageContext.request.contextPath}/assets/images-guardian/twitter0.svg" />
-  </div>
-  <div class="frame-1000001097">
-    <div class="depth-3-frame-02">
-      <img class="depth-4-frame-2" src="${pageContext.request.contextPath}/assets/images-guardian/depth-4-frame-20.png" />
-      <div class="depth-4-frame-12">
-        <div class="medora2">Medora</div>
-      </div>
-    </div>
-    <div class="frame-2">
-      <div class="home"> <a href="index.html"> Home </a></div>
-      <div class="patients"><a href="patients.html"> Patients </a></div>
-      <div class="patient-info"><a href="patientinfo.html"> Patient Info </a></div>
-      <div class="alerts"><a href="alerts.html"> Alerts </a></div>
-      <div class="settings"><a href="settings.html"> Settings </a></div>
-    </div>
-  </div>
-  <div class="total-patients-monitored">Total Patients Monitored</div>
-  <div class="welcome-sophia">Welcome, Sophia!</div>
-  <img class="r-1-1" src="${pageContext.request.contextPath}/assets/images-guardian/r-1-10.png" />
-  <div class="missed">Missed</div>
-  <div class="patient-list">Patient List</div>
-  <div class="mr-john">Mr. John</div>
-</div>
+
+  <div class="flex justify-between">
+    <!-- Patient 1 -->
+<%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
+<%--      <jsp:param name="initials" value="ER"/>--%>
+<%--      <jsp:param name="name" value="Eleanor Rodriguez"/>--%>
+<%--      <jsp:param name="age" value="72"/>--%>
+<%--      <jsp:param name="conditions" value="Hypertension, Type 2 Diabetes"/>--%>
+<%--      <jsp:param name="adherence" value="92"/>--%>
+<%--      <jsp:param name="updated" value="2 hours ago"/>--%>
+<%--    </jsp:include>--%>
+
+<%--    <!-- Patient 2 -->--%>
+<%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
+<%--      <jsp:param name="initials" value="RC"/>--%>
+<%--      <jsp:param name="name" value="Robert Chen"/>--%>
+<%--      <jsp:param name="age" value="68"/>--%>
+<%--      <jsp:param name="conditions" value="Heart Disease"/>--%>
+<%--      <jsp:param name="adherence" value="78"/>--%>
+<%--      <jsp:param name="updated" value="5 hours ago"/>--%>
+<%--    </jsp:include>--%>
+
+<%--    <!-- Patient 3 -->--%>
+<%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
+<%--      <jsp:param name="initials" value="MW"/>--%>
+<%--      <jsp:param name="name" value="Margaret Wilson"/>--%>
+<%--      <jsp:param name="age" value="75"/>--%>
+<%--      <jsp:param name="conditions" value="Arthritis, Osteoporosis"/>--%>
+<%--      <jsp:param name="adherence" value="95"/>--%>
+<%--      <jsp:param name="updated" value="1 hour ago"/>--%>
+<%--    </jsp:include>--%>
+<%--  </div>--%>
+</main>
 
 </body>
 </html>
