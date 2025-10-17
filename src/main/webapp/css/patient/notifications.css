@@ -1,0 +1,10 @@
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.empty-state svg {
+  margin-bottom: 15px;
+  stroke: #6c757d;
+}

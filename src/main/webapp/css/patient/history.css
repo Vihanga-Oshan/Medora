@@ -1,0 +1,75 @@
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.adherence-overall {
+  background: #f0f9ff;
+  border: 1px solid #cce5ff;
+}
+
+.adherence-overall .card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-blue);
+}
+
+.adherence-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-blue);
+  margin: 15px 0;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-blue);
+  width: 0%;
+}
+
+.tip {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.adherence-week .day-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.day-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-row span:first-child {
+  width: 40px;
+  font-weight: 500;
+}
+
+.bar {
+  flex-grow: 1;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: #cce5ff;
+  width: 0%;
+}
