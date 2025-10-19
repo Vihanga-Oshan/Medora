@@ -51,7 +51,6 @@ public class ScheduleDAO {
         END,
         med.name
 """;
-
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, Date.valueOf(date));
             stmt.setString(2, patientNic);
