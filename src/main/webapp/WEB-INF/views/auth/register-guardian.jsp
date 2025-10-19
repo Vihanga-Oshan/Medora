@@ -92,7 +92,6 @@
     <p class="login-text">Already have an account? <a href="${cp}/loginguardian">Login here</a></p>
 
 </div>
-
 <script src="${cp}/js/form-validation.js?v=1" defer></script>
 </body>
 </html>
