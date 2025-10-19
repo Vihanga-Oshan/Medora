@@ -1,6 +1,7 @@
 package com.example.base.model;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Prescription {
     private int id;
@@ -35,4 +36,11 @@ public class Prescription {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    // Convenience getter for JSP display
+    public String getFormattedUploadDate() {
+        if (uploadDate == null) return "";
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
+        return uploadDate.format(fmt);
+    }
 }

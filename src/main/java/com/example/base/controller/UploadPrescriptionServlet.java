@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.util.List;
 import java.util.UUID;
 
 @WebServlet("/patient/upload-prescription")
@@ -28,7 +29,31 @@ public class UploadPrescriptionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Show upload form
+        // Ensure user is logged in (patient)
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("patient") == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
+
+        com.example.base.model.patient patient =
+                (com.example.base.model.patient) session.getAttribute("patient");
+        String patientNic = patient.getNic();
+
+        // Load patient's prescriptions from DB and attach to request (always set attribute)
+        List<Prescription> prescriptions = new java.util.ArrayList<>();
+        try (Connection conn = dbconnection.getConnection()) {
+            PrescriptionDAO dao = new PrescriptionDAO(conn);
+            prescriptions = dao.getPrescriptionsByPatient(patientNic);
+            System.out.println("Loaded " + prescriptions.size() + " prescriptions for patientNic=" + patientNic);
+        } catch (Exception e) {
+            // Log and continue; JSP will handle empty list
+            System.out.println("Failed to load prescriptions for patientNic=" + patientNic + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        req.setAttribute("prescriptions", prescriptions);
+
+        // Show upload form (with prescriptions attached)
         req.getRequestDispatcher("/WEB-INF/views/patient/upload-prescription.jsp").forward(req, resp);
     }
 

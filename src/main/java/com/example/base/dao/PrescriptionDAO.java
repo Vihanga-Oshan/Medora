@@ -150,6 +150,28 @@ public class PrescriptionDAO {
         }
         return null;
     }
+
+    // ✅ Get a prescription by stored file path (used for authorization checks)
+    public Prescription getPrescriptionByFilePath(String filePath) throws SQLException {
+        String sql = "SELECT * FROM prescriptions WHERE file_path = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, filePath);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Prescription p = new Prescription();
+                    p.setId(rs.getInt("id"));
+                    p.setPatientNic(rs.getString("patient_nic"));
+                    p.setFileName(rs.getString("file_name"));
+                    p.setFilePath(rs.getString("file_path"));
+                    p.setUploadDate(rs.getTimestamp("upload_date").toLocalDateTime());
+                    p.setStatus(rs.getString("status"));
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
     public List<Prescription> getPrescriptionsByStatus(String status) throws SQLException {
         List<Prescription> prescriptions = new ArrayList<>();
         String sql = "SELECT * FROM prescriptions WHERE status = ?";
