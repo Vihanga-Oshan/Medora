@@ -6,88 +6,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Medora - Guardian Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account - Guardian | Medora</title>
     <link rel="stylesheet" href="${cp}/css/register/register-guardian.css" />
+
+    <!-- Optional inline error fallback -->
+    <style>
+        .invalid { outline: 2px solid #e11d48; }
+        .error-text { color: #e11d48; margin-top: .5rem; font-size: .9rem; }
+    </style>
 </head>
 <body>
 
-<header class="navbar">
-    <div class="logo-brand">
-        <img src="${cp}/assets/logo.png" alt="Medora Logo" class="logo" />
-        <h1 class="brand-name">Medora</h1>
-    </div>
-</header>
+<div class="register-box">
 
-<main class="container">
-    <div class="left-side">
-        <img src="${cp}/assets/reg-guardian.webp" class="guardian-logo" alt="guardian"/>
-        <div class="image-placeholder"></div>
+    <!-- Back to Home -->
+    <div class="back-link" onclick="window.location.href='${cp}/index.jsp'">← Back to Home</div>
+
+    <!-- Logo -->
+    <div class="logo">
+        <img src="${cp}/assets/logo.png" alt="Medora Logo" />
     </div>
 
-    <div class="right-side">
-        <!-- Global error (from servlet) -->
-        <c:if test="${not empty error}">
-            <p style="color:#e11d48;margin:.5rem 0">${error}</p>
-        </c:if>
+    <!-- Title -->
+    <h1>Create Account</h1>
+    <p class="subtitle">Manage your patients’ health with care</p>
 
-        <form
-                id="guardianForm"
-                class="register-form"
-                method="post"
-                action="${cp}/register/guardian"
-                novalidate
-                onsubmit="return window.guardianValidate && window.guardianValidate(this);"
-        >
-            <img src="${cp}/assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
-            <h2>Create your account</h2>
+    <!-- Toggle Buttons -->
+    <div class="toggle-btns">
+        <button type="button" onclick="location.href='${cp}/register/patient'">Patient</button>
+        <button type="button" class="active">Guardian</button>
+    </div>
 
-            <div class="toggle-buttons">
-                <button type="button" class="toggle" onclick="location.href='${cp}/register/patient'">Register as Patient</button>
-                <button type="button" class="toggle active">Register as Guardian</button>
+    <!-- Server Error -->
+    <c:if test="${not empty error}">
+        <p class="error-text">${error}</p>
+    </c:if>
+
+    <!-- Guardian Registration Form -->
+    <form method="post" action="${cp}/register/guardian"
+          id="guardianForm"
+          novalidate
+          onsubmit="return window.guardianValidate && window.guardianValidate(this);">
+
+        <div class="form-grid">
+            <div class="input-group full">
+                <label for="g_name">Full Name</label>
+                <input type="text" id="g_name" name="g_name" required value="${param.g_name}" />
             </div>
 
-            <div class="field">
-                <input type="text" name="g_name" placeholder="User name" autocomplete="name"
-                       required value="${param.g_name}" />
+            <div class="input-group full">
+                <label for="nic">NIC</label>
+                <input type="text" id="nic" name="nic" inputmode="numeric" required value="${param.nic}" />
             </div>
 
-            <div class="field">
-                <input type="text" name="nic" placeholder="NIC" inputmode="numeric" autocomplete="off"
-                       required value="${param.nic}" />
+            <div class="input-group full">
+                <label for="contact_number">Contact Number</label>
+                <input type="text" id="contact_number" name="contact_number"
+                       inputmode="tel" required value="${param.contact_number}" />
             </div>
 
-            <div class="field">
-                <input type="text" name="contact_number" placeholder="Contact Number" inputmode="tel" autocomplete="tel"
-                       required value="${param.contact_number}" />
+            <div class="input-group full">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" autocomplete="email" required value="${param.email}" />
             </div>
 
-            <div class="field">
-                <input type="email" name="email" placeholder="Email" autocomplete="email"
-                       value="${param.email}" />
+            <div class="input-group full">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="new-password" required />
             </div>
 
-            <div class="field">
-                <input type="password" name="password" placeholder="Password" autocomplete="new-password"
-                       required />
-            </div>
-
-            <div class="checkbox field">
+            <div class="checkbox full">
                 <label>
                     <input type="checkbox" id="agree" name="agree" required />
                     I agree to the Privacy Policies
                 </label>
             </div>
 
-            <button type="submit" class="register-button">Register</button>
-        </form>
+            <div class="input-group full">
+                <button type="submit" class="btn-submit">Create Account</button>
+            </div>
+        </div>
+    </form>
 
-    </div>
-</main>
+    <p class="login-text">Already have an account? <a href="${cp}/loginguardian">Login here</a></p>
+
+</div>
 
 <script src="${cp}/js/form-validation.js?v=1" defer></script>
-
-
-
 </body>
 </html>

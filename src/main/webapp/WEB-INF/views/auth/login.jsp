@@ -1,68 +1,74 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <c:set var="cp" value="${pageContext.request.contextPath}" />
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Medora</title>
-
-    <!-- Use context path; avoids ../../ breakage -->
     <link rel="stylesheet" href="${cp}/css/login/login-patient.css" />
 </head>
-<body>
+<body class="login-page">
 
-<header class="navbar">
-    <div class="logo-brand">
-        <img src="${cp}/assets/logo.png" alt="Medora Logo" class="logo" />
-        <span class="small-brand">Medora</span>
-    </div>
-</header>
+<div class="login-container">
 
-<div class="container">
-    <div class="left-panel">
-        <img src="${cp}/assets/login-patient.jpg" alt="login image" class="register-image" />
+    <!-- Back to Home -->
+    <div class="back-link" onclick="window.location.href='${cp}/index.jsp'">← Back to Home</div>
+
+    <!-- Logo -->
+    <div class="logo">
+        <img src="${cp}/assets/logo.png" alt="Medora Logo" />
     </div>
 
-    <div class="right-panel">
-        <div class="form-card">
-            <div class="form-header">
-                <img src="${cp}/assets/welcome.png" alt="welcome icon" class="welcome-icon" />
-                <h2>Welcome back</h2>
+    <!-- Heading -->
+    <h1>Welcome back</h1>
+    <p class="subtitle">Log in to continue your Medora journey</p>
 
-                <div class="toggle-buttons">
-                    <button class="active" onclick="location.href='${cp}/login'">Login as Patient</button>
-                    <button class="not-active" onclick="location.href='${cp}/loginguardian'">Login as Guardian</button>
+    <!-- Toggle Buttons -->
+    <div class="form-toggle">
+        <button class="active" type="button" onclick="location.href='${cp}/login'">Patient</button>
+        <button type="button" onclick="location.href='${cp}/loginguardian'">Guardian</button>
+    </div>
 
-                </div>
+    <!-- Login Form -->
+    <form method="post" action="${cp}/login" novalidate
+          onsubmit="return window.loginValidate && window.loginValidate(this);">
+
+        <div class="form">
+            <label for="nic">NIC</label>
+            <input type="text" name="nic" id="nic" value="${param.nic}" placeholder="Enter your NIC" required />
+
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" placeholder="Enter your password" required />
+
+            <div class="form-options">
+                <label>
+                    <input type="checkbox" name="remember" /> Remember me
+                </label>
+                <a href="#" class="forgot-password">Forgot password?</a>
             </div>
 
+            <button type="submit" class="btn-submit">Login</button>
 
-            <form method="post" action="${cp}/login" novalidate>
-                <input type="text" name="nic" placeholder="NIC" required />
-                <input type="password" name="password" placeholder="Password" required />
-                <button type="submit" class="submit-btn">Login</button>
+            <!-- Display backend error -->
+            <c:if test="${not empty error}">
+                <p class="error-text" style="color:#e11d48;margin-top:.75rem;">${error}</p>
+            </c:if>
 
-                <div class="forgot-password">
-                    <a href="#">Forgot your password?</a>
-                </div>
+            <!-- Optional success message (if set by backend) -->
+            <c:if test="${not empty message}">
+                <p class="success-text" style="color:#16a34a;margin-top:.75rem;">${message}</p>
+            </c:if>
 
-
-                <c:if test="${not empty error}">
-                    <p class="error-text" style="color:#e11d48;margin-top:.75rem;">${error}</p>
-                </c:if>
-
-            </form>
+            <p class="bottom-text">Don’t have an account?
+                <a href="${cp}/register/patient">Create one here</a>
+            </p>
         </div>
-    </div>
+    </form>
 </div>
 
 <script src="${cp}/js/form-validation.js?v=1" defer></script>
-
-
-
 </body>
 </html>

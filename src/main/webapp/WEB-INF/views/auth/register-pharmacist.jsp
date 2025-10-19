@@ -1,52 +1,80 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Register Pharmacist - Medora</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/index.css">
-  <style>
-    .form-container {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      max-width: 500px;
-      margin: 60px auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    .btn-submit { background: #007acc; color: white; padding: 10px 20px; border: none; border-radius: 20px; cursor: pointer; }
-    .error { color: red; margin-top: 10px; }
-    .back-link { display: inline-block; margin-top: 15px; color: #007acc; }
-  </style>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/index.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/auth.css">
 </head>
 <body>
-<div class="form-container">
-  <h2>Register Pharmacist</h2>
-  <form action="${pageContext.request.contextPath}/register/pharmacist" method="post">
-    <div class="form-group">
-      <label for="name">Full Name</label>
-      <input type="text" id="name" name="name" required>
+  <div class="wrap">
+    <div class="card">
+      <h2>Create Pharmacist Account</h2>
+      <div class="lead">Create an account to start validating prescriptions and scheduling medications.</div>
+
+      <c:if test="${not empty error}">
+        <div class="msg error">${error}</div>
+      </c:if>
+
+      <form id="regForm" action="${pageContext.request.contextPath}/register/pharmacist" method="post" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" required value="${fn:escapeXml(param.name)}">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required value="${fn:escapeXml(param.email)}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pharmacistId">Pharmacist ID</label>
+            <input type="text" id="pharmacistId" name="pharmacistId" pattern="\d+" placeholder="Enter your pharmacy numeric ID" required value="${fn:escapeXml(param.pharmacistId)}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <button type="submit" id="submitBtn" class="btn-primary">Create account</button>
+          <a href="${pageContext.request.contextPath}/pharmacist/login" class="btn-secondary">Back to login</a>
+        </div>
+      </form>
     </div>
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" required>
-    </div>
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" required>
-    </div>
-    <div class="form-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" name="confirmPassword" required>
-    </div>
-    <button type="submit" class="btn-submit">Register</button>
-    <a href="${pageContext.request.contextPath}/login/pharmacist" class="back-link">← Back to Login</a>
-    <c:if test="${not empty error}">
-      <p class="error">${error}</p>
-    </c:if>
-  </form>
-</div>
+  </div>
+
+  <script>
+    (function(){
+      const form = document.getElementById('regForm');
+      const submitBtn = document.getElementById('submitBtn');
+
+      form.addEventListener('submit', function(e){
+        if (!form.checkValidity()){
+          e.preventDefault();
+          form.reportValidity();
+          return;
+        }
+        submitBtn.disabled = true;
+        const orig = submitBtn.textContent;
+        submitBtn.textContent = 'Creating...';
+        setTimeout(()=>{ submitBtn.disabled = false; submitBtn.textContent = orig; }, 6000);
+      });
+    })();
+  </script>
 </body>
 </html>

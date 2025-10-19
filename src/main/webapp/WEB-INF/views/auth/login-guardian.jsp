@@ -7,49 +7,59 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Login • Guardian</title>
-  <link rel="stylesheet" href="${cp}/css/login/login-patient.css"/>
+  <title>Login - Guardian</title>
+  <link rel="stylesheet" href="${cp}/css/login/login-guardian.css"/>
 </head>
-<body>
-<header class="navbar">
-  <div class="logo-brand">
-    <img src="${cp}/assets/logo.png" alt="Medora Logo" class="logo"/>
-    <span class="small-brand">Medora</span>
+<body class="login-page">
+
+<div class="login-container">
+
+  <!-- Back to Home -->
+  <div class="back-link" onclick="window.location.href='${cp}/index.jsp'">← Back to Home</div>
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="${cp}/assets/logo.png" alt="Medora Logo"/>
   </div>
-</header>
 
-<div class="container">
-  <div class="left-panel">
-    <img src="${cp}/assets/login-patient.jpg" alt="login image" class="register-image"/>
+  <!-- Heading -->
+  <h1>Welcome Back</h1>
+  <p class="subtitle">Login to manage your patients’ health with care</p>
+
+  <!-- Toggle Buttons -->
+  <div class="form-toggle">
+    <button type="button" onclick="location.href='${cp}/login'">Patient</button>
+    <button type="button" class="active">Guardian</button>
   </div>
 
-  <div class="right-panel">
-    <div class="form-card">
-      <div class="form-header">
-        <img src="${cp}/assets/welcome.png" alt="welcome icon" class="welcome-icon"/>
-        <h2>Guardian Login</h2>
+  <!-- Show error message if login failed -->
+  <c:if test="${not empty error}">
+    <p class="error-text" style="color:#e11d48; margin-top:.75rem;">${error}</p>
+  </c:if>
 
-        <div class="toggle-buttons">
-          <button class="not-active" onclick="location.href='${cp}/login'">Login as Patient</button>
-          <button class="active">Login as Guardian</button>
-        </div>
-      </div>
+  <!-- Login Form -->
+  <form method="post" action="${cp}/loginguardian" novalidate
+        onsubmit="return window.loginValidate && window.loginValidate(this);">
 
-      <c:if test="${not empty error}">
-        <p style="color:#e11d48;margin:.5rem 0">${error}</p>
-      </c:if>
+    <label for="nic">NIC</label>
+    <input type="text" id="nic" name="nic" value="${param.nic}" placeholder="Enter your NIC" required/>
 
-      <form method="post" action="${cp}/loginguardian" novalidate>
-        <input type="text" name="nic" placeholder="NIC" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <button type="submit" class="submit-btn">Login</button>
-      </form>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" placeholder="Enter your password" required/>
+
+    <div class="form-options">
+      <label><input type="checkbox" name="remember"/> Remember Me</label>
+      <a href="#" class="forgot-password">Forgot Password?</a>
     </div>
-  </div>
+
+    <button type="submit" class="btn-submit">Login</button>
+  </form>
+
+  <p class="bottom-text">
+    Don’t have an account? <a href="${cp}/register/guardian">Register here</a>
+  </p>
 </div>
+
 <script src="${cp}/js/form-validation.js?v=1" defer></script>
-
-
-
 </body>
 </html>

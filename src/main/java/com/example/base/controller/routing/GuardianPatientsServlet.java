@@ -1,10 +1,12 @@
-package com.example.base.controller;
+package com.example.base.controller.routing;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 
+@WebServlet("/guardian/patients")
 public class GuardianPatientsServlet extends HttpServlet {
 
     @Override
@@ -46,3 +48,4 @@ public class GuardianPatientsServlet extends HttpServlet {
         req.getRequestDispatcher("/WEB-INF/views/guardian/guardian-patients.jsp").forward(req, resp);
     }
 }
+

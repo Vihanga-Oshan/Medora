@@ -1,12 +1,12 @@
-package com.example.base.controller;
+package com.example.base.controller.routing;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 
-// Routing moved to com.example.base.controller.routing.GuardianDashboardServlet
-public class guardiandashboardservlet extends HttpServlet {
-
+@WebServlet("/guardian/dashboard")
+public class GuardianDashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -20,3 +20,4 @@ public class guardiandashboardservlet extends HttpServlet {
         req.getRequestDispatcher("/WEB-INF/views/guardian/guardian-dashboard.jsp").forward(req, resp);
     }
 }
+

@@ -62,41 +62,53 @@ window.guardianValidate = function(form){
     return true;
 };
 
-/* ---------- Patient Register ---------- */
-window.patientValidate = function(form){
+/* ---------- Patient Register (fixed for 2-step) ---------- */
+window.patientValidate = function(form, step1Only = false){
     const name  = form.querySelector('input[name="name"]');
     const phone = form.querySelector('input[name="emergencyContact"]');
     const nic   = form.querySelector('input[name="nic"]');
     const email = form.querySelector('input[name="email"]');
     const pw    = form.querySelector('input[name="password"]');
-    const cpw   = form.querySelector('input[name="confirmPassword"]');
+    const gNic  = form.querySelector('input[name="guardianNic"]');
+    const privacy = form.querySelector('input[name="privacy"]');
+    const allergies = form.querySelector('textarea[name="allergies"]');
+    const chronic = form.querySelector('textarea[name="chronic"]');
 
-    [name,phone,nic,email,pw,cpw].forEach(i=> i && i.addEventListener("input", ()=> clearError(i), {once:true}));
+    [name,phone,nic,email,pw,gNic,privacy,allergies,chronic].forEach(i=>{
+        if(i) i.addEventListener("input", ()=> clearError(i), {once:true});
+    });
 
     let ok = true;
 
+    // STEP 1 checks
     if(!name || !name.value.trim()){ setError(name,"Full name is required"); ok = false; }
     if(!phone || !phoneOK(phone.value)){ setError(phone,"Phone like 0XXXXXXXXX or +94XXXXXXXXX"); ok = false; }
     if(!nic || !nicOK(nic.value)){ setError(nic,"NIC must be 12 digits or 9 digits + V/X"); ok = false; }
     if(email && email.value && !email.checkValidity()){ setError(email,"Enter a valid email"); ok = false; }
     if(!pw || pw.value.length < 6){ setError(pw,"Password min 6 chars"); ok = false; }
-    if(!cpw || cpw.value !== pw.value){ setError(cpw,"Does not match"); ok = false; }
+
+    if(step1Only) return ok; // stop here when user clicks "Next"
+
+    // STEP 2 checks (only runs on final submit)
+    if(gNic && gNic.value.trim()){
+        if (!nicOK(gNic.value)) { setError(gNic, "Guardian NIC is invalid"); ok = false; }
+        else if (normalizeNIC(gNic.value) === normalizeNIC(nic.value)) {
+            setError(gNic, "Guardian NIC cannot be same as patient NIC"); ok = false;
+        }
+    }
+
+    if(!privacy || !privacy.checked){
+        setError(privacy,"You must agree to the Privacy Policies");
+        ok = false;
+    }
 
     if(!ok) return false;
 
     nic.value   = normalizeNIC(nic.value);
     phone.value = normalizePhone(phone.value);
     return true;
-    // add inside patientValidate() after other checks:
-    const gNic = form.querySelector('input[name="guardianNic"]');
-    if (gNic && gNic.value.trim()){
-        if (!nicOK(gNic.value)) { setError(gNic, "Guardian NIC is invalid"); ok = false; }
-        else if (normalizeNIC(gNic.value) === normalizeNIC(nic.value)) {
-            setError(gNic, "Guardian NIC cannot be the same as patient NIC"); ok = false;
-        } else { clearError(gNic); }
-    }
-
 };
+
 
 /* ---------- Logins (patient & guardian) ---------- */
 window.loginValidate = function(form){

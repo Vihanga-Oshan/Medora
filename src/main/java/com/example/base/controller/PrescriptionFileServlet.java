@@ -30,7 +30,7 @@ public class PrescriptionFileServlet extends HttpServlet {
 
         // sanitize filename to prevent path traversal
         String requested = new File(pathInfo).getName();
-        if (requested == null || requested.isEmpty()) {
+        if (requested.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -59,15 +59,17 @@ public class PrescriptionFileServlet extends HttpServlet {
         if (session != null) {
             Object patientObj = session.getAttribute("patient");
             if (patientObj != null) {
+                // prefer direct cast to your patient model to avoid reflection
                 try {
-                    // patient class has getNic()
-                    String nic = (String) patientObj.getClass().getMethod("getNic").invoke(patientObj);
-                    if (nic != null && nic.equals(pres.getPatientNic())) {
-                        authorized = true;
+                    if (patientObj instanceof com.example.base.model.patient) {
+                        com.example.base.model.patient sessPatient = (com.example.base.model.patient) patientObj;
+                        String nic = sessPatient.getNic();
+                        if (nic != null && nic.equals(pres.getPatientNic())) {
+                            authorized = true;
+                        }
                     }
                 } catch (Exception e) {
-                    // ignore reflection errors, remain unauthorized
-                    LOGGER.log(Level.WARNING, "Failed to read patient nic via reflection", e);
+                    LOGGER.log(Level.WARNING, "Failed to read patient nic from session object", e);
                 }
             }
             // allow pharmacists (staff) to view
@@ -83,12 +85,26 @@ public class PrescriptionFileServlet extends HttpServlet {
 
         // Determine base storage directory: prefer configured external folder
         String configuredDir = req.getServletContext().getInitParameter("upload.dir");
-        File file;
+        File file = null;
+        String webAppRoot = req.getServletContext().getRealPath("");
+        // 1) Try configured external directory (if provided)
         if (configuredDir != null && !configuredDir.trim().isEmpty()) {
-            file = new File(configuredDir.trim(), requested);
-        } else {
-            String webAppRoot = req.getServletContext().getRealPath("");
-            file = new File(webAppRoot + File.separator + UPLOAD_DIR, requested);
+            File cfgFile = new File(configuredDir.trim(), requested);
+            if (cfgFile.exists() && cfgFile.isFile()) {
+                file = cfgFile;
+            } else {
+                LOGGER.info("Configured upload.dir '" + configuredDir + "' does not contain requested file; will try webapp uploads folder");
+            }
+        }
+
+        // 2) Fallback to webapp's internal uploads directory
+        if (file == null) {
+            if (webAppRoot != null) {
+                file = new File(webAppRoot + File.separator + UPLOAD_DIR, requested);
+            } else {
+                // getRealPath returned null (possible in some servlet containers). Fall back to relative path.
+                file = new File(UPLOAD_DIR, requested);
+            }
         }
 
         if (!file.exists() || !file.isFile()) {

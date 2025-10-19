@@ -2,41 +2,82 @@ package com.example.base.controller;
 
 import com.example.base.dao.PharmacistDAO;
 import com.example.base.model.Pharmacist;
+import com.example.base.auth.JwtUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@WebServlet("/login/pharmacist")
+@WebServlet("/pharmacist/login")
 public class PharmacistLoginServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(PharmacistLoginServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Show success message if redirected from registration
-        if ("1".equals(req.getParameter("registered"))) {
-            req.setAttribute("message", "Registration successful! Please log in.");
-        }
-        req.getRequestDispatcher("/WEB-INF/views/auth/login-pharmacist.jsp").forward(req, resp);
+        // forward to a pharmacist login JSP if you have one; fallback to patient login page
+        req.getRequestDispatcher("/WEB-INF/views/auth/pharmacist-login.jsp").forward(req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
-        String email = req.getParameter("email");
+        // Expect numeric pharmacistId and password
+        String pharmacistIdParam = req.getParameter("pharmacistId");
         String password = req.getParameter("password");
 
-        Pharmacist pharmacist = PharmacistDAO.validate(email, password);
+        Integer pharmacistId = null;
+        if (pharmacistIdParam != null) {
+            pharmacistIdParam = pharmacistIdParam.trim();
+            try {
+                pharmacistId = Integer.parseInt(pharmacistIdParam);
+            } catch (NumberFormatException e) {
+                req.setAttribute("error", "Invalid Pharmacist ID.");
+                req.setAttribute("pharmacistId", pharmacistIdParam);
+                req.getRequestDispatcher("/WEB-INF/views/auth/pharmacist-login.jsp").forward(req, resp);
+                return;
+            }
+        }
 
-        if (pharmacist != null) {
+        Pharmacist p = null;
+        if (pharmacistId != null) {
+            p = PharmacistDAO.validateById(pharmacistId, password);
+        }
+
+        if (p != null) {
             HttpSession session = req.getSession(true);
-            session.setAttribute("pharmacist", pharmacist);
+            session.setAttribute("pharmacist", p);
+            session.setAttribute("role", "pharmacist");
+
+            String secret = req.getServletContext().getInitParameter("jwt.secret");
+            String expiryStr = req.getServletContext().getInitParameter("jwt.expirySeconds");
+            long expiry = 3600L;
+            try { if (expiryStr != null) expiry = Long.parseLong(expiryStr); } catch (Exception ignored) {}
+            try {
+                String token = JwtUtil.createToken(secret != null ? secret : "change_this_secret_before_production_2025", String.valueOf(p.getId()), "pharmacist", expiry);
+                Cookie jwt = new Cookie("JWT", token);
+                jwt.setHttpOnly(true);
+                jwt.setPath(req.getContextPath().isEmpty() ? "/" : req.getContextPath());
+                if (req.isSecure()) jwt.setSecure(true);
+                resp.addCookie(jwt);
+            } catch (Exception e) {
+                // token creation failed; proceed with session only
+                LOGGER.log(Level.SEVERE, "Failed to create JWT for pharmacist", e);
+            }
+
             resp.sendRedirect(req.getContextPath() + "/pharmacist/dashboard");
         } else {
-            req.setAttribute("error", "Invalid email or password.");
-            req.getRequestDispatcher("/WEB-INF/views/auth/login-pharmacist.jsp").forward(req, resp);
+            req.setAttribute("error", "Invalid Pharmacist ID or password.");
+            // preserve entered pharmacistId
+            req.setAttribute("pharmacistId", pharmacistIdParam);
+            req.getRequestDispatcher("/WEB-INF/views/auth/pharmacist-login.jsp").forward(req, resp);
         }
     }
 }

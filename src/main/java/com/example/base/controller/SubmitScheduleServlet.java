@@ -13,6 +13,13 @@ public class SubmitScheduleServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Ensure pharmacist is authenticated (defense-in-depth)
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("pharmacist") == null) {
+            response.sendRedirect(request.getContextPath() + "/pharmacist/login");
+            return;
+        }
+
         String prescriptionId = request.getParameter("prescriptionId");
         String patientNic = request.getParameter("patientNic");
 

@@ -1,6 +1,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/components/header.css">
 
+<!-- Clean header: ensure logout directs to patient login -->
+
 <header class="header">
   <div class="logo">
     <img src="${pageContext.request.contextPath}/assets/logo.png" alt="Medora Logo">
@@ -28,7 +30,8 @@
 <%--      <img src="${pageContext.request.contextPath}/assets/icons/user.svg" width="18" alt="User Icon">--%>
       Profile
     </a>
-    <a href="${pageContext.request.contextPath}/logout">
+    <!-- Explicitly send patients to the patient login after logout -->
+    <a href="${pageContext.request.contextPath}/logout?next=/login">
 <%--      <img src="${pageContext.request.contextPath}/assets/icons/logout.svg" width="18" alt="Logout Icon">--%>
       Logout
     </a>

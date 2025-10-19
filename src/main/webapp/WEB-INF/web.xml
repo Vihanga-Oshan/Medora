@@ -10,5 +10,41 @@
         <listener-class>com.example.base.listener.CleanupListener</listener-class>
     </listener>
 
+    <!-- Configurable external uploads directory. Change this to a folder outside the webapp for persistence across redeploys -->
+    <context-param>
+        <param-name>upload.dir</param-name>
+        <param-value>C:/MedoraUploads</param-value>
+    </context-param>
+
+    <!-- JWT configuration (change secret to a secure random value in production) -->
+    <context-param>
+        <param-name>jwt.secret</param-name>
+        <param-value>change_this_secret_before_production_2025</param-value>
+    </context-param>
+    <context-param>
+        <param-name>jwt.expirySeconds</param-name>
+        <param-value>3600</param-value>
+    </context-param>
+
+    <!-- JWT authentication filter: protects patient, pharmacist and prescription file endpoints -->
+    <filter>
+        <filter-name>JwtAuthFilter</filter-name>
+        <filter-class>com.example.base.auth.JwtAuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>JwtAuthFilter</filter-name>
+        <url-pattern>/patient/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>JwtAuthFilter</filter-name>
+        <url-pattern>/pharmacist/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>JwtAuthFilter</filter-name>
+        <url-pattern>/prescriptionFile/*</url-pattern>
+    </filter-mapping>
 
 </web-app>

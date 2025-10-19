@@ -1,11 +1,12 @@
-package com.example.base.controller;
+package com.example.base.controller.routing;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 
-// Routing moved to com.example.base.controller.routing.GuardianReportsServlet
-public class GuardianReportsServlet extends HttpServlet {
+@WebServlet("/guardian/profile")
+public class GuardianProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -13,7 +14,7 @@ public class GuardianReportsServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
-        // You can attach attributes here in future for patient reports
-        req.getRequestDispatcher("/WEB-INF/views/guardian/guardian-reports.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/views/guardian/guardian-profile.jsp").forward(req, resp);
     }
 }
+

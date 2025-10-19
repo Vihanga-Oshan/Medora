@@ -30,6 +30,34 @@ public class RegisterPharmacistServlet extends HttpServlet {
         String email = trim(req.getParameter("email"));
         String password = req.getParameter("password");
         String confirmPassword = req.getParameter("confirmPassword");
+        String pharmacistIdParam = trim(req.getParameter("pharmacistId"));
+
+        // Pharmacist ID is required (must be numeric positive)
+        if (pharmacistIdParam == null || pharmacistIdParam.isEmpty()) {
+            req.setAttribute("error", "Pharmacist ID is required.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/register-pharmacist.jsp").forward(req, resp);
+            return;
+        }
+
+        Integer explicitId = null;
+        // only digits allowed
+        if (!pharmacistIdParam.matches("\\d+")) {
+            req.setAttribute("error", "Pharmacist ID must be numeric.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/register-pharmacist.jsp").forward(req, resp);
+            return;
+        }
+        try {
+            explicitId = Integer.parseInt(pharmacistIdParam);
+            if (explicitId <= 0) {
+                req.setAttribute("error", "Pharmacist ID must be a positive number.");
+                req.getRequestDispatcher("/WEB-INF/views/auth/register-pharmacist.jsp").forward(req, resp);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            req.setAttribute("error", "Invalid Pharmacist ID.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/register-pharmacist.jsp").forward(req, resp);
+            return;
+        }
 
         // Validation
         if (isEmpty(name) || isEmpty(email) || isEmpty(password) || isEmpty(confirmPassword)) {
@@ -45,6 +73,7 @@ public class RegisterPharmacistServlet extends HttpServlet {
         }
 
         Pharmacist p = new Pharmacist();
+        if (explicitId != null) p.setId(explicitId);
         p.setName(name);
         p.setEmail(email);
         p.setPassword(password); // Will hash later
@@ -55,7 +84,15 @@ public class RegisterPharmacistServlet extends HttpServlet {
 
             resp.sendRedirect(req.getContextPath() + "/login/pharmacist?registered=1");
         } catch (SQLIntegrityConstraintViolationException e) {
-            req.setAttribute("error", "Email already registered.");
+            // Could be duplicate email or duplicate id
+            String msg = e.getMessage();
+            if (msg != null && msg.toLowerCase().contains("email")) {
+                req.setAttribute("error", "Email already registered.");
+            } else if (msg != null && msg.toLowerCase().contains("id")) {
+                req.setAttribute("error", "Pharmacist ID is already in use.");
+            } else {
+                req.setAttribute("error", "Email or Pharmacist ID already registered.");
+            }
             req.getRequestDispatcher("/WEB-INF/views/auth/register-pharmacist.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,22 +10,23 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/pharmacist/prescription-review")
 public class PrescriptionReviewServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(PrescriptionReviewServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // ✅ TEMPORARY: Skip login for testing
-        /*
+        // Server-side auth check (defense-in-depth)
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("pharmacist") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login/pharmacist");
+            resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
             return;
         }
-        */
 
         String idParam = req.getParameter("id");
         if (idParam == null || idParam.trim().isEmpty()) {
@@ -66,7 +67,7 @@ public class PrescriptionReviewServlet extends HttpServlet {
 
             req.getRequestDispatcher("/WEB-INF/views/pharmacist/prescription-review.jsp").forward(req, resp);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error in PrescriptionReviewServlet", e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error");
         }
     }
@@ -75,14 +76,12 @@ public class PrescriptionReviewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // ✅ TEMPORARY: Skip login for testing
-        /*
+        // Server-side auth check (defense-in-depth)
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("pharmacist") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login/pharmacist");
+            resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
             return;
         }
-        */
 
         String action = req.getParameter("action");
         String idParam = req.getParameter("prescriptionId");
@@ -98,7 +97,7 @@ public class PrescriptionReviewServlet extends HttpServlet {
             PrescriptionDAO dao = new PrescriptionDAO(conn);
             dao.updatePrescriptionStatus(prescriptionId, action);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to update prescription status", e);
         }
 
         resp.sendRedirect(req.getContextPath() + "/pharmacist/validate");

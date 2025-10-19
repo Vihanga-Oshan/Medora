@@ -1,14 +1,14 @@
-package com.example.base.controller;
+package com.example.base.controller.routing;
 
-import javax.management.Notification;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
-// Routing moved to com.example.base.controller.routing.NotificationServlet
+// Routing servlet moved from com.example.base.controller.NotificationServlet
+@WebServlet("/patient/notifications")
 public class NotificationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)   throws ServletException, IOException {
         // Optionally check that a patient is logged in

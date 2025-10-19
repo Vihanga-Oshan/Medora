@@ -6,141 +6,165 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create Patient Account - Medora</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account - Medora</title>
   <link rel="stylesheet" href="${cp}/css/register/register-patient.css" />
-  <!-- Optional: tiny error styles (if not already in your CSS) -->
+
+  <!-- Inline fallback styles for errors -->
   <style>
-    .invalid{ outline:2px solid #e11d48; }
-    .input-error{ color:#e11d48; font-size:.9rem; margin-top:4px; display:block; }
+    .invalid { outline: 2px solid #e11d48; }
+    .input-error { color: #e11d48; font-size: .9rem; margin-top: 4px; display: block; }
   </style>
 </head>
 <body>
 
-<header class="navbar">
-  <div class="logo-brand">
-    <img src="${cp}/assets/logo.png" alt="Medora Logo" class="logo" />
-    <span class="small-brand">Medora</span>
-  </div>
-</header>
+<div class="register-box">
 
-<div class="container">
-  <div class="left-panel">
-    <img src="${cp}/assets/register-patient1.jpg" alt="register image" class="register-image" />
+  <!-- Back to Home -->
+  <div class="back-link" onclick="window.location.href='${cp}/index.jsp'">← Back to Home</div>
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="${cp}/assets/logo.png" alt="Medora Logo" />
   </div>
 
-  <div class="right-panel">
-    <div class="form-card">
-      <div class="form-header">
-        <img src="${cp}/assets/c-a-icon.png" alt="create account icon" class="create-acc-icon" />
-        <h2>Create Account</h2>
-        <div class="toggle-buttons">
-          <button class="active" type="button">Register as Patient</button>
-          <button class="not-active" type="button" onclick="location.href='${cp}/register/guardian'">Register as Guardian</button>
+  <!-- Title -->
+  <h1>Create Account</h1>
+  <p class="subtitle">Join Medora and never miss a dose again</p>
+
+  <!-- Toggle Buttons -->
+  <div class="toggle-btns">
+    <button class="active" type="button">Patient</button>
+    <button type="button" onclick="location.href='${cp}/register/guardian'">Guardian</button>
+  </div>
+
+  <!-- Show server error if present -->
+  <c:if test="${not empty error}">
+    <p class="error-text" style="color:#e11d48;margin:.5rem 0;">${error}</p>
+  </c:if>
+
+  <!-- Registration Form -->
+  <form method="post" action="${cp}/register/patient" id="patientForm"
+        novalidate onsubmit="return window.patientValidate && window.patientValidate(this);">
+
+    <!-- STEP 1 -->
+    <div id="step1" class="form active animate-in">
+      <div class="form-grid">
+        <div class="input-group full">
+          <label>Full Name</label>
+          <input type="text" name="name" autocomplete="name"
+                 required value="${param.name}" />
         </div>
-      </div>
 
-      <!-- Show server error if present -->
-      <c:if test="${not empty error}">
-        <p style="color:#e11d48;margin:.5rem 0">${error}</p>
-      </c:if>
-
-      <!-- FORM -->
-      <form
-              method="post"
-              action="${cp}/register/patient"
-              id="patientForm"
-              novalidate
-              onsubmit="return window.patientValidate && window.patientValidate(this);"
-      >
-        <!-- STEP 1 -->
-        <div id="step1">
-          <div class="field">
-            <input type="text" name="name" placeholder="Full Name" autocomplete="name"
-                   required value="${param.name}"/>
-          </div>
-
-          <div class="gender-selection" style="margin:.5rem 0 1rem">
-            <label><input type="radio" name="gender" value="Male"   ${param.gender == 'Male' ? 'checked' : ''}/> Male</label>
+        <div class="input-group full gender-group">
+          <label>Gender</label>
+          <div class="gender-selection">
+            <label><input type="radio" name="gender" value="Male" ${param.gender == 'Male' ? 'checked' : ''}/> Male</label>
             <label><input type="radio" name="gender" value="Female" ${param.gender == 'Female' ? 'checked' : ''}/> Female</label>
           </div>
-
-          <div class="field">
-            <input type="text" name="emergencyContact" placeholder="Emergency Contact Number"
-                   inputmode="tel" autocomplete="tel" required value="${param.emergencyContact}"/>
-          </div>
-
-          <div class="field">
-            <input type="text" name="nic" placeholder="NIC" inputmode="numeric" autocomplete="off"
-                   required value="${param.nic}"/>
-          </div>
-
-          <div class="field">
-            <input type="email" name="email" placeholder="Email" autocomplete="email"
-                   required value="${param.email}"/>
-          </div>
-
-          <div class="field">
-            <input type="password" name="password" id="password" placeholder="Password"
-                   autocomplete="new-password" required />
-          </div>
-
-          <div class="field">
-            <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required />
-          </div>
-
-          <button type="button" class="submit-btn" onclick="nextStep()">Next</button>
         </div>
 
-        <!-- STEP 2 -->
-        <div id="step2" style="display:none;">
-          <label for="allergies">If you have any Allergies:</label>
-          <div class="field">
-            <textarea id="allergies" name="allergies">${param.allergies}</textarea>
-          </div>
-
-          <label for="chronic">If you have any Chronic Issues:</label>
-          <div class="field">
-            <textarea id="chronic" name="chronic">${param.chronic}</textarea>
-          </div>
-
-          <label for="guardian">If you have a guardian:</label>
-          <div class="field">
-            <input type="text" id="guardian" name="guardianNic" placeholder="NIC of the Guardian" value="${param.guardianNic}"/>
-          </div>
-
-          <div class="checkbox-group field">
-            <label>
-              <input type="checkbox" id="privacy" name="privacy" required />
-              I agree to the Privacy Policies
-            </label>
-          </div>
-
-          <button type="button" class="submit-btn" onclick="previousStep()">Back</button>
-          <button type="submit" class="submit-btn">Register</button>
+        <div class="input-group full">
+          <label>Emergency Contact Number</label>
+          <input type="text" name="emergencyContact" inputmode="tel"
+                 autocomplete="tel" required value="${param.emergencyContact}" />
         </div>
-      </form>
+
+        <div class="input-group full">
+          <label>NIC</label>
+          <input type="text" name="nic" inputmode="numeric"
+                 autocomplete="off" required value="${param.nic}" />
+        </div>
+
+        <div class="input-group full">
+          <label>Email</label>
+          <input type="email" name="email" autocomplete="email"
+                 required value="${param.email}" />
+        </div>
+
+        <div class="input-group full">
+          <label>Password</label>
+          <input type="password" name="password" id="password"
+                 autocomplete="new-password" required />
+        </div>
+
+        <div class="input-group full">
+          <label>Confirm Password</label>
+          <input type="password" name="confirmPassword" id="confirmPassword" required />
+        </div>
+
+        <div class="input-group full">
+          <button type="button" class="btn-submit" onclick="nextStep()">Next</button>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" class="form" style="display: none;">
+      <div class="form-grid">
+        <div class="input-group full">
+          <label>If you have any Allergies</label>
+          <textarea name="allergies">${param.allergies}</textarea>
+        </div>
+
+        <div class="input-group full">
+          <label>If you have any Chronic Issues</label>
+          <textarea name="chronic">${param.chronic}</textarea>
+        </div>
+
+        <div class="input-group full">
+          <label>If you have a Guardian</label>
+          <input type="text" name="guardianNic"
+                 placeholder="NIC of the Guardian" value="${param.guardianNic}" />
+        </div>
+
+        <div class="checkbox full">
+          <label>
+            <input type="checkbox" id="privacy" name="privacy" required />
+            I agree to the Privacy Policies
+          </label>
+        </div>
+
+        <div class="input-group full button-row">
+          <button type="button" class="btn-outline" onclick="previousStep()">← Back</button>
+          <button type="submit" class="btn-submit">Create Account</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <p class="login-text">
+    Already have an account? <a href="${cp}/login">Login here</a>
+  </p>
+
 </div>
 
-<!-- Load validator (cache-bust to avoid stale) -->
-<script src="${cp}/js/form-validation.js?v=7" defer></script>
-
-<!-- Step control: uses patientValidate(form, true) to gate step 1 -->
+<script src="${cp}/js/form-validation.js?v=8" defer></script>
 <script>
-  function nextStep(){
+  function nextStep() {
     const form = document.getElementById('patientForm');
     if (window.patientValidate && window.patientValidate(form, true)) {
-      document.getElementById('step1').style.display = 'none';
-      document.getElementById('step2').style.display = '';
+      document.getElementById('step1').classList.remove('animate-in');
+      document.getElementById('step1').classList.add('animate-out');
+      setTimeout(() => {
+        document.getElementById('step1').style.display = 'none';
+        const step2 = document.getElementById('step2');
+        step2.style.display = 'block';
+        step2.classList.add('animate-in');
+      }, 300);
     }
   }
-  function previousStep(){
-    document.getElementById('step2').style.display = 'none';
-    document.getElementById('step1').style.display = '';
+
+  function previousStep() {
+    document.getElementById('step2').classList.remove('animate-in');
+    document.getElementById('step2').classList.add('animate-out');
+    setTimeout(() => {
+      document.getElementById('step2').style.display = 'none';
+      const step1 = document.getElementById('step1');
+      step1.style.display = 'block';
+      step1.classList.add('animate-in');
+    }, 300);
   }
 </script>
-
 </body>
 </html>

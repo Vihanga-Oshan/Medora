@@ -17,6 +17,13 @@ public class ApprovedPrescriptionsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Ensure pharmacist is authenticated (defense-in-depth)
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("pharmacist") == null) {
+            response.sendRedirect(request.getContextPath() + "/pharmacist/login");
+            return;
+        }
+
         try (Connection conn = dbconnection.getConnection()) {
             PrescriptionDAO dao = new PrescriptionDAO(conn);
 
