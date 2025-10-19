@@ -1,11 +1,126 @@
-.report-summary-item {
+:root {
+    --primary-blue: #007bff;
+    --success-green: #28a745;
+    --danger-red: #dc3545;
+    --light-gray: #f8f9fa;
+    --text-muted: #6c757d;
+    --border-radius: 12px;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f5f8fc;
+    margin: 0;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.section-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.card {
     background: white;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 8px;
-  }
-  
-  .report-summary-item:hover {
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    width: 23%;
+}
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+.trend-up {
+    color: green;
+    font-size: 1rem;
+    margin-left: 4px;
+}
+.primary { border-left: 4px solid var(--primary-blue); }
+.success { border-left: 4px solid var(--success-green); }
+.danger { border-left: 4px solid var(--danger-red); }
+
+.flex {
+    display: flex;
+}
+.justify-between {
+    justify-content: space-between;
+}
+.align-center {
+    align-items: center;
+}
+.mt-2 { margin-top: 1rem; }
+.mb-2 { margin-bottom: 1.5rem; }
+
+.patient-selector {
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    background: #f1f4f8;
+    margin-right: 1rem;
+    text-align: center;
+    flex: 1;
+    cursor: pointer;
+}
+.patient-selector.active {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.chart-placeholder {
+    padding: 2rem;
+    text-align: center;
+    font-size: 1rem;
+    background: #eef3f8;
+    border-radius: var(--border-radius);
+    color: #555;
+}
+
+.report-summary-item {
+    border: 1px solid #ddd;
     background: #fafafa;
-  }
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+.report-summary-item.taken {
+    background: #e6f4ea;
+    border: 1px solid #b2dfdb;
+}
+.report-summary-item.missed {
+    background: #fbe9e7;
+    border: 1px solid #f8bbd0;
+}
+.highlight {
+    color: var(--primary-blue);
+    font-weight: bold;
+}
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    background: var(--primary-blue);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover {
+    background: #0056b3;
+}
+.btn.full-width {
+    width: 100%;
+}

@@ -1,12 +1,141 @@
-.alert-item {
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 12px;
+:root {
+    --primary-blue: #007bff;
+    --success-green: #28a745;
+    --danger-red: #dc3545;
+    --warning-orange: #fd7e14;
+    --light-gray: #f8f9fa;
+    --text-muted: #6c757d;
+    --border-radius: 12px;
+    --bg-new: #e3f2fd;
+}
+
+body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f5f8fc;
+    margin: 0;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.section-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+}
+
+.flex {
     display: flex;
+}
+.justify-between {
     justify-content: space-between;
+}
+.align-center {
     align-items: center;
-  }
-  
-  .alert-item:hover {
-    background: #fafafa;
-  }
+}
+.mt-2 { margin-top: 1rem; }
+.mb-2 { margin-bottom: 1rem; }
+
+.alert-stat {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    color: white;
+    border-radius: var(--border-radius);
+    margin-right: 1rem;
+}
+.alert-stat:last-child {
+    margin-right: 0;
+}
+.alert-stat.red {
+    background: var(--danger-red);
+}
+.alert-stat.orange {
+    background: var(--warning-orange);
+}
+.alert-stat.green {
+    background: var(--success-green);
+}
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+.badge-high {
+    background: #f8d7da;
+    color: #721c24;
+}
+.badge-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+.badge-new {
+    background: var(--bg-new);
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.alert-item {
+    padding: 1rem;
+    background: #fff;
+    border-radius: var(--border-radius);
+    border: 1px solid #eee;
+}
+.alert-item.alert-high {
+    background: #fff5f5;
+}
+.alert-item.alert-medium {
+    background: #fffdf3;
+}
+
+.alert-icon {
+    font-size: 1.75rem;
+    margin-right: 1rem;
+    color: var(--danger-red);
+}
+
+.btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #f8f9fa;
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+.btn:hover {
+    background: #e9ecef;
+}
+.btn-outline.danger {
+    border-color: var(--danger-red);
+    color: var(--danger-red);
+}
+.btn-outline.danger:hover {
+    background: #f8d7da;
+}

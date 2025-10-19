@@ -1,26 +1,125 @@
-.patient-card {
-    background: white;
-    padding: 16px;
+/* Root container */
+.profile-container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* Section Titles */
+.profile-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-container p.description {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Boxes */
+.section-box {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
-    border: 1px solid #eee;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Linked Patients */
+.patients-grid {
     display: flex;
-    flex-direction: column;
-  }
-  
-  .patient-card:hover {
-    background: #fafafa;
-  }
-  
-  .patient-card .badge {
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.patient-card {
+    padding: 1rem;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    width: 180px;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.patient-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.patient-card strong {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.patient-card .badge {
     font-size: 0.75rem;
-    padding: 2px 8px;
-  }
-  
-  .patient-card span[style*="color: #ff4d4d"] {
+    color: #fff;
+    background-color: #3b82f6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.patient-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Account Info */
+.account-info p {
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+}
+
+.account-info label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* Change Password */
+.change-password label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.change-password input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+}
+
+.change-password input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.change-password button {
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: color 0.2s ease;
-  }
-  
-  .patient-card span[style*="color: #ff4d4d"]:hover {
-    color: #cc0000;
-  }
+    transition: background-color 0.2s ease;
+}
+
+.change-password button:hover {
+    background-color: #1d4ed8;
+}
+
+/* Footer */

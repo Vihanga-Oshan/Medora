@@ -45,9 +45,11 @@
                             <p class="file-type">${p.fileName}</p>
                         </div>
 
-                        <a href="${pageContext.request.contextPath}/pharmacist/medication-scheduling?id=${p.id}" class="view-btn">
-                            Schedule
+                        <a href="${pageContext.request.contextPath}/pharmacist/schedule?id=${p.id}&nic=${p.patientNic}">
+                            <button>Schedule</button>
                         </a>
+
+
                     </div>
                 </c:forEach>
 

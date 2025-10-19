@@ -1,0 +1,98 @@
+package com.example.base.dao;
+
+import com.example.base.model.MedicationSchedule;
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ScheduleDAO {
+    private Connection conn;
+
+    public ScheduleDAO(Connection conn) {
+        this.conn = conn;
+    }
+
+    public List<MedicationSchedule> getMedicationByDate(String patientNic, LocalDate date) throws SQLException {
+        List<MedicationSchedule> meds = new ArrayList<>();
+
+        String sql = """
+    SELECT 
+        ms.id,
+        med.name AS medicine_name,
+        dc.label AS dosage,
+        f.label AS frequency,
+        mt.label AS meal_timing,
+        ms.instructions,
+        ms.start_date,
+        ms.duration_days,
+        COALESCE(ml.status, 'PENDING') AS status
+    FROM medication_schedule ms
+    JOIN schedule_master sm ON sm.id = ms.schedule_master_id
+    JOIN medicines med ON med.id = ms.medicine_id
+    JOIN dosage_categories dc ON dc.id = ms.dosage_id
+    JOIN frequencies f ON f.id = ms.frequency_id
+    LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
+    LEFT JOIN medication_log ml 
+        ON ml.medication_schedule_id = ms.id
+        AND ml.dose_date = ?
+        AND ml.patient_nic = sm.patient_nic
+    WHERE sm.patient_nic = ?
+      AND ? BETWEEN ms.start_date AND DATE_ADD(ms.start_date, INTERVAL ms.duration_days - 1 DAY)
+    ORDER BY 
+        CASE 
+            WHEN f.label LIKE '%morning%' THEN 1
+            WHEN f.label LIKE '%day%' THEN 2
+            WHEN f.label LIKE '%afternoon%' THEN 3
+            WHEN f.label LIKE '%evening%' THEN 4
+            WHEN f.label LIKE '%night%' THEN 5
+            WHEN f.label LIKE '%bed%' THEN 6
+            ELSE 7
+        END,
+        med.name
+""";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, Date.valueOf(date));
+            stmt.setString(2, patientNic);
+            stmt.setDate(3, Date.valueOf(date));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String freq = rs.getString("frequency");
+                    String[] timesOfDay = freq.split("&"); // Split "Morning & Night" → ["Morning", "Night"]
+
+                    for (String time : timesOfDay) {
+                        MedicationSchedule m = new MedicationSchedule();
+                        m.setId(rs.getInt("id"));
+                        m.setMedicineName(rs.getString("medicine_name"));
+                        m.setDosage(rs.getString("dosage"));
+                        m.setFrequency(time.trim()); // store only "Morning" or "Night"
+                        m.setMealTiming(rs.getString("meal_timing"));
+                        m.setInstructions(rs.getString("instructions"));
+                        m.setStartDate(rs.getDate("start_date").toLocalDate());
+                        m.setDurationDays(rs.getInt("duration_days"));
+                        m.setStatus(rs.getString("status"));
+                        meds.add(m);
+                    }
+                }
+
+            }
+        }
+
+        meds.sort((a, b) -> getTimeOrder(a.getFrequency()) - getTimeOrder(b.getFrequency()));
+        return meds;
+    }
+
+    // helper function at the bottom of ScheduleDAO
+    private int getTimeOrder(String frequency) {
+        if (frequency == null) return 99;
+        String f = frequency.toLowerCase();
+        if (f.contains("morning")) return 1;
+        if (f.contains("day") || f.contains("afternoon")) return 2;
+        if (f.contains("evening")) return 3;
+        if (f.contains("night")) return 4;
+        if (f.contains("bed")) return 5;
+        return 99;
+    }
+}

@@ -15,11 +15,11 @@ public class PharmacistDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-//        HttpSession session = req.getSession(false);
-//        if (session == null || session.getAttribute("pharmacist") == null) {
-//            resp.sendRedirect(req.getContextPath() + "/login/pharmacist");
-//            return;
-//        }
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("pharmacist") == null) {
+            resp.sendRedirect(req.getContextPath() + "/login/pharmacist");
+            return;
+        }
 
         // Get count of pending prescriptions
         try (Connection conn = com.example.base.db.dbconnection.getConnection()) {

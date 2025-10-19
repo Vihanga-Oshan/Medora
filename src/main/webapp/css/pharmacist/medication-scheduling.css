@@ -1,3 +1,4 @@
+/* ========== Layout ========== */
 .container {
     display: flex;
 }
@@ -15,49 +16,76 @@
     margin-bottom: 30px;
 }
 
+/* ========== Grid Layout ========== */
 .scheduling-grid {
-    display: flex;
-    gap: 40px;
+    display: grid;
+    grid-template-columns: 0.9fr 0.9fr; /* more even split for better balance */
+    gap: 50px;
     align-items: flex-start;
 }
 
+/* ========== Form Section ========== */
 .schedule-form {
-    flex: 1;
+    background-color: #fff;
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
     gap: 14px;
-}
-
-.schedule-form input,
-.schedule-form textarea {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
     width: 100%;
-    font-size: 14px;
+    max-width: 520px;
 }
 
 .schedule-form label {
     font-weight: 600;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
+.schedule-form input,
+.schedule-form select,
+.schedule-form textarea {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 14px;
+    background-color: #f8fafc;
+}
+
+.schedule-form input:focus,
+.schedule-form select:focus,
+.schedule-form textarea:focus {
+    outline: none;
+    border-color: #007dca;
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(0, 125, 202, 0.2);
+}
+
+/* ========== Buttons ========== */
 .btn-group {
     margin-top: 20px;
     display: flex;
     gap: 12px;
+    justify-content: flex-end;
 }
 
-.btn-submit, .btn-reject {
+.btn-submit,
+.btn-reject {
     padding: 10px 20px;
     font-weight: 600;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     text-align: center;
     color: white;
     background-color: #007dca;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #006bb0;
 }
 
 .btn-reject {
@@ -66,64 +94,98 @@
     border: 1px solid #007dca;
 }
 
-.btn-submit:hover {
-    background-color: #006bb0;
-}
-
 .btn-reject:hover {
     background-color: #e6f3fc;
 }
 
+/* ========== Prescription Panel ========== */
 .patient-details-box {
-    width: 350px;
+    width: 100%;
+    max-width: 560px; /* larger, more balanced */
     background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+    position: sticky; /* keeps it visible while scrolling */
+    top: 30px;
 }
-
 .preview-placeholder {
-    height: 250px;
-    background-color: #e6f0f8;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    margin-bottom: 20px;
+        width: 100%;
+        background-color: #e6f0f8;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        min-height: 480px; /* consistent height */
+        overflow: hidden;
+    }
+
+.preview-placeholder img {
+        width: auto;
+        height: 100%;
+        max-height: 480px;
+        max-width: 100%;
+        border-radius: 12px;
+        object-fit: contain; /* no cropping */
+        border: 2px solid #e2e8f0;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.preview-placeholder img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ========== Patient Info ========== */
 .patient-details-box h3 {
     font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1e293b;
 }
 
 .info-group {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 equal info cards */
+    gap: 12px;
+    margin: 15px 0 20px;
 }
 
 .info-card {
     background-color: #f1f5f9;
     border-radius: 8px;
-    padding: 10px 15px;
-    flex: 1;
+    padding: 10px 12px;
     font-size: 14px;
+    display: flex;
+    flex-direction: column;
 }
 
 .label {
     font-weight: 600;
     font-size: 12px;
     margin-bottom: 5px;
-    color: #333;
+    color: #475569;
 }
 
-.current-meds {
-    background-color: #f1f5f9;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 14px;
+/* ========== Responsive ========== */
+@media (max-width: 992px) {
+    .scheduling-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .patient-details-box {
+        max-width: 100%;
+        position: static;
+    }
+
+    .schedule-form {
+        max-width: 100%;
+    }
+
+    .info-group {
+        grid-template-columns: 1fr;
+    }
 }

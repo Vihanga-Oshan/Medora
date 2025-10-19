@@ -1,3 +1,8 @@
+/* =========================
+   DASHBOARD & TIMETABLE STYLES
+   ========================= */
+
+/* ===== Stats Section ===== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -11,7 +16,7 @@
   border-radius: 8px;
   padding: 15px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .stat-card span {
@@ -27,67 +32,262 @@
   color: var(--dark-text);
 }
 
-.stat-taken {
-  background: #e8fdf3;
-  border-color: #b2f0d4;
-}
+.stat-taken { background: #e8fdf3; border-color: #b2f0d4; }
+.stat-pending { background: #fff9e6; border-color: #ffeaa7; }
+.stat-missed { background: #fef0f0; border-color: #ffd8d8; }
 
-.stat-pending {
-  background: #fff9e6;
-  border-color: #ffeaa7;
-}
-
-.stat-missed {
-  background: #fef0f0;
-  border-color: #ffd8d8;
-}
-
-.medication-item {
+/* ===== Medication Card ===== */
+.med-card {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  background: var(--white);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin: 12px 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
 }
 
-.med-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
+.med-card:hover {
+  background-color: #f9fafb;
 }
 
-.med-icon.green { background: #28a745; }
-.med-icon.blue { background: #0077CC; }
-
+/* ===== Left side (Medicine Info) ===== */
 .med-info {
-  flex-grow: 1;
-}
-
-.time {
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-.action-buttons {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
-.btn-success {
-  background: #28a745;
+.med-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.med-details {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: wrap;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.med-details em {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ===== Right side (Action Buttons) ===== */
+.med-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ===== Buttons ===== */
+.btn-taken,
+.btn-missed {
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  cursor: pointer;
   color: white;
+  transition: background-color 0.2s ease;
 }
 
-.btn-danger {
-  background: #dc3545;
+.btn-taken {
+  background-color: #22c55e; /* green */
+}
+
+.btn-taken:hover {
+  background-color: #16a34a;
+}
+
+.btn-missed {
+  background-color: #ef4444; /* red */
+}
+
+.btn-missed:hover {
+  background-color: #dc2626;
+}
+
+/* ===== Date Selector ===== */
+.date-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0 25px;
+}
+
+.date-selector input[type="date"] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.btn-submit {
+  background-color: #007dca;
   color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
+.btn-submit:hover {
+  background-color: #006bb0;
+}
+
+/* ===== Container ===== */
+.medication-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+/* ===== Full Timetable Section ===== */
+.full-timetable {
+  background-color: #f9fafb;
+  border-radius: 12px;
+  padding: 30px;
+  margin-top: 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.full-timetable h2 {
+  margin-bottom: 20px;
+  color: #1e293b;
+  font-size: 1.5rem;
+}
+
+.date-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.date-selector input[type="date"] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: white;
+}
+
+.btn-submit {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-submit:hover {
+  background-color: #1d4ed8;
+}
+
+/* ===== Timetable Card ===== */
+.timetable-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin: 12px 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.timetable-card:hover {
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+/* Left info block */
+.timetable-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timetable-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.timetable-info p {
+  margin: 2px 0;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.timetable-info em {
+  color: #6b7280;
+}
+
+/* Status badge */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-taken {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-missed {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .timetable-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* ===== Icon colors ===== */
 .taken .med-icon { background: #28a745; }
 .pending .med-icon { background: #0077CC; }
+
+/* ===== Responsive alignment ===== */
+@media (max-width: 700px) {
+  .med-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .med-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
