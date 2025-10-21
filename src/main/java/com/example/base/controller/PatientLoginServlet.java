@@ -36,6 +36,7 @@ public class PatientLoginServlet extends HttpServlet {
             HttpSession session = request.getSession(true);
             session.setAttribute("patient", p);
 
+
             // create JWT and set as HttpOnly cookie
             String secret = request.getServletContext().getInitParameter("jwt.secret");
             String expiryStr = request.getServletContext().getInitParameter("jwt.expirySeconds");

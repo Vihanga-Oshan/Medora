@@ -1,10 +1,11 @@
 package com.example.base.controller;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 
-// Routing moved to com.example.base.controller.routing.GuardianReportsServlet
+@WebServlet("/guardian/reports")
 public class GuardianReportsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

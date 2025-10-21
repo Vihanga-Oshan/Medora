@@ -31,16 +31,27 @@ public class PatientDashboardServlet extends HttpServlet {
         String patientNic = patient.getNic();
 
         // ✅ If a date is passed, show that date; otherwise, default to today
-        LocalDate selectedDate = LocalDate.now();
+        LocalDate today = LocalDate.now();
+        LocalDate selectedDate = today;
         String dateParam = req.getParameter("date");
         if (dateParam != null && !dateParam.isEmpty()) {
             selectedDate = LocalDate.parse(dateParam);
         }
 
+
         try (Connection conn = dbconnection.getConnection()) {
             ScheduleDAO scheduleDAO = new ScheduleDAO(conn);
             List<MedicationSchedule> meds = scheduleDAO.getMedicationByDate(patientNic, selectedDate);
+            List<MedicationSchedule> todaysMeds = scheduleDAO.getMedicationByDate(patientNic, today);
+            List<MedicationSchedule> selectedDateMeds = scheduleDAO.getMedicationByDate(patientNic, selectedDate);
 
+            List<MedicationSchedule> pendingTodaysMeds = todaysMeds.stream()
+                    .filter(m -> "PENDING".equalsIgnoreCase(m.getStatus()))
+                    .collect(Collectors.toList());
+// Set attributes for both
+            req.setAttribute("pendingMedications", pendingTodaysMeds); // used in today's card
+            req.setAttribute("medications", selectedDateMeds); // used in view timetable
+            req.setAttribute("selectedDate", selectedDate);
             // Calculate stats
             int total = meds.size();
             int taken = (int) meds.stream().filter(m -> "TAKEN".equalsIgnoreCase(m.getStatus())).count();

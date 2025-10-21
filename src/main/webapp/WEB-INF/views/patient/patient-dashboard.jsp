@@ -56,8 +56,8 @@
                 <p style="text-align:center; color:#6c757d;">No medications scheduled for today.</p>
             </c:when>
             <c:otherwise>
-                <c:forEach var="m" items="${medications}">
-                    <div class="med-card">
+                <c:forEach var="m" items="${pendingMedications}">
+                <div class="med-card">
                         <div class="med-info">
                             <h3>${m.medicineName}</h3>
                             <div class="med-details">
@@ -72,6 +72,7 @@
                                 <input type="hidden" name="scheduleId" value="${m.id}" />
                                 <input type="hidden" name="patientNic" value="${sessionScope.patient.nic}" />
                                 <input type="hidden" name="status" value="TAKEN" />
+                                <input type="hidden" name="timeSlot" value="${m.frequency}" /> <!-- ✅ ADD THIS -->
                                 <button type="submit" class="btn-taken">Mark as Taken</button>
                             </form>
 
@@ -79,8 +80,10 @@
                                 <input type="hidden" name="scheduleId" value="${m.id}" />
                                 <input type="hidden" name="patientNic" value="${sessionScope.patient.nic}" />
                                 <input type="hidden" name="status" value="MISSED" />
+                                <input type="hidden" name="timeSlot" value="${m.frequency}" /> <!-- ✅ ADD THIS -->
                                 <button type="submit" class="btn-missed">Mark as Missed</button>
                             </form>
+
                         </div>
                     </div>
                 </c:forEach>

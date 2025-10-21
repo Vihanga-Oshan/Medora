@@ -3,11 +3,12 @@ package com.example.base.controller;
 import com.example.base.model.Alert;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 
-// Routing moved to com.example.base.controller.routing.GuardianAlertsServlet
+@WebServlet("/guardian/alerts")
 public class GuardianAlertsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
