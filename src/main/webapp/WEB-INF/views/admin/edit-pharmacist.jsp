@@ -73,12 +73,12 @@
 
         <div class="form-group">
           <label for="licenseNumber">License Number</label>
-          <input type="text" id="licenseNumber" name="licenseNumber" value="${pharmacist.id}" readonly />
+          <input type="text" id="licenseNumber" name="licenseNumber" value="${pharmacist.id}" required  />
         </div>
 
         <div class="form-group">
           <label for="fullName">Full Name</label>
-          <input type="text" id="fullName" name="fullName" value="${pharmacist.name}" required />
+          <input type="text" id="fullName" name="fullName" value="${pharmacist.name}" />
         </div>
 
         <div class="form-group">
@@ -91,6 +91,11 @@
           <input type="password" id="password" name="password"  placeholder="Enter new password (leave blank to keep current)" />
         </div>
 
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword"
+                 placeholder="Re-enter new password" />
+        </div>
 
         <div class="button-row" style="display:flex; gap:12px; margin-top:10px;">
           <button type="button" class="cancel-btn" onclick="window.location.href='${pageContext.request.contextPath}/admin/pharmacists'">Cancel</button>

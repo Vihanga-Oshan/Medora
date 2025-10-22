@@ -26,7 +26,7 @@ public class LogoutServlet extends HttpServlet {
         clearCookie(resp, "JWT_GUARDIAN", req);
         clearCookie(resp, "JWT", req); // old fallback
 
-        LOGGER.info("✅ Cleared all JWT cookies. Role detected: " + role);
+        LOGGER.info("✅ Cleared all JWT cookies. Role detected: " + (role != null ? role : "unknown"));
 
         // Redirect based on role
         String redirectTo;

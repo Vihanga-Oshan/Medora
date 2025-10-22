@@ -44,7 +44,7 @@
     </c:if>
 
     <!-- Guardian Registration Form -->
-    <form method="post" action="${cp}/register/guardian"
+    <form method="post" action="${cp}/guardian/register"
           id="guardianForm"
           novalidate
           onsubmit="return window.guardianValidate && window.guardianValidate(this);">

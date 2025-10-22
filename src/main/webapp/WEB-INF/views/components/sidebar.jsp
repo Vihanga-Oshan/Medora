@@ -13,9 +13,7 @@
             <li><a href="<%= request.getContextPath() %>/pharmacist/validate" class="nav-item">Prescription Review</a></li>
             <li><a href="${pageContext.request.contextPath}/pharmacist/approved-prescriptions" class="nav-item"><span>Approved Prescriptions</span></a></li>
             <li><a href="${pageContext.request.contextPath}/pharmacist/patients" class="nav-item">Patients</a></li>
-            <li><a href="#" class="nav-item">Reports</a></li>
-            <li><a href="#" class="nav-item">Notifications</a></li>
-            <li><a href="#" class="nav-item">Application Settings</a></li>
+            <li><a href="#" class="nav-item">Settings</a></li>
         </ul>
     </nav>
 

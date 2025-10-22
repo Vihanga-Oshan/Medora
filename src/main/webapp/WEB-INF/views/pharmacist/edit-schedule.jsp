@@ -6,20 +6,21 @@
 <head>
     <title>Edit Medication Schedule</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/medication-scheduling.css">
-    <style>
-
-    </style>
 </head>
 <body>
 <div class="container">
     <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
 
     <div class="main-content">
+
         <h1>Edit Medication Schedule</h1>
 
-        <div class="edit-schedule-container">
-            <!-- ======= Edit Schedule Form ======= -->
-            <form action="${pageContext.request.contextPath}/pharmacist/edit-schedule" method="post" class="schedule-form">
+        <div class="scheduling-grid">
+
+            <!-- ======= Edit Form Section ======= -->
+            <form action="${pageContext.request.contextPath}/pharmacist/edit-schedule"
+                  method="post" class="schedule-form">
+
                 <input type="hidden" name="id" value="${schedule.id}">
                 <input type="hidden" name="nic" value="${param.nic}">
 
@@ -70,26 +71,31 @@
                 </div>
 
                 <div class="btn-group">
-                    <button type="submit" class="btn-submit">Save Changes</button>
+                    <button type="submit" class="btn-submit">💾 Save Changes</button>
                     <a href="${pageContext.request.contextPath}/pharmacist/view-schedule?nic=${param.nic}" class="btn-reject">Cancel</a>
                 </div>
             </form>
 
-            <!-- ======= Prescription Preview ======= -->
-            <div class="prescription-preview-box">
-                <h3>Prescription Preview</h3>
-                <c:choose>
-                    <c:when test="${fn:endsWith(prescriptionFile.fileName, '.pdf')}">
-                        <div class="pdf-box">
-                            <iframe src="${pageContext.request.contextPath}/prescriptionFile/${prescriptionFile.filePath}" allowfullscreen></iframe>
-                            <a href="${pageContext.request.contextPath}/prescriptionFile/${prescriptionFile.filePath}" target="_blank" class="view-link">Open PDF</a>
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}" alt="Prescription" class="preview-image" />
-                    </c:otherwise>
-                </c:choose>
+            <!-- ======= Prescription Preview Section ======= -->
+            <div class="patient-details-box">
+                <h3>Linked Prescription</h3>
+                <div class="preview-placeholder">
+                    <c:choose>
+                        <c:when test="${empty prescription}">
+                            <p style="color:#999;">No prescription file found.</p>
+                        </c:when>
+                        <c:when test="${fn:endsWith(prescription.fileName, '.pdf')}">
+                            <span class="pdf-icon">📄 PDF</span>
+                            <p>${prescription.fileName}</p>
+                        </c:when>
+                        <c:otherwise>
+                            <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}"
+                                 alt="Prescription" class="preview-image" />
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </div>
+
         </div>
     </div>
 </div>

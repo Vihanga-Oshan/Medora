@@ -38,7 +38,7 @@
   </c:if>
 
   <!-- Login Form -->
-  <form method="post" action="${cp}/loginguardian" novalidate
+  <form method="post" action="${cp}/guardian/login" novalidate
         onsubmit="return window.loginValidate && window.loginValidate(this);">
 
     <label for="nic">NIC</label>

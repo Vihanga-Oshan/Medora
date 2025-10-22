@@ -83,9 +83,9 @@ public class EditPharmacistServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Update editable fields
-            pharmacist.setId(Integer.parseInt(license));
+            // ✅ Keep real ID, just update editable fields
             pharmacist.setName(name);
+
 
             // ✅ Password change (only if confirmed)
             if (password != null && !password.isEmpty()) {

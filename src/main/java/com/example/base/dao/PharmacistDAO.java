@@ -108,18 +108,34 @@ public class PharmacistDAO {
             return pharmacists;
         }
 
-        public void updatePharmacist(Pharmacist pharmacist) throws SQLException {
-            String sql = "UPDATE pharmacist SET name = ?, email = ?, password = ? WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, pharmacist.getName());
-                stmt.setString(2, pharmacist.getEmail());
-                stmt.setString(3, PasswordUtil.hashPassword(pharmacist.getPassword()));
-                stmt.setInt(4, pharmacist.getId());
-                stmt.executeUpdate();
-            }
+    public void updatePharmacist(Pharmacist pharmacist) throws SQLException {
+        // 1️⃣ Fetch the current record
+        Pharmacist existing = getPharmacistById(pharmacist.getId());
+        if (existing == null) {
+            throw new SQLException("Pharmacist not found with ID: " + pharmacist.getId());
         }
 
-        public boolean deletePharmacist(int id) throws SQLException {
+        // 2️⃣ Decide which password to keep
+        String newPassword;
+        if (pharmacist.getPassword() != null && !pharmacist.getPassword().trim().isEmpty()) {
+            newPassword = PasswordUtil.hashPassword(pharmacist.getPassword());
+        } else {
+            newPassword = existing.getPassword(); // keep current hash
+        }
+
+        // 3️⃣ Update everything else safely
+        String sql = "UPDATE pharmacist SET name = ?, email = ?, password = ? WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, pharmacist.getName());
+            stmt.setString(2, pharmacist.getEmail());
+            stmt.setString(3, newPassword);
+            stmt.setInt(4, pharmacist.getId());
+            stmt.executeUpdate();
+        }
+    }
+
+
+    public boolean deletePharmacist(int id) throws SQLException {
             String sql = "DELETE FROM pharmacist WHERE id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, id);

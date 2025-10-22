@@ -42,23 +42,19 @@ public class DeletePharmacistServlet extends HttpServlet {
 
             if (!deleted) {
                 LOGGER.warning("Pharmacist delete failed for ID: " + id);
-                req.setAttribute("error", "Unable to delete pharmacist. It may not exist.");
-                req.getRequestDispatcher("/WEB-INF/views/admin/admin-pharmacists.jsp").forward(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/admin/pharmacists?error=not_found");
                 return;
             }
 
             LOGGER.info("Pharmacist successfully deleted by admin: " + adminNic);
 
-        } catch (NumberFormatException e) {
-            LOGGER.log(Level.WARNING, "Invalid pharmacist ID format: " + idParam, e);
-            resp.sendRedirect(req.getContextPath() + "/admin/pharmacists?error=invalid_id");
-            return;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error deleting pharmacist ID: " + idParam, e);
-            throw new ServletException("Failed to delete pharmacist", e);
+            resp.sendRedirect(req.getContextPath() + "/admin/pharmacists?error=delete_failed");
+            return;
         }
 
-        // ✅ Redirect back to pharmacist list after deletion
         resp.sendRedirect(req.getContextPath() + "/admin/pharmacists?deleted=1");
+
     }
 }

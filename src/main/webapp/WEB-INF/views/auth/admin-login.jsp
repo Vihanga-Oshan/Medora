@@ -29,7 +29,7 @@
         </form>
 
         <div class="helper-links">
-            <p>Don't have an account?  <a href="${pageContext.request.contextPath}/admin/register">Login</a></p>
+            <p>Don't have an account?  <a href="${pageContext.request.contextPath}/admin/register">Register</a></p>
         </div>
     </div>
 </div>

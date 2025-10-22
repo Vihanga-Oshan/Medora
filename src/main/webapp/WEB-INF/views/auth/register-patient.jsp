@@ -44,7 +44,7 @@
   </c:if>
 
   <!-- Registration Form -->
-  <form method="post" action="${cp}/register/patient" id="patientForm"
+  <form method="post" action="${cp}/patient/register" id="patientForm"
         novalidate onsubmit="return window.patientValidate && window.patientValidate(this);">
 
     <!-- STEP 1 -->

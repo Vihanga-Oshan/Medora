@@ -82,7 +82,7 @@ public class RegisterPharmacistServlet extends HttpServlet {
             PharmacistDAO dao = new PharmacistDAO(conn);
             dao.insertPharmacist(p);
 
-            resp.sendRedirect(req.getContextPath() + "pharmacist/login");
+            resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
         } catch (SQLIntegrityConstraintViolationException e) {
             // Could be duplicate email or duplicate id
             String msg = e.getMessage();

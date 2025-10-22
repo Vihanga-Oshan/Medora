@@ -60,7 +60,7 @@ body {
 
 .nav-item {
     display: flex;
-    align-items: center;
+    align-items:self-start;
     padding: 12px 20px;
     color: #e2e8f0;
     text-decoration: none;
