@@ -7,9 +7,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Prescriptions - Medora</title>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/patient/prescriptions.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/patient/main.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/components/header.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/patient/prescriptions.css">
+
 </head>
 <body>
 <jsp:include page="/WEB-INF/views/components/header.jsp" />
@@ -48,13 +49,14 @@
   <div class="card">
     <h3 class="card-title">My Uploaded Prescriptions</h3>
     <c:if test="${not empty prescriptions}">
-      <p class="muted">You have ${fn:length(prescriptions)} uploaded prescription(s).</p>
+      <p class="muted">You have ${fn:length(prescriptions)} uploaded prescriptions.</p>
     </c:if>
     <c:if test="${not empty prescriptions}">
       <div class="prescription-list">
         <c:forEach items="${prescriptions}" var="p">
           <div class="prescription-tile">
-            <a href="${pageContext.request.contextPath}/prescriptionFile/${p.filePath}" target="_blank" class="prescription-thumb" aria-label="Open ${p.fileName}">
+            <a href="${pageContext.request.contextPath}/prescriptionFile/${p.filePath}" target="_blank" class="prescription-thumb"
+               aria-label="Open ${p.fileName}">
               <c:choose>
                 <c:when test="${fn:endsWith(p.fileName, 'pdf') or fn:endsWith(p.fileName, 'PDF')}">
                   <div class="pdf-icon">PDF</div>
@@ -67,6 +69,8 @@
             <div class="prescription-meta">
               <div class="prescription-name">${p.fileName}</div>
               <div class="prescription-date">${p.formattedUploadDate}</div>
+              <a href="${pageContext.request.contextPath}/patient/edit-prescription?id=${p.id}" class="btn btn-sm">Edit</a>
+
             </div>
           </div>
         </c:forEach>
@@ -245,6 +249,6 @@
 });
 
 </script>
-
+<jsp:include page="/WEB-INF/views/components/footer.jsp" />
 </body>
 </html>

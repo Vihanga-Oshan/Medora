@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,7 +68,7 @@
         <h1>Pharmacist Management</h1>
         <p>Manage pharmacist accounts and permissions</p>
       </div>
-      <button class="add-btn" onclick="window.location.href='${pageContext.request.contextPath}/admin/pharmacists/add'">
+      <button class="add-btn" onclick="window.location.href='${pageContext.request.contextPath}/admin/add-pharmacist'">
         <i data-lucide='plus'></i> Add Pharmacist
       </button>
     </div>
@@ -90,45 +92,67 @@
         <th>Name</th>
         <th>Contact</th>
         <th>License</th>
-        <th>Joined Date</th>
-        <th>Last Active</th>
         <th>Actions</th>
       </tr>
       </thead>
       <tbody>
-      <!-- Sample Static Rows -->
-      <tr>
-        <td>Dr. Sarah Johnson</td>
-        <td>sarah.johnson@medora.com<br /><span class="phone">+1 234-567-8901</span></td>
-        <td>PHR-2024-001</td>
-        <td>2024-01-15</td>
-        <td>2 hours ago</td>
-        <td>
-          <button class="action-btn" onclick="openActionsMenu(this)">
-            <i data-lucide="more-vertical"></i>
-          </button>
-          <div class="action-menu hidden">
-            <ul>
-              <li class="edit" onclick="window.location.href='${pageContext.request.contextPath}/admin/pharmacists/edit?id=1'">
-                <i data-lucide='edit-3'></i>
-                Edit Details
-              </li>
-              <li class="delete">
-                <i data-lucide="trash-2"></i>
-                Delete
-              </li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-      <!-- Repeat for other entries -->
+      <c:forEach var="pharmacist" items="${pharmacists}">
+        <tr>
+          <td>${pharmacist.name}</td>
+          <td>${pharmacist.email}</td>
+          <td>MEDORA-${pharmacist.id}</td>
+          <td>
+            <button class="action-btn" onclick="openActionsMenu(this)">
+              <i data-lucide="more-vertical"></i>
+            </button>
+            <div class="action-menu hidden">
+              <ul>
+                <li class="edit" onclick="window.location.href='${pageContext.request.contextPath}/admin/edit-pharmacist?id=${pharmacist.id}'">
+                  <i data-lucide='edit-3'></i>
+                  Edit Details
+                </li>
+                <li class="delete" onclick="confirmDelete('${pharmacist.id}')">
+                  <i data-lucide="trash-2"></i>
+                  Delete
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </c:forEach>
       </tbody>
+
     </table>
   </section>
 </main>
+<div id="deleteModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Confirm Deletion</h3>
+    <p>Are you sure you want to delete this pharmacist?</p>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <form id="deleteForm" method="post">
+        <button type="submit" class="delete-btn">Yes, Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script>
   lucide.createIcons();
+
+  const contextPath = '<%= request.getContextPath() %>';
+
+  function confirmDelete(id) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('deleteForm');
+    form.action = contextPath + '/admin/pharmacists/delete?id=' + id;
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+  }
 
   function openActionsMenu(button) {
     const menu = button.nextElementSibling;

@@ -20,7 +20,7 @@
     <!-- Header -->
     <header class="header">
       <div class="user-info">
-        <img src="https://via.placeholder.com/40" alt="User Avatar" class="avatar">
+        <img src="${pageContext.request.contextPath}/assets/register-patient1.png" alt="User Avatar" class="avatar">
         <span class="user-role">Super Pharmacist</span>
       </div>
       <div class="greeting">
@@ -49,8 +49,8 @@
               </svg>
             </c:when>
             <c:otherwise>
-              <img src="${pageContext.request.contextPath}/view-prescription?filePath=${prescription.filePath}"
-                   alt="Prescription"
+              <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}" class="preview-image"
+              alt="Prescription"
                    style="width: 100%; height: 100%; object-fit: contain; display: block;">
             </c:otherwise>
           </c:choose>

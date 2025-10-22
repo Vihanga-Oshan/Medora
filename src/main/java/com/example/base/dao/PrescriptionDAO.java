@@ -194,6 +194,14 @@ public class PrescriptionDAO {
         return prescriptions;
     }
 
+    public void updatePrescriptionName(int id, String newName) throws SQLException {
+        String sql = "UPDATE prescriptions SET file_name = ? WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newName);
+            stmt.setInt(2, id);
+            stmt.executeUpdate();
+        }
+    }
 
 
 

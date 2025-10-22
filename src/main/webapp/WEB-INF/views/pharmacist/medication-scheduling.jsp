@@ -4,14 +4,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+
     <title>Medication Scheduling</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/medication-scheduling.css">
 </head>
+
 <body>
 <div class="container">
     <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
 
     <div class="main-content">
+
         <h1>Medication Scheduling</h1>
 
         <div class="scheduling-grid">
@@ -44,7 +47,7 @@
                         </select>
 
                         <label>Frequency</label>
-                        <<select name="frequencyId" required>
+                        <select name="frequencyId" required>
                         <c:forEach var="f" items="${frequencies}">
                             <option value="${f[0]}">${f[1]}</option>
                         </c:forEach>
@@ -69,6 +72,7 @@
                         <textarea name="instructions" rows="2" placeholder="E.g. Take with water..."></textarea>
 
                         <button type="button" class="btn-reject" onclick="removeRow(this)">Remove</button>
+                        <br>  <br>
                         <hr>
                     </div>
                 </div>
@@ -92,8 +96,8 @@
                             <span class="pdf-icon">📄 PDF</span>
                         </c:when>
                         <c:otherwise>
-                            <img src="${pageContext.request.contextPath}/view-prescription?filePath=${prescription.filePath}"
-                                 alt="Prescription" style="width: 100%; border-radius: 12px;" />
+                            <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}" alt="Prescription" class="preview-image" />
+
                         </c:otherwise>
                     </c:choose>
                 </div>

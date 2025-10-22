@@ -73,34 +73,31 @@
 
         <div class="form-group">
           <label for="licenseNumber">License Number</label>
-          <input type="text" id="licenseNumber" name="licenseNumber" value="${pharmacist.licenseNumber}" required />
+          <input type="text" id="licenseNumber" name="licenseNumber" value="${pharmacist.id}" readonly />
         </div>
 
         <div class="form-group">
           <label for="fullName">Full Name</label>
-          <input type="text" id="fullName" name="fullName" value="${pharmacist.fullName}" required />
+          <input type="text" id="fullName" name="fullName" value="${pharmacist.name}" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="${pharmacist.email}" required />
         </div>
 
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Enter new password" />
+          <input type="password" id="password" name="password"  placeholder="Enter new password (leave blank to keep current)" />
         </div>
 
-        <div class="form-group">
-          <label for="confirmPassword">Confirm Password</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" />
-        </div>
-
-        <div class="form-group">
-          <label for="contactNumber">Contact Number</label>
-          <input type="text" id="contactNumber" name="contactNumber" value="${pharmacist.contactNumber}" required />
-        </div>
 
         <div class="button-row" style="display:flex; gap:12px; margin-top:10px;">
           <button type="button" class="cancel-btn" onclick="window.location.href='${pageContext.request.contextPath}/admin/pharmacists'">Cancel</button>
           <button type="submit" class="save-btn">Save Changes</button>
         </div>
       </form>
+
     </div>
   </section>
 </main>

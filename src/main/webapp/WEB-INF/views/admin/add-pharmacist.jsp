@@ -72,7 +72,14 @@
                 </div>
             </div>
 
-            <form class="admin-form" action="${pageContext.request.contextPath}/admin/add-pharmacist" method="post">
+            <% String error = (String) request.getAttribute("error"); %>
+            <% if (error != null) { %>
+            <div class="error-message" style="background-color: #ffe0e0;color: #b30000;padding: 12px 16px;border-radius: 6px;margin-bottom: 16px;font-weight: 500;">
+                <%= error %>
+            </div>
+            <% } %>
+
+            <form class="admin-form" action="${pageContext.request.contextPath}/admin/addpharmacist" method="post">
                 <div class="form-group">
                     <label for="license">License Number</label>
                     <input type="text" id="license" name="license" placeholder="Enter license number" required>
@@ -84,8 +91,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="contact">Contact Number</label>
-                    <input type="text" id="contact" name="contact" placeholder="Enter contact number" required>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter email">
                 </div>
 
                 <div class="form-group">

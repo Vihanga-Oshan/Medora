@@ -14,14 +14,28 @@
   <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
 
   <div class="main-content prescription-validation-page">
+    <header class="header">
+      <div class="user-info">
+        <img src="${pageContext.request.contextPath}/assets/register-patient1.png" alt="User Avatar" class="avatar">
+        <span class="user-role">Super Pharmacist</span>
+      </div>
+      <div class="greeting">
+        <span class="greeting-icon">☀️</span>
+        <div>
+          <span class="greeting-text">Good Morning</span>
+          <span class="date-time">14 January 2022 • 22:45:04</span>
+        </div>
+      </div>
+    </header>
     <div class="validation-container">
       <div class="pv-header">
         <h2>Prescription Validation</h2>
-        <a href="${pageContext.request.contextPath}/pharmacist/dashboard" class="back-link">← Back to Dashboard</a>
+
       </div>
 
       <c:if test="${empty prescriptions}">
         <p class="no-data-msg">No pending prescriptions.</p>
+        <a href="${pageContext.request.contextPath}/pharmacist/dashboard" class="back-link">← Back to Dashboard</a>
       </c:if>
 
       <div class="prescription-grid">
@@ -33,8 +47,8 @@
                   <span class="pdf-icon">📄</span>
                 </c:when>
                 <c:otherwise>
-                  <img src="${pageContext.request.contextPath}/view-prescription?filePath=${p.filePath}"
-                       alt="Prescription" class="preview-image">
+                  <c:set var="cleanFilePath" value="${fn:replace(p.filePath, '\"', '')}" />
+                  <img src="${pageContext.request.contextPath}/prescriptionFile/${p.filePath}" alt="Prescription" class="preview-image" />
                 </c:otherwise>
               </c:choose>
             </div>
