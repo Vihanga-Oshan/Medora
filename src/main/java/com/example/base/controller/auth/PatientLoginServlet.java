@@ -1,4 +1,3 @@
-// com/example/base/controller/PatientLoginServlet.java
 package com.example.base.controller.auth;
 
 import com.example.base.dao.patientDAO;
@@ -9,16 +8,17 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/login")
 public class PatientLoginServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(PatientLoginServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // show the login page
         req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
-        // (Recommended: move to /WEB-INF/views/auth/login.jsp for security, see note below)
     }
 
     @Override
@@ -27,40 +27,58 @@ public class PatientLoginServlet extends HttpServlet {
 
         String nic = request.getParameter("nic");
         String password = request.getParameter("password");
+        LOGGER.info("Patient login attempt for NIC=" + nic);
 
-        patient p = patientDAO.validate(nic, password);
+        try {
+            patient p = patientDAO.validate(nic, password);
 
-        if (p != null) {
-            // create session for backward compatibility
-            HttpSession session = request.getSession(true);
-            session.setAttribute("patient", p);
+            if (p == null) {
+                request.setAttribute("error", "Invalid NIC or password.");
+                request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                return;
+            }
 
-
-            // create JWT and set as HttpOnly cookie
+            // ✅ Create JWT
             String secret = request.getServletContext().getInitParameter("jwt.secret");
             String expiryStr = request.getServletContext().getInitParameter("jwt.expirySeconds");
             long expiry = 3600L;
             try { if (expiryStr != null) expiry = Long.parseLong(expiryStr); } catch (Exception ignored) {}
+
             try {
-                String token = JwtUtil.createToken(secret != null ? secret : "change_this_secret_before_production_2025", p.getNic(), "patient", expiry);
-                Cookie jwt = new Cookie("JWT", token);
+                String token = JwtUtil.createToken(
+                        secret != null ? secret : "change_this_secret_before_production_2025",
+                        p.getNic(),
+                        "patient",
+                        expiry
+                );
+
+                // ✅ Store under role-specific cookie
+                Cookie jwt = new Cookie("JWT_PATIENT", token);
                 jwt.setHttpOnly(true);
                 jwt.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
-                // Mark secure only if request is secure
+                jwt.setMaxAge((int) expiry);
                 if (request.isSecure()) jwt.setSecure(true);
-                // session cookie by default; if you want persistent token setMaxAge
                 response.addCookie(jwt);
+
+                LOGGER.info("✅ JWT_PATIENT cookie set successfully for NIC=" + nic);
+
             } catch (Exception e) {
-                // token creation failed; proceed with session only (still works)
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Failed to create JWT for patient NIC=" + nic, e);
+                request.setAttribute("error", "Error creating token. Please try again.");
+                request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                return;
             }
 
-            // Always include context path on redirects
+            // ✅ Optional: Keep session for compatibility (not required for JWT)
+            HttpSession session = request.getSession(true);
+            session.setAttribute("patient", p);
+
+            // ✅ Redirect to dashboard
             response.sendRedirect(request.getContextPath() + "/patient/dashboard");
-        } else {
-            request.setAttribute("error", "Invalid NIC or password.");
-            // Forward back to the correct JSP path (absolute from context root)
-            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error during patient login", e);
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
         }
     }
 }

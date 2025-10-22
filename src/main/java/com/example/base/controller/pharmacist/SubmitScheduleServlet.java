@@ -1,21 +1,28 @@
 package com.example.base.controller.pharmacist;
 
 import com.example.base.db.dbconnection;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/pharmacist/submitSchedule")
 public class SubmitScheduleServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(SubmitScheduleServlet.class.getName());
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Ensure pharmacist is authenticated (defense-in-depth)
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("pharmacist") == null) {
+        // ✅ Auth handled by JwtAuthFilter — verify role
+        String role = (String) request.getAttribute("jwtRole");
+        String pharmacistId = (String) request.getAttribute("jwtSub");
+
+        if (role == null || !"pharmacist".equals(role)) {
             response.sendRedirect(request.getContextPath() + "/pharmacist/login");
             return;
         }
@@ -37,65 +44,66 @@ public class SubmitScheduleServlet extends HttpServlet {
         }
 
         try (Connection conn = dbconnection.getConnection()) {
+            if (conn == null) throw new SQLException("Database connection failed.");
 
-            // Insert master schedule (optional step)
-            PreparedStatement masterStmt = conn.prepareStatement(
-                    "INSERT INTO schedule_master (prescription_id, patient_nic) VALUES (?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            masterStmt.setInt(1, Integer.parseInt(prescriptionId));
-            masterStmt.setString(2, patientNic);
-            masterStmt.executeUpdate();
+            conn.setAutoCommit(false); // ✅ Prevent partial inserts
 
-            int scheduleMasterId = 0;
-            try (ResultSet rs = masterStmt.getGeneratedKeys()) {
-                if (rs.next()) {
+            // ✅ Insert into schedule_master
+            int scheduleMasterId;
+            try (PreparedStatement masterStmt = conn.prepareStatement(
+                    "INSERT INTO schedule_master (prescription_id, patient_nic, created_by) VALUES (?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS)) {
+
+                masterStmt.setInt(1, Integer.parseInt(prescriptionId));
+                masterStmt.setString(2, patientNic);
+                masterStmt.setString(3, pharmacistId); // pharmacist ID from JWT
+                masterStmt.executeUpdate();
+
+                try (ResultSet rs = masterStmt.getGeneratedKeys()) {
+                    if (!rs.next()) throw new SQLException("Failed to create schedule master record.");
                     scheduleMasterId = rs.getInt(1);
                 }
             }
-            masterStmt.close();
 
-            // Insert each medication row
-            String sql = "INSERT INTO medication_schedule " +
-                    "(schedule_master_id, medicine_id, dosage_id, frequency_id, meal_timing_id, start_date, duration_days, instructions) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+            // ✅ Insert individual medication schedules
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "INSERT INTO medication_schedule " +
+                            "(schedule_master_id, medicine_id, dosage_id, frequency_id, meal_timing_id, start_date, duration_days, instructions) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
 
-            for (int i = 0; i < medicineIds.length; i++) {
-                stmt.setInt(1, scheduleMasterId);
-                stmt.setInt(2, Integer.parseInt(medicineIds[i]));
-                stmt.setInt(3, Integer.parseInt(dosageIds[i]));
-                stmt.setInt(4, Integer.parseInt(frequencyIds[i]));
+                for (int i = 0; i < medicineIds.length; i++) {
+                    stmt.setInt(1, scheduleMasterId);
+                    stmt.setInt(2, Integer.parseInt(medicineIds[i]));
+                    stmt.setInt(3, Integer.parseInt(dosageIds[i]));
+                    stmt.setInt(4, Integer.parseInt(frequencyIds[i]));
 
-                if (mealTimingIds[i] != null && !mealTimingIds[i].isEmpty()) {
-                    stmt.setInt(5, Integer.parseInt(mealTimingIds[i]));
-                } else {
-                    stmt.setNull(5, Types.INTEGER);
+                    if (mealTimingIds != null && mealTimingIds[i] != null && !mealTimingIds[i].isEmpty()) {
+                        stmt.setInt(5, Integer.parseInt(mealTimingIds[i]));
+                    } else {
+                        stmt.setNull(5, Types.INTEGER);
+                    }
+
+                    stmt.setDate(6, Date.valueOf(startDates[i]));
+                    stmt.setInt(7, Integer.parseInt(durationDays[i]));
+                    stmt.setString(8, (instructions != null && instructions[i] != null) ? instructions[i] : null);
+                    stmt.addBatch();
                 }
 
-                stmt.setDate(6, Date.valueOf(startDates[i]));
-                stmt.setInt(7, Integer.parseInt(durationDays[i]));
-                stmt.setString(8, (instructions[i] != null) ? instructions[i] : null);
-
-                stmt.addBatch();
+                stmt.executeBatch();
             }
 
-            stmt.executeBatch();
-            stmt.close();
+            // ✅ Update prescription status
+            try (PreparedStatement updateStmt = conn.prepareStatement(
+                    "UPDATE prescriptions SET status = 'SCHEDULED' WHERE id = ?")) {
+                updateStmt.setInt(1, Integer.parseInt(prescriptionId));
+                updateStmt.executeUpdate();
+            }
 
-
-            PreparedStatement updateStatusStmt = conn.prepareStatement(
-                    "UPDATE prescriptions SET status = 'SCHEDULED' WHERE id = ?"
-            );
-            updateStatusStmt.setInt(1, Integer.parseInt(prescriptionId));
-            updateStatusStmt.executeUpdate();
-            updateStatusStmt.close();
-
+            conn.commit(); // ✅ Commit transaction
             response.sendRedirect(request.getContextPath() + "/pharmacist/approved-prescriptions");
 
-
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error submitting medication schedule", e);
             response.sendRedirect(request.getContextPath() + "/pharmacist/schedule-error.jsp");
         }
     }

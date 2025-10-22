@@ -10,9 +10,12 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/admin/login")
 public class AdminLoginServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(AdminLoginServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -26,40 +29,54 @@ public class AdminLoginServlet extends HttpServlet {
 
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-        System.out.println("AdminLoginServlet: doPost entered with email=" + email);
-        System.out.println("AdminLoginServlet: password=" + password);
+
+        LOGGER.info("Admin login attempt for email=" + email);
 
         try (Connection conn = dbconnection.getConnection()) {
             AdminDAO dao = new AdminDAO(conn);
             Admin admin = dao.validate(email, password);
 
-            if (admin != null) {
-                HttpSession session = request.getSession(true);
-                session.setAttribute("admin", admin);
+            if (admin == null) {
+                request.setAttribute("error", "Invalid email or password.");
+                request.getRequestDispatcher("/WEB-INF/views/auth/admin-login.jsp").forward(request, response);
+                return;
+            }
 
-                // JWT creation
-                String secret = request.getServletContext().getInitParameter("jwt.secret");
-                String expiryStr = request.getServletContext().getInitParameter("jwt.expirySeconds");
-                long expiry = 3600L;
-                try { if (expiryStr != null) expiry = Long.parseLong(expiryStr); } catch (Exception ignored) {}
+            // ✅ Generate JWT for admin
+            String secret = request.getServletContext().getInitParameter("jwt.secret");
+            String expiryStr = request.getServletContext().getInitParameter("jwt.expirySeconds");
+            long expiry = 3600L;
+            try { if (expiryStr != null) expiry = Long.parseLong(expiryStr); } catch (Exception ignored) {}
 
-                String token = JwtUtil.createToken(secret != null ? secret : "change_this_secret_before_production_2025",
-                        String.valueOf(admin.getId()), "admin", expiry);
-                Cookie jwt = new Cookie("JWT", token);
+            try {
+                String token = JwtUtil.createToken(
+                        secret != null ? secret : "change_this_secret_before_production_2025",
+                        admin.getNic() != null ? admin.getNic() : String.valueOf(admin.getId()), // sub = unique ID
+                        "admin", // role claim
+                        expiry
+                );
+
+                Cookie jwt = new Cookie("JWT_ADMIN", token);
                 jwt.setHttpOnly(true);
                 jwt.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
+                jwt.setMaxAge((int) expiry);
                 if (request.isSecure()) jwt.setSecure(true);
                 response.addCookie(jwt);
 
-                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-            } else {
-                System.out.println("AdminLoginServlet: authentication failed");
-                request.setAttribute("error", "Invalid credentials.");
+                LOGGER.info("✅ Admin JWT created successfully for " + email);
+
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to create JWT for admin " + email, e);
+                request.setAttribute("error", "Token creation failed.");
                 request.getRequestDispatcher("/WEB-INF/views/auth/admin-login.jsp").forward(request, response);
+                return;
             }
 
+            // ✅ Redirect to admin dashboard
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error during admin login", e);
             response.sendRedirect(request.getContextPath() + "/error.jsp");
         }
     }

@@ -10,13 +10,17 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/admin/register")
 public class AdminRegisterServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(AdminRegisterServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        // ✅ Always forward to the same JSP
         req.getRequestDispatcher("/WEB-INF/views/auth/admin-register.jsp").forward(req, resp);
     }
 
@@ -31,9 +35,10 @@ public class AdminRegisterServlet extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        if (!password.equals(confirmPassword)) {
+        // ✅ Validation: passwords match
+        if (password == null || confirmPassword == null || !password.equals(confirmPassword)) {
             request.setAttribute("error", "Passwords do not match.");
-            request.getRequestDispatcher("/WEB-INF/views/admin/register-admin.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/auth/admin-register.jsp").forward(request, response);
             return;
         }
 
@@ -49,15 +54,16 @@ public class AdminRegisterServlet extends HttpServlet {
             boolean registered = dao.registerAdmin(admin);
 
             if (registered) {
-                response.sendRedirect(request.getContextPath() + "/admin/login?success=1");
+                LOGGER.info("✅ New admin registered successfully: " + email);
+                response.sendRedirect(request.getContextPath() + "/admin/login?registered=1");
             } else {
-                request.setAttribute("error", "Registration failed.");
-                request.getRequestDispatcher("/WEB-INF/views/admin/register-admin.jsp").forward(request, response);
+                request.setAttribute("error", "Registration failed. Please try again.");
+                request.getRequestDispatcher("/WEB-INF/views/auth/admin-register.jsp").forward(request, response);
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "An error occurred.");
+            LOGGER.log(Level.SEVERE, "Admin registration error", e);
+            request.setAttribute("error", "An internal error occurred. Please try again later.");
             request.getRequestDispatcher("/WEB-INF/views/auth/admin-register.jsp").forward(request, response);
         }
     }

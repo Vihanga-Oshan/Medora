@@ -29,7 +29,7 @@
     <!-- Toggle Buttons -->
     <div class="form-toggle">
         <button class="active" type="button" onclick="location.href='${cp}/login'">Patient</button>
-        <button type="button" onclick="location.href='${cp}/loginguardian'">Guardian</button>
+        <button type="button" onclick="location.href='${cp}/guardian/login'">Guardian</button>
     </div>
 
     <!-- Login Form -->
@@ -63,7 +63,7 @@
             </c:if>
 
             <p class="bottom-text">Don’t have an account?
-                <a href="${cp}/register/patient">Create one here</a>
+                <a href="${cp}/patient/register">Create one here</a>
             </p>
         </div>
     </form>

@@ -33,7 +33,7 @@
                 <li>Guardian monitoring & support</li>
             </ul>
             <div class="cta-buttons">
-                <a href="${cp}/register/patient" class="btn primary">Get Started Free</a>
+                <a href="${cp}/patient/register" class="btn primary">Get Started Free</a>
                 <a href="${cp}/login" class="btn secondary">Sign In</a>
             </div>
             <div class="compliance">

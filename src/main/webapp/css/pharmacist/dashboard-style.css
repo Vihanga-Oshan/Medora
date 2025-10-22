@@ -49,6 +49,10 @@ body {
     padding: 20px 0;
 
 }
+.logout-link{
+    font-size: 17px;
+    font-weight: normal;
+}
 
 .nav-item {
     display: flex;
@@ -72,9 +76,14 @@ body {
 }
 
 .footer-section {
+    align-items: start;
     padding: 20px;
     border-top: 1px solid rgba(255,255,255,0.1);
     font-size: 12px;
+}
+.footer-section a{
+    align-items: start;
+    padding-left: 0;
 }
 
 .help-link {

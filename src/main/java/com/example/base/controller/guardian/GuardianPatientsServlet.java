@@ -13,7 +13,16 @@ public class GuardianPatientsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // ✅ Simulated medication list for demo purposes
+        // ✅ JwtAuthFilter should already verify guardian token.
+        String guardianNic = (String) req.getAttribute("jwtSub");
+
+        // 🔒 Defense-in-depth: if no JWT or invalid token, redirect to login
+        if (guardianNic == null || guardianNic.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/guardian/login");
+            return;
+        }
+
+        // ✅ Simulated data (replace later with DB query via DAO)
         List<Map<String, String>> medications = new ArrayList<>();
 
         medications.add(Map.of(
@@ -43,8 +52,11 @@ public class GuardianPatientsServlet extends HttpServlet {
                 "instructions", "Take with water"
         ));
 
+        // ✅ Pass guardian info + medication list to JSP
+        req.setAttribute("guardianNic", guardianNic);
         req.setAttribute("medications", medications);
 
+        // ✅ Forward to JSP view
         req.getRequestDispatcher("/WEB-INF/views/guardian/guardian-patients.jsp").forward(req, resp);
     }
 }

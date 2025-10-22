@@ -119,12 +119,13 @@ public class PharmacistDAO {
             }
         }
 
-        public void deletePharmacist(int id) throws SQLException {
+        public boolean deletePharmacist(int id) throws SQLException {
             String sql = "DELETE FROM pharmacist WHERE id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, id);
                 stmt.executeUpdate();
             }
+            return false;
         }
 
         public boolean idExists(int id) throws SQLException {

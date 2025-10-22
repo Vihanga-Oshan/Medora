@@ -35,7 +35,7 @@
   <!-- Toggle Buttons -->
   <div class="toggle-btns">
     <button class="active" type="button">Patient</button>
-    <button type="button" onclick="location.href='${cp}/register/guardian'">Guardian</button>
+    <button type="button" onclick="location.href='${cp}/guardian/register'">Guardian</button>
   </div>
 
   <!-- Show server error if present -->

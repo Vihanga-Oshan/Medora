@@ -20,7 +20,7 @@
         <div class="msg error">${error}</div>
       </c:if>
 
-      <form id="regForm" action="${pageContext.request.contextPath}/register/pharmacist" method="post" novalidate>
+      <form id="regForm" action="${pageContext.request.contextPath}/pharmacist/register" method="post" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label for="name">Full Name</label>

@@ -9,12 +9,21 @@ import java.io.IOException;
 
 @WebServlet("/patient/notifications")
 public class NotificationServlet extends HttpServlet {
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)   throws ServletException, IOException {
-        // Optionally check that a patient is logged in
-        if (req.getSession(false) == null || req.getSession(false).getAttribute("patient") == null) {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        // ✅ Use JWT attributes injected by JwtAuthFilter
+        String role = (String) req.getAttribute("jwtRole");
+        String patientNic = (String) req.getAttribute("jwtSub");
+
+        if (role == null || !"patient".equals(role) || patientNic == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
+
+        // ✅ Forward to JSP (JWT is already validated)
         req.getRequestDispatcher("/WEB-INF/views/patient/notifications.jsp").forward(req, resp);
     }
 }

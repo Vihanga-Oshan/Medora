@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLIntegrityConstraintViolationException;
 
-@WebServlet("/register/guardian")
+@WebServlet("/guardian/register")
 public class RegisterGuardianServlet extends HttpServlet {
 
     @Override

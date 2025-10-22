@@ -1,6 +1,7 @@
 package com.example.base.controller.pharmacist;
 
 import com.example.base.dao.PrescriptionDAO;
+import com.example.base.db.dbconnection;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -18,20 +19,28 @@ public class PharmacistDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("pharmacist") == null) {
+
+        String role = (String) req.getAttribute("jwtRole");
+        String pharmacistId = (String) req.getAttribute("jwtSub");
+
+
+        if (!"pharmacist".equals(role)) {
             resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
             return;
         }
 
-        // Get count of pending prescriptions
-        try (Connection conn = com.example.base.db.dbconnection.getConnection()) {
+
+        try (Connection conn = dbconnection.getConnection()) {
             PrescriptionDAO dao = new PrescriptionDAO(conn);
             int pendingCount = dao.getPendingPrescriptionCount();
+
             req.setAttribute("pendingCount", pendingCount);
+            req.setAttribute("pharmacistId", pharmacistId);
+
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to load dashboard data", e);
+            LOGGER.log(Level.WARNING, "Failed to load pharmacist dashboard data", e);
         }
+
 
         req.getRequestDispatcher("/WEB-INF/views/pharmacist/pharmacist-dashboard.jsp").forward(req, resp);
     }

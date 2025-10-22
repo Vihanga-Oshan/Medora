@@ -9,13 +9,13 @@
 
     <nav class="main-nav">
         <ul>
-            <li><a href="<%= request.getContextPath() %>/pharmacist/dashboard" class="nav-item <%= request.getRequestURI().endsWith("dashboard") ? "active" : "" %>"><span class="icon">📋</span> Dashboard</a></li>
-            <li><a href="<%= request.getContextPath() %>/pharmacist/validate" class="nav-item"><span class="icon">💊</span> Prescription Review</a></li>
-            <li><a href="${pageContext.request.contextPath}/pharmacist/approved-prescriptions" class="nav-item"><i class="icon">✔️</i><span>Approved Prescriptions</span></a></li>
-            <li><a href="#" class="nav-item"><span class="icon">👤</span> Patients</a></li>
-            <li><a href="#" class="nav-item"><span class="icon">📈</span> Reports</a></li>
-            <li><a href="#" class="nav-item"><span class="icon">🔔</span> Notifications</a></li>
-            <li><a href="#" class="nav-item"><span class="icon">⚙️</span> Application Settings</a></li>
+            <li><a href="<%= request.getContextPath() %>/pharmacist/dashboard" class="nav-item <%= request.getRequestURI().endsWith("dashboard") ? "active" : "" %>">Dashboard</a></li>
+            <li><a href="<%= request.getContextPath() %>/pharmacist/validate" class="nav-item">Prescription Review</a></li>
+            <li><a href="${pageContext.request.contextPath}/pharmacist/approved-prescriptions" class="nav-item"><span>Approved Prescriptions</span></a></li>
+            <li><a href="${pageContext.request.contextPath}/pharmacist/patients" class="nav-item">Patients</a></li>
+            <li><a href="#" class="nav-item">Reports</a></li>
+            <li><a href="#" class="nav-item">Notifications</a></li>
+            <li><a href="#" class="nav-item">Application Settings</a></li>
         </ul>
     </nav>
 

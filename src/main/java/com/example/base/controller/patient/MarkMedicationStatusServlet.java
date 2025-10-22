@@ -8,36 +8,40 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/patient/mark-medication")
 public class MarkMedicationStatusServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(MarkMedicationStatusServlet.class.getName());
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        System.out.println("\n===== DEBUG: Mark Medication =====");
-        System.out.println("Schedule ID: " + req.getParameter("scheduleId"));
-        System.out.println("NIC: " + req.getParameter("patientNic"));
-        System.out.println("Status: " + req.getParameter("status"));
-        System.out.println("TimeSlot: " + req.getParameter("timeSlot"));
-        System.out.println("==================================\n");
+        LOGGER.info("=== Mark Medication Request ===");
+
+        // ✅ Get identity from JWT (set by JwtAuthFilter)
+        String role = (String) req.getAttribute("jwtRole");
+        String patientNic = (String) req.getAttribute("jwtSub");
+
+        if (role == null || !"patient".equals(role) || patientNic == null) {
+            LOGGER.warning("Unauthorized or missing JWT");
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
+        }
 
         // ✅ Read form data
         String scheduleIdStr = req.getParameter("scheduleId");
-        String patientNic = req.getParameter("patientNic");
         String status = req.getParameter("status");
-        String timeSlot = req.getParameter("timeSlot"); // ✅ new field
+        String timeSlot = req.getParameter("timeSlot");
 
-        // ✅ Debug (remove later)
-        System.out.println("=== Mark Medication Request ===");
-        System.out.println("Schedule ID: " + scheduleIdStr);
-        System.out.println("Patient NIC: " + patientNic);
-        System.out.println("Status: " + status);
-        System.out.println("Time Slot: " + timeSlot);
+        LOGGER.info(() -> String.format("Schedule ID=%s, Patient NIC=%s, Status=%s, TimeSlot=%s",
+                scheduleIdStr, patientNic, status, timeSlot));
 
         // ✅ Basic validation
-        if (scheduleIdStr == null || patientNic == null || status == null || timeSlot == null ||
-                scheduleIdStr.isEmpty() || patientNic.isEmpty() || status.isEmpty() || timeSlot.isEmpty()) {
+        if (scheduleIdStr == null || status == null || timeSlot == null ||
+                scheduleIdStr.isEmpty() || status.isEmpty() || timeSlot.isEmpty()) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing parameters");
             return;
         }
@@ -75,19 +79,20 @@ public class MarkMedicationStatusServlet extends HttpServlet {
                         updateStmt.setString(1, status.toUpperCase());
                         updateStmt.setInt(2, rs.getInt("id"));
                         updateStmt.executeUpdate();
-                        System.out.println("Updated existing record for " + timeSlot);
+                        LOGGER.info("Updated existing record for " + timeSlot);
                     }
                 } else {
                     // ✅ Insert new record
                     try (PreparedStatement insertStmt = conn.prepareStatement(
-                            "INSERT INTO medication_log (medication_schedule_id, patient_nic, dose_date, status, time_slot, updated_at) VALUES (?, ?, ?, ?, ?, NOW())")) {
+                            "INSERT INTO medication_log (medication_schedule_id, patient_nic, dose_date, status, time_slot, updated_at) " +
+                                    "VALUES (?, ?, ?, ?, ?, NOW())")) {
                         insertStmt.setInt(1, scheduleId);
                         insertStmt.setString(2, patientNic);
                         insertStmt.setDate(3, Date.valueOf(today));
                         insertStmt.setString(4, status.toUpperCase());
                         insertStmt.setString(5, timeSlot);
                         insertStmt.executeUpdate();
-                        System.out.println("Inserted new record for " + timeSlot);
+                        LOGGER.info("Inserted new record for " + timeSlot);
                     }
                 }
             }
@@ -96,8 +101,7 @@ public class MarkMedicationStatusServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/patient/dashboard");
 
         } catch (Exception e) {
-            e.printStackTrace();
-            // optional for debugging
+            LOGGER.log(Level.SEVERE, "Error updating medication log", e);
             throw new ServletException("Error updating medication log", e);
         }
     }

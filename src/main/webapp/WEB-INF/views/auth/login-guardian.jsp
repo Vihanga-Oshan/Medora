@@ -56,7 +56,7 @@
   </form>
 
   <p class="bottom-text">
-    Don’t have an account? <a href="${cp}/register/guardian">Register here</a>
+    Don’t have an account? <a href="${cp}/guardian/register">Register here</a>
   </p>
 </div>
 

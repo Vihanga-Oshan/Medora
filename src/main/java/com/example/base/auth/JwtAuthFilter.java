@@ -1,18 +1,9 @@
 package com.example.base.auth;
 
-import com.example.base.dao.patientDAO;
-import com.example.base.model.patient;
-import com.example.base.db.dbconnection;
-
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JwtAuthFilter implements Filter {
@@ -24,130 +15,140 @@ public class JwtAuthFilter implements Filter {
         secret = filterConfig.getServletContext().getInitParameter("jwt.secret");
         if (secret == null || secret.isEmpty()) {
             secret = "change_this_secret_before_production_2025";
-//            LOGGER.warning("JWT secret not configured; using default insecure secret. Update web.xml context-param jwt.secret.");
+            LOGGER.warning("JWT secret not configured; using default insecure secret.");
         }
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
+            throws IOException, ServletException {
+
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
-
         String path = req.getRequestURI().substring(req.getContextPath().length());
+
         LOGGER.info("JwtAuthFilter checking path: " + path);
 
-        if (path.startsWith("/login") || path.startsWith("/logout") ||
-                path.startsWith("/pharmacist/login") || path.startsWith("/admin/login") ||
-                path.startsWith("/admin/register") ||
-                path.startsWith("/assets/") || path.startsWith("/css/") || path.startsWith("/js/")) {
-            chain.doFilter(servletRequest, servletResponse);
+        // 1️⃣ Allow public endpoints (no authentication)
+        if (isPublicPath(path)) {
+            chain.doFilter(req, resp);
             return;
         }
 
-        String token = null;
+        // 2️⃣ Determine which JWT cookie to check based on route prefix
+        String cookieName = getRoleCookieName(path);
+        if (cookieName == null) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Unknown access path");
+            return;
+        }
+
+        String token = getCookieValue(req, cookieName);
+        if (token == null || token.isEmpty()) {
+            redirectOrReject(req, resp);
+            return;
+        }
+
+        // 3️⃣ Validate and decode JWT
+        Map<String, String> claims = JwtUtil.validateToken(secret, token);
+        if (claims == null || JwtUtil.isExpired(claims)) {
+            LOGGER.warning("JWT expired or invalid for cookie " + cookieName);
+            clearCookie(resp, cookieName, req.getContextPath());
+            redirectOrReject(req, resp);
+            return;
+        }
+
+        // 4️⃣ Role validation: ensure the role matches the route prefix
+        String role = claims.get("role");
+        if (!isAuthorizedPath(role, path)) {
+            LOGGER.warning("Unauthorized access attempt by role=" + role + " for path=" + path);
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        // 5️⃣ Attach claims for downstream servlets
+        req.setAttribute("jwtClaims", claims);
+        req.setAttribute("jwtRole", role);
+        req.setAttribute("jwtSub", claims.get("sub"));
+
+        chain.doFilter(req, resp);
+    }
+
+    @Override
+    public void destroy() {}
+
+    // --------------------------------------------------------------------
+    // 🔧 Helper Methods
+    // --------------------------------------------------------------------
+
+    private String getRoleCookieName(String path) {
+        if (path.startsWith("/admin")) return "JWT_ADMIN";
+        if (path.startsWith("/pharmacist")) return "JWT_PHARMACIST";
+        if (path.startsWith("/patient")) return "JWT_PATIENT";
+        if (path.startsWith("/guardian")) return "JWT_GUARDIAN";
+        return null;
+    }
+
+    private String getCookieValue(HttpServletRequest req, String name) {
         Cookie[] cookies = req.getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
-                if ("JWT".equals(c.getName())) {
-                    token = c.getValue();
-                    break;
-                }
+                if (name.equals(c.getName())) return c.getValue();
             }
         }
-        LOGGER.info("JwtAuthFilter token present: " + (token != null));
-
-        boolean verified = false;
-        if (token != null && !token.isEmpty()) {
-            Map<String, String> claims = JwtUtil.validateToken(secret, token);
-            if (claims != null) {
-                String sub = claims.get("sub");
-                String role = claims.get("role");
-
-                try (Connection conn = dbconnection.getConnection()) {
-                    HttpSession session = req.getSession(false);
-
-                    if ("patient".equals(role)) {
-                        com.example.base.model.patient sessPatient = null;
-                        if (session != null) {
-                            Object obj = session.getAttribute("patient");
-                            if (obj instanceof com.example.base.model.patient) {
-                                sessPatient = (com.example.base.model.patient) obj;
-                            }
-                        }
-
-                        if (sessPatient != null && sub.equals(sessPatient.getNic())) {
-                            verified = true;
-                        } else {
-                            patientDAO dao = new patientDAO(conn);
-                            com.example.base.model.patient p = dao.getPatientByNIC(sub);
-                            if (p != null) {
-                                req.getSession(true).setAttribute("patient", p);
-                                verified = true;
-                            }
-                        }
-
-                    } else if ("pharmacist".equals(role)) {
-                        com.example.base.model.Pharmacist sessPharm = null;
-                        if (session != null) {
-                            Object obj = session.getAttribute("pharmacist");
-                            if (obj instanceof com.example.base.model.Pharmacist) {
-                                sessPharm = (com.example.base.model.Pharmacist) obj;
-                            }
-                        }
-
-                        if (sessPharm != null && String.valueOf(sessPharm.getId()).equals(sub)) {
-                            verified = true;
-                        } else {
-                            com.example.base.dao.PharmacistDAO phDao = new com.example.base.dao.PharmacistDAO(conn);
-                            int pid = Integer.parseInt(sub);
-                            com.example.base.model.Pharmacist pharm = phDao.getPharmacistById(pid);
-                            if (pharm != null) {
-                                req.getSession(true).setAttribute("pharmacist", pharm);
-                                verified = true;
-                            }
-                        }
-
-                    } else if ("admin".equals(role)) {
-                        com.example.base.model.Admin sessAdmin = null;
-                        if (session != null) {
-                            Object obj = session.getAttribute("admin");
-                            if (obj instanceof com.example.base.model.Admin) {
-                                sessAdmin = (com.example.base.model.Admin) obj;
-                            }
-                        }
-
-                        if (sessAdmin != null && sub.equals(sessAdmin.getNic())) {
-                            verified = true;
-                        } else {
-                            com.example.base.dao.AdminDAO dao = new com.example.base.dao.AdminDAO(conn);
-                            com.example.base.model.Admin admin = dao.getAdminByNIC(sub);
-                            if (admin != null) {
-                                req.getSession(true).setAttribute("admin", admin);
-                                verified = true;
-                            }
-                        }
-
-                    } else {
-                        LOGGER.warning("JWT contains unknown role: " + role);
-                    }
-
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Error processing JWT or loading user", e);
-                }
-            }
-        }
-
-        if (!verified) {
-            String loginRedirect = req.getContextPath() +
-                    (path.startsWith("/pharmacist") ? "/pharmacist/login" :
-                            path.startsWith("/admin") ? "/admin/login" : "/login");
-            resp.sendRedirect(loginRedirect);
-            return;
-        }
-
-        chain.doFilter(servletRequest, servletResponse);
+        return null;
     }
 
-    @Override
-    public void destroy() { }
+    private void clearCookie(HttpServletResponse resp, String name, String contextPath) {
+        Cookie cookie = new Cookie(name, "");
+        cookie.setPath(contextPath.isEmpty() ? "/" : contextPath);
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        resp.addCookie(cookie);
+    }
+
+    private boolean isPublicPath(String path) {
+        return
+                path.equals("/") ||
+                        path.equals("/index") ||
+                        path.equals("/home") ||
+                        path.startsWith("/assets/") ||
+                        path.startsWith("/css/") ||
+                        path.startsWith("/js/") ||
+                        path.startsWith("/images/") ||
+
+                        // Public auth routes for all roles
+                        path.equals("/login") || path.equals("/register") ||
+                        path.equals("/patient/login") || path.equals("/patient/register") ||
+                        path.equals("/pharmacist/login") || path.equals("/pharmacist/register") ||
+                        path.equals("/admin/login") || path.equals("/admin/register") ||
+                        path.equals("/guardian/login") || path.equals("/guardian/register") ||
+                        path.equals("/logout");
+    }
+
+    private boolean isAuthorizedPath(String role, String path) {
+        if (role == null) return false;
+        switch (role) {
+            case "admin": return path.startsWith("/admin");
+            case "pharmacist": return path.startsWith("/pharmacist");
+            case "patient": return path.startsWith("/patient");
+            case "guardian": return path.startsWith("/guardian");
+            default: return false;
+        }
+    }
+
+    private void redirectOrReject(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String path = req.getRequestURI().substring(req.getContextPath().length());
+        boolean isApi = path.startsWith("/api/");
+
+        if (isApi) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        } else {
+            String redirect = req.getContextPath() +
+                    (path.startsWith("/admin") ? "/admin/login"
+                            : path.startsWith("/pharmacist") ? "/pharmacist/login"
+                            : path.startsWith("/guardian") ? "/guardian/login"
+                            : "/login");
+            resp.sendRedirect(redirect);
+        }
+    }
 }

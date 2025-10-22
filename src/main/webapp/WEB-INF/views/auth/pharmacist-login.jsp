@@ -51,7 +51,7 @@
         <!-- Helper links -->
         <div class="helper-links">
             <p style="margin:10px 0 0;text-align:center;">
-                <a href="${pageContext.request.contextPath}/register/pharmacist" class="btn-secondary">
+                <a href="${pageContext.request.contextPath}/pharmacist/register" class="btn-secondary">
                     Create a pharmacist account
                 </a>
             </p>

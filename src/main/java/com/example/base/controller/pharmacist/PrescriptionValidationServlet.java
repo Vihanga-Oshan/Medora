@@ -1,6 +1,7 @@
 package com.example.base.controller.pharmacist;
 
 import com.example.base.dao.PrescriptionDAO;
+import com.example.base.db.dbconnection;
 import com.example.base.model.Prescription;
 
 import javax.servlet.ServletException;
@@ -20,22 +21,27 @@ public class PrescriptionValidationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Server-side check to ensure only authenticated pharmacists can access this page.
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("pharmacist") == null) {
-            // Redirect to pharmacist login (use context path)
+        // ✅ Auth already handled by JwtAuthFilter — check jwtRole just for safety
+        String role = (String) req.getAttribute("jwtRole");
+        String pharmacistId = (String) req.getAttribute("jwtSub");
+
+        if (role == null || !"pharmacist".equals(role)) {
             resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
             return;
         }
 
-        try (Connection conn = com.example.base.db.dbconnection.getConnection()) {
+        try (Connection conn = dbconnection.getConnection()) {
             PrescriptionDAO dao = new PrescriptionDAO(conn);
             List<Prescription> prescriptions = dao.getPendingPrescriptions();
             req.setAttribute("prescriptions", prescriptions);
+            req.setAttribute("pharmacistId", pharmacistId);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to load pending prescriptions", e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading prescriptions");
+            return;
         }
 
+        // ✅ Forward to JSP
         req.getRequestDispatcher("/WEB-INF/views/pharmacist/prescription-validation.jsp").forward(req, resp);
     }
 }

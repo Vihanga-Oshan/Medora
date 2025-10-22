@@ -3,6 +3,8 @@ package com.example.base.dao;
 import com.example.base.db.dbconnection;
 import com.example.base.model.patient;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class patientDAO {
     private Connection conn;
@@ -77,5 +79,26 @@ public class patientDAO {
         }
         return null;
     }
+    public List<patient> getAllPatients() throws SQLException {
+        List<patient> patients = new ArrayList<>();
+        String sql = "SELECT * FROM patient ORDER BY name";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                patient p = new patient();
+                p.setNic(rs.getString("nic"));
+                p.setName(rs.getString("name"));
+                p.setGender(rs.getString("gender"));
+                p.setEmail(rs.getString("email"));
+                p.setEmergencyContact(rs.getString("emergency_contact"));
+                p.setAllergies(rs.getString("allergies"));
+                p.setChronicIssues(rs.getString("chronic_issues"));
+                p.setGuardianNic(rs.getString("guardian_nic"));
+                patients.add(p);
+            }
+        }
+        return patients;
+    }
+
 
 }

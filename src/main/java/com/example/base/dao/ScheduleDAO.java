@@ -120,4 +120,62 @@ public class ScheduleDAO {
         if (f.contains("bed")) return 5;
         return 99;
     }
+    public boolean updateMedicationSchedule(int id, String dosage, String frequency,
+                                            String mealTiming, String instructions,
+                                            LocalDate startDate, int durationDays) throws SQLException {
+        String sql = """
+        UPDATE medication_schedule
+        SET dosage_id = (SELECT id FROM dosage_categories WHERE label = ? LIMIT 1),
+            frequency_id = (SELECT id FROM frequencies WHERE label = ? LIMIT 1),
+            meal_timing_id = (SELECT id FROM meal_timing WHERE label = ? LIMIT 1),
+            start_date = ?, 
+            duration_days = ?, 
+            instructions = ?
+        WHERE id = ?
+    """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, dosage);
+            stmt.setString(2, frequency);
+            stmt.setString(3, mealTiming);
+            stmt.setDate(4, java.sql.Date.valueOf(startDate));
+            stmt.setInt(5, durationDays);
+            stmt.setString(6, instructions);
+            stmt.setInt(7, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+    public MedicationSchedule getScheduleById(int id) throws SQLException {
+        String sql = """
+        SELECT ms.id, med.name AS medicine_name, dc.label AS dosage,
+               f.label AS frequency, mt.label AS meal_timing,
+               ms.instructions, ms.start_date, ms.duration_days
+        FROM medication_schedule ms
+        JOIN medicines med ON med.id = ms.medicine_id
+        JOIN dosage_categories dc ON dc.id = ms.dosage_id
+        JOIN frequencies f ON f.id = ms.frequency_id
+        LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
+        WHERE ms.id = ?
+    """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                MedicationSchedule m = new MedicationSchedule();
+                m.setId(rs.getInt("id"));
+                m.setMedicineName(rs.getString("medicine_name"));
+                m.setDosage(rs.getString("dosage"));
+                m.setFrequency(rs.getString("frequency"));
+                m.setMealTiming(rs.getString("meal_timing"));
+                m.setInstructions(rs.getString("instructions"));
+                m.setStartDate(rs.getDate("start_date").toLocalDate());
+                m.setDurationDays(rs.getInt("duration_days"));
+                return m;
+            }
+        }
+        return null;
+    }
+
+
 }

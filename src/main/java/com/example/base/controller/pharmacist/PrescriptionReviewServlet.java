@@ -1,9 +1,9 @@
 package com.example.base.controller.pharmacist;
 
 import com.example.base.dao.PrescriptionDAO;
-import com.example.base.dao.patientDAO; // Note: lowercase 'p' in your class
+import com.example.base.dao.patientDAO;
 import com.example.base.model.Prescription;
-import com.example.base.model.patient;   // Note: lowercase 'p'
+import com.example.base.model.patient;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,9 +21,11 @@ public class PrescriptionReviewServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Server-side auth check (defense-in-depth)
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("pharmacist") == null) {
+        // ✅ Auth handled by JwtAuthFilter — just verify role for safety
+        String role = (String) req.getAttribute("jwtRole");
+        String pharmacistId = (String) req.getAttribute("jwtSub");
+
+        if (role == null || !"pharmacist".equals(role)) {
             resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
             return;
         }
@@ -51,10 +53,10 @@ public class PrescriptionReviewServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Fetch patient details using patient_nic
+            // ✅ Fetch patient details using NIC
             String patientNic = prescription.getPatientNic();
             patientDAO patientDao = new patientDAO(conn);
-            patient patient = patientDao.getPatientByNIC(patientNic); // We'll add this method next
+            patient patient = patientDao.getPatientByNIC(patientNic);
 
             if (patient == null) {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Patient not found");
@@ -63,9 +65,10 @@ public class PrescriptionReviewServlet extends HttpServlet {
 
             // Pass data to JSP
             req.setAttribute("prescription", prescription);
-            req.setAttribute("patient", patient); // Entire patient object
+            req.setAttribute("patient", patient);
 
             req.getRequestDispatcher("/WEB-INF/views/pharmacist/prescription-review.jsp").forward(req, resp);
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error in PrescriptionReviewServlet", e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error");
@@ -76,9 +79,9 @@ public class PrescriptionReviewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Server-side auth check (defense-in-depth)
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("pharmacist") == null) {
+        // ✅ Auth handled by JwtAuthFilter
+        String role = (String) req.getAttribute("jwtRole");
+        if (role == null || !"pharmacist".equals(role)) {
             resp.sendRedirect(req.getContextPath() + "/pharmacist/login");
             return;
         }
@@ -91,11 +94,12 @@ public class PrescriptionReviewServlet extends HttpServlet {
             return;
         }
 
-        int prescriptionId = Integer.parseInt(idParam);
-
-        try (Connection conn = com.example.base.db.dbconnection.getConnection()) {
-            PrescriptionDAO dao = new PrescriptionDAO(conn);
-            dao.updatePrescriptionStatus(prescriptionId, action);
+        try {
+            int prescriptionId = Integer.parseInt(idParam);
+            try (Connection conn = com.example.base.db.dbconnection.getConnection()) {
+                PrescriptionDAO dao = new PrescriptionDAO(conn);
+                dao.updatePrescriptionStatus(prescriptionId, action);
+            }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to update prescription status", e);
         }

@@ -34,7 +34,7 @@
 
     <!-- Toggle Buttons -->
     <div class="toggle-btns">
-        <button type="button" onclick="location.href='${cp}/register/patient'">Patient</button>
+        <button type="button" onclick="location.href='${cp}/patient/register'">Patient</button>
         <button type="button" class="active">Guardian</button>
     </div>
 
@@ -89,7 +89,7 @@
         </div>
     </form>
 
-    <p class="login-text">Already have an account? <a href="${cp}/loginguardian">Login here</a></p>
+    <p class="login-text">Already have an account? <a href="${cp}/guardian/login">Login here</a></p>
 
 </div>
 <script src="${cp}/js/form-validation.js?v=1" defer></script>
