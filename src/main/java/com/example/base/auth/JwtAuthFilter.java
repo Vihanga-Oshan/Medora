@@ -37,6 +37,19 @@ public class JwtAuthFilter implements Filter {
 
         // 2️⃣ Determine which JWT cookie to check based on route prefix
         String cookieName = getRoleCookieName(path);
+
+        // ✅ Special handling for shared resource routes (like /prescriptionFile)
+        if (cookieName == null && path.startsWith("/prescriptionFile")) {
+            // Try all known JWT cookies — whichever exists first will be used
+            for (String candidate : new String[]{"JWT_PATIENT", "JWT_PHARMACIST", "JWT_ADMIN"}) {
+                String candidateToken = getCookieValue(req, candidate);
+                if (candidateToken != null && !candidateToken.isEmpty()) {
+                    cookieName = candidate;
+                    break;
+                }
+            }
+        }
+
         if (cookieName == null) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Unknown access path");
             return;
@@ -59,7 +72,8 @@ public class JwtAuthFilter implements Filter {
 
         // 4️⃣ Role validation: ensure the role matches the route prefix
         String role = claims.get("role");
-        if (!isAuthorizedPath(role, path)) {
+        if (!isAuthorizedPath(role, path) && !path.startsWith("/prescriptionFile")) {
+            // skip path restriction for prescription files
             LOGGER.warning("Unauthorized access attempt by role=" + role + " for path=" + path);
             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
@@ -107,22 +121,20 @@ public class JwtAuthFilter implements Filter {
     }
 
     private boolean isPublicPath(String path) {
-        return
-                path.equals("/") ||
-                        path.equals("/index") ||
-                        path.equals("/home") ||
-                        path.startsWith("/assets/") ||
-                        path.startsWith("/css/") ||
-                        path.startsWith("/js/") ||
-                        path.startsWith("/images/") ||
-
-                        // Public auth routes for all roles
-                        path.equals("/login") || path.equals("/register") ||
-                        path.equals("/patient/login") || path.equals("/patient/register") ||
-                        path.equals("/pharmacist/login") || path.equals("/pharmacist/register") ||
-                        path.equals("/admin/login") || path.equals("/admin/register") ||
-                        path.equals("/guardian/login") || path.equals("/guardian/register") ||
-                        path.equals("/logout");
+        return path.equals("/") ||
+                path.equals("/index") ||
+                path.equals("/home") ||
+                path.startsWith("/assets/") ||
+                path.startsWith("/css/") ||
+                path.startsWith("/js/") ||
+                path.startsWith("/images/") ||
+                // Public auth routes
+                path.equals("/login") || path.equals("/register") ||
+                path.equals("/patient/login") || path.equals("/patient/register") ||
+                path.equals("/pharmacist/login") || path.equals("/pharmacist/register") ||
+                path.equals("/admin/login") || path.equals("/admin/register") ||
+                path.equals("/guardian/login") || path.equals("/guardian/register") ||
+                path.equals("/logout");
     }
 
     private boolean isAuthorizedPath(String role, String path) {

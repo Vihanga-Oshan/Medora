@@ -1,8 +1,10 @@
 package com.example.base.controller.pharmacist;
 
+import com.example.base.dao.PrescriptionDAO;
 import com.example.base.dao.ScheduleDAO;
 import com.example.base.db.dbconnection;
 import com.example.base.model.MedicationSchedule;
+import com.example.base.model.Prescription;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
@@ -21,6 +23,8 @@ public class EditScheduleServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String idParam = request.getParameter("id");
+        String patientNic = request.getParameter("nic");
+
         if (idParam == null || idParam.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing schedule ID");
             return;
@@ -37,39 +41,37 @@ public class EditScheduleServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Load dropdown data (same as SchedulePageServlet)
+            // ✅ Find related prescription by patient NIC instead of risky join
+            PrescriptionDAO prescriptionDAO = new PrescriptionDAO(conn);
+            Prescription prescription = prescriptionDAO.getLatestPrescriptionByPatientNic(patientNic);
+
+            // ✅ Load dropdown data
             List<String[]> dosages = new ArrayList<>();
             List<String[]> frequencies = new ArrayList<>();
             List<String[]> mealTimings = new ArrayList<>();
 
             try (PreparedStatement stmt1 = conn.prepareStatement("SELECT id, label FROM dosage_categories");
                  ResultSet rs1 = stmt1.executeQuery()) {
-                while (rs1.next()) {
-                    dosages.add(new String[]{rs1.getString("id"), rs1.getString("label")});
-                }
+                while (rs1.next()) dosages.add(new String[]{rs1.getString("id"), rs1.getString("label")});
             }
 
             try (PreparedStatement stmt2 = conn.prepareStatement("SELECT id, label FROM frequencies");
                  ResultSet rs2 = stmt2.executeQuery()) {
-                while (rs2.next()) {
-                    frequencies.add(new String[]{rs2.getString("id"), rs2.getString("label")});
-                }
+                while (rs2.next()) frequencies.add(new String[]{rs2.getString("id"), rs2.getString("label")});
             }
 
             try (PreparedStatement stmt3 = conn.prepareStatement("SELECT id, label FROM meal_timing");
                  ResultSet rs3 = stmt3.executeQuery()) {
-                while (rs3.next()) {
-                    mealTimings.add(new String[]{rs3.getString("id"), rs3.getString("label")});
-                }
+                while (rs3.next()) mealTimings.add(new String[]{rs3.getString("id"), rs3.getString("label")});
             }
 
-            // ✅ Attach attributes for JSP
+            // ✅ Attach data to JSP
             request.setAttribute("schedule", schedule);
             request.setAttribute("dosages", dosages);
             request.setAttribute("frequencies", frequencies);
             request.setAttribute("mealTimings", mealTimings);
+            request.setAttribute("prescription", prescription); // same name used in working JSP
 
-            // ✅ Forward to JSP
             request.getRequestDispatcher("/WEB-INF/views/pharmacist/edit-schedule.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -96,7 +98,6 @@ public class EditScheduleServlet extends HttpServlet {
             boolean updated = dao.updateMedicationSchedule(id, dosage, frequency, mealTiming, instructions, startDate, durationDays);
 
             if (updated) {
-                // redirect to patient’s schedule view
                 response.sendRedirect(request.getContextPath() + "/pharmacist/view-schedule?nic=" + request.getParameter("nic"));
             } else {
                 request.setAttribute("error", "Failed to update schedule.");

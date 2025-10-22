@@ -37,17 +37,17 @@
             <div class="metric-card">
                 <div class="metric-value">21</div>
                 <div class="metric-label">Pending Prescriptions</div>
-                <a href="#" class="see-all">See all »</a>
+                <a href="${pageContext.request.contextPath}/pharmacist/validate" class="see-all">See All</a>
             </div>
             <div class="metric-card">
                 <div class="metric-value">19</div>
                 <div class="metric-label">Pending Schedules</div>
-                <a href="#" class="see-all">See All »</a>
+                <a href="${pageContext.request.contextPath}/pharmacist/approved-prescriptions" class="see-all">See All</a>
             </div>
             <div class="metric-card">
                 <div class="metric-value">10</div>
                 <div class="metric-label">New patients (last 24 hrs)</div>
-                <a href="#" class="see-all">See All »</a>
+                <a href="${pageContext.request.contextPath}/pharmacist/patients" class="see-all">See All</a>
             </div>
         </div>
 

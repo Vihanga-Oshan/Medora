@@ -1,10 +1,14 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Edit Medication Schedule</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/medication-scheduling.css">
+    <style>
+
+    </style>
 </head>
 <body>
 <div class="container">
@@ -13,10 +17,9 @@
     <div class="main-content">
         <h1>Edit Medication Schedule</h1>
 
-        <div class="scheduling-grid">
+        <div class="edit-schedule-container">
             <!-- ======= Edit Schedule Form ======= -->
             <form action="${pageContext.request.contextPath}/pharmacist/edit-schedule" method="post" class="schedule-form">
-
                 <input type="hidden" name="id" value="${schedule.id}">
                 <input type="hidden" name="nic" value="${param.nic}">
 
@@ -71,6 +74,22 @@
                     <a href="${pageContext.request.contextPath}/pharmacist/view-schedule?nic=${param.nic}" class="btn-reject">Cancel</a>
                 </div>
             </form>
+
+            <!-- ======= Prescription Preview ======= -->
+            <div class="prescription-preview-box">
+                <h3>Prescription Preview</h3>
+                <c:choose>
+                    <c:when test="${fn:endsWith(prescriptionFile.fileName, '.pdf')}">
+                        <div class="pdf-box">
+                            <iframe src="${pageContext.request.contextPath}/prescriptionFile/${prescriptionFile.filePath}" allowfullscreen></iframe>
+                            <a href="${pageContext.request.contextPath}/prescriptionFile/${prescriptionFile.filePath}" target="_blank" class="view-link">Open PDF</a>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}" alt="Prescription" class="preview-image" />
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
     </div>
 </div>

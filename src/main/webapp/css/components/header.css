@@ -1,73 +1,96 @@
+/* =========================
+   HEADER: Blue Fixed Navbar (Admin-Style)
+========================= */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fbfd;
+    line-height: 2;
+}
+
+/* ===== Header Container ===== */
 .header {
-    background: linear-gradient(90deg, #007dca 0%, #00aaff 100%);
-    padding: 16px 28px;
-    margin: 18px auto;
-    max-width: 1200px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #007acc; /* Blue navbar */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 14px 48px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    margin: 0;
+    border-radius: 0;
 }
 
+/* ===== Logo Section ===== */
 .logo {
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
 .logo img {
-    height: 42px;
-    margin-right: 12px;
+    height: 34px;
 }
 
 .logo span {
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
     font-size: 20px;
     color: #ffffff;
 }
 
+/* ===== Navigation Links ===== */
 .nav-links {
     display: flex;
-    gap: 20px;
+    gap: 28px;
 }
 
 .nav-links a {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 15px;
-    font-weight: 600;
-    color: #ffffff;
+    font-weight: 500;
+    color: #ffffff; /* Default white */
     text-decoration: none;
-    padding: 8px 18px;
-    border-radius: 20px;
+    padding: 8px 16px;
+    border-radius: 8px;
     transition: all 0.25s ease;
-    background-color: rgba(255, 255, 255, 0.01);
 }
 
+/* Hover effect */
 .nav-links a:hover {
     background-color: #ffffff;
-    color: #007dca;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+    color: #007acc; /* Switch to blue on hover */
 }
 
-/* Responsive tweaks */
+/* ===== Active Link ===== */
+.nav-links a.active {
+    background-color: #ffffff;
+    color: #007acc;
+    font-weight: 600;
+}
+
+/* ===== Prevent Overlap ===== */
+body {
+    padding-top: 70px;
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
         align-items: flex-start;
-        padding: 20px;
+        padding: 12px 24px;
     }
 
     .nav-links {
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 12px;
-        width: 100%;
-    }
-
-    .nav-links a {
-        width: 100%;
-        text-align: left;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 8px;
     }
 }

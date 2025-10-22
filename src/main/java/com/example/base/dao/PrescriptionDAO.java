@@ -202,6 +202,25 @@ public class PrescriptionDAO {
             stmt.executeUpdate();
         }
     }
+    public Prescription getLatestPrescriptionByPatientNic(String nic) throws SQLException {
+        String sql = "SELECT * FROM prescriptions WHERE patient_nic = ? ORDER BY upload_date DESC LIMIT 1";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nic);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Prescription p = new Prescription();
+                    p.setId(rs.getInt("id"));
+                    p.setPatientNic(rs.getString("patient_nic"));
+                    p.setFileName(rs.getString("file_name"));
+                    p.setFilePath(rs.getString("file_path"));
+                    p.setStatus(rs.getString("status"));
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
 
 
 
