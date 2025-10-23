@@ -1,5 +1,155 @@
 /* view-schedule.css */
 
+
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* dark overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 8px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.delete-btn {
+    background-color: #e53935;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #c62828;
+}
+
+.cancel-btn {
+    background-color: #ddd;
+    color: #333;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+}
+.action-btn {
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #f1f5f9;
+}
+
+.action-btn i {
+    color: #334155;
+    width: 18px;
+    height: 18px;
+}
+
+.action-menu {
+    position: absolute;
+    right: 0; /* align to the right of the button */
+    transform: translateX(-40%); /* shift it left */
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    min-width: 160px;
+    padding: 6px 0;
+    margin-top: 6px;
+    z-index: 1000;
+}
+
+.action-menu.hidden {
+    display: none;
+}
+
+.action-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.action-menu li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.action-menu li.edit {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.action-menu li.edit i {
+    color: #1e293b;
+}
+
+.action-menu li.delete {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.action-menu li.delete i {
+    color: #dc2626;
+}
+
+.action-menu li:hover {
+    background: #f8fafc;
+}
+
+.action-menu li i {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2px;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     margin: 0;

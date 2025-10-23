@@ -33,7 +33,7 @@
                 <li>Guardian monitoring & support</li>
             </ul>
             <div class="cta-buttons">
-                <a href="${cp}/patient/register" class="btn primary">Get Started Free</a>
+                <a href="${cp}/patient/register" class="btn primary">Get Started</a>
                 <a href="${cp}/login" class="btn secondary">Sign In</a>
             </div>
             <div class="compliance">
@@ -191,11 +191,11 @@
     <div class="container">
         <h2>Ready to Never Miss a Dose?</h2>
         <p>Join thousands of patients and caregivers who trust Medora for better medication management.</p>
-        <a href="${cp}/register.jsp" class="btn primary large">Start Your Free Account</a>
+        <a href="${cp}/register.jsp" class="btn primary large">Begin Your Journey</a>
         <ul class="benefits">
-            <li>Free to get started</li>
-            <li>No credit card required</li>
-            <li>Cancel anytime</li>
+            <li>Completely free to use</li>
+            <li>Monitor your progress easily</li>
+            <li>Secure and private</li>
         </ul>
     </div>
 </section>

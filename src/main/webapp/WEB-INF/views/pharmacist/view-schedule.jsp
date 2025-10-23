@@ -90,18 +90,48 @@
                   </c:choose>
                 </td>
                 <td>
-                  <a href="${pageContext.request.contextPath}/pharmacist/edit-schedule?id=${m.id}&nic=${patient.nic}"
-                     class="btn-edit">Edit</a>
+                  <a href="${pageContext.request.contextPath}/pharmacist/edit-schedule?id=${m.id}&nic=${patient.nic}" class="btn-edit">Edit</a>
+                  <button  class="btn-delete" onclick="confirmDelete(${m.id})">Delete</button>
+
                 </td>
               </tr>
             </c:forEach>
             </tbody>
           </table>
+
+          <div id="deleteModal" class="modal hidden">
+            <div class="modal-content">
+              <h3>Confirm Deletion</h3>
+              <p>Are you sure you want to delete this medication schedule?</p>
+              <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+                <form id="deleteForm" method="post">
+                  <input type="hidden" name="nic" value="${patient.nic}" />
+                  <button type="submit" class="delete-btn">Yes, Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
         </c:if>
       </div>
 
     </div>
   </div>
 </div>
+<script>
+  const contextPath = '<%= request.getContextPath() %>';
+
+  function confirmDelete(id) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('deleteForm');
+    form.action = contextPath + '/pharmacist/delete-schedule?id=' + id;
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+  }
+</script>
+
 </body>
 </html>

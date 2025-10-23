@@ -177,5 +177,16 @@ public class ScheduleDAO {
         return null;
     }
 
+        public boolean deleteScheduleById(int id) {
+            String sql = "DELETE FROM medication_schedule WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, id);
+                int rowsAffected = stmt.executeUpdate();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
 
 }
