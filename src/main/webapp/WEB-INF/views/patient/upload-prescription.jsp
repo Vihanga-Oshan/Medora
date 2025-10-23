@@ -66,13 +66,28 @@
                 </c:otherwise>
               </c:choose>
             </a>
-            <div class="prescription-meta">
-              <div class="prescription-name">${p.fileName}</div>
-              <div class="prescription-date">${p.formattedUploadDate}</div>
-              <a href="${pageContext.request.contextPath}/patient/edit-prescription?id=${p.id}" class="btn btn-sm">Edit</a>
 
+            <div class="prescription-meta">
+              <div class="prescription-name-date">
+                <div class="prescription-name">${p.fileName}</div>
+                <div class="prescription-date">${p.formattedUploadDate}</div>
+              </div>
+
+              <div class="prescription-actions">
+                <a href="${pageContext.request.contextPath}/patient/edit-prescription?id=${p.id}" class="prescription-link edit">Edit</a>
+                <!-- Replace the current Delete form or link -->
+                <button
+                        class="prescription-link delete"
+                        onclick="confirmDeletePrescription(${p.id})"  >
+                  Delete
+                </button>
+
+
+              </div>
             </div>
           </div>
+
+
         </c:forEach>
       </div>
     </c:if>
@@ -87,6 +102,18 @@
         <p>No prescriptions uploaded yet</p>
       </div>
     </c:if>
+  </div>
+  <div class="modal hidden" id="deleteModal">
+    <div class="modal-content">
+      <p>Are you sure you want to delete this prescription?</p>
+      <form id="deleteForm" method="post" action="${pageContext.request.contextPath}/patient/delete-prescription">
+        <input type="hidden" name="id" id="prescriptionIdToDelete" />
+        <div class="modal-actions">
+          <button type="submit" class="delete-btn">Yes, Delete</button>
+          <button type="button" class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
   </div>
 
 </main>
@@ -248,6 +275,14 @@
 
 });
 
+    function confirmDeletePrescription(id) {
+    document.getElementById("prescriptionIdToDelete").value = id;
+    document.getElementById("deleteModal").classList.remove("hidden");
+  }
+
+    function closeDeleteModal() {
+    document.getElementById("deleteModal").classList.add("hidden");
+  }
 </script>
 <jsp:include page="/WEB-INF/views/components/footer.jsp" />
 </body>

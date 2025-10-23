@@ -1,3 +1,52 @@
+.prescription-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.prescription-name-date {
+  display: flex;
+  flex-direction: column;
+}
+
+.prescription-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.prescription-link {
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.prescription-link.edit {
+  color: #007acc;
+}
+
+.prescription-link.delete {
+  color: #e53935;
+}
+.prescription-link {
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.prescription-link.edit {
+  color: #007acc;
+}
+
+.prescription-link.delete {
+  color: #e53935;
+}
+
 .upload-container {
   max-width: 600px;
   background-color: #ffffff;
@@ -234,7 +283,7 @@ input[type="file"] {
 .prescription-tile {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   flex-direction: row;
   gap: 12px;
   padding: 12px;
@@ -242,7 +291,8 @@ input[type="file"] {
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 8px;
   width: calc(33.333% - 8px);
-  min-width: 180px;
+  max-width: 280px;
+  min-width: 150px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.04);
   position: relative;
 }
@@ -252,12 +302,6 @@ input[type="file"] {
   flex-direction: column;
   gap: 4px;
   flex-grow: 1;
-}
-
-.prescription-meta .btn-sm {
-  position: absolute;
-  top: 8px;
-  right: 8px;
 }
 
 .prescription-tile:hover {
@@ -284,8 +328,8 @@ input[type="file"] {
 }
 
 .prescription-thumb {
-  width: 64px;
-  height: 64px;
+  width:70px;
+  height: 70px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -313,8 +357,6 @@ input[type="file"] {
   background: #dc3545;
   border-radius: 6px;
 }
-
-
 
 .prescription-name {
   font-size: 0.95rem;
@@ -374,6 +416,182 @@ input[type="file"] {
 
 .edit-form .btn {
   width: fit-content;
+}
+
+.prescription-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.prescription-actions {
+  display: flex;
+  flex-direction: row; /* Make Edit/Delete side by side */
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.prescription-link.delete {
+  background: none;
+  border: none;
+  color: #e53935;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6); /* dark overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.delete-btn {
+  background-color: #e53935;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background-color: #c62828;
+}
+
+.cancel-btn {
+  background-color: #ddd;
+  color: #333;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #bbb;
+}
+.action-btn {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.action-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.action-btn i {
+  color: #334155;
+  width: 18px;
+  height: 18px;
+}
+
+.action-menu {
+  position: absolute;
+  right: 0; /* align to the right of the button */
+  transform: translateX(-40%); /* shift it left */
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  min-width: 160px;
+  padding: 6px 0;
+  margin-top: 6px;
+  z-index: 1000;
+}
+
+.action-menu.hidden {
+  display: none;
+}
+
+.action-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.action-menu li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.action-menu li.edit {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.action-menu li.edit i {
+  color: #1e293b;
+}
+
+.action-menu li.delete {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.action-menu li.delete i {
+  color: #dc2626;
+}
+
+.action-menu li:hover {
+  background: #f8fafc;
+}
+
+.action-menu li i {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2px;
 }
 
 /* Responsive: stack on small screens */
