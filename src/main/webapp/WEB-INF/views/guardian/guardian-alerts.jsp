@@ -7,8 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Alerts & Notifications | Medora</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/components/header.css" />
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/guardian/alerts.css" />
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/guardian/main.css" />
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/guardian/alerts.css" />
 </head>
 <body>
 
@@ -24,20 +24,34 @@
   </div>
 
   <!-- Alert Summary Cards -->
+  <!-- Alert Summary Cards -->
   <div class="flex justify-between mb-2">
-    <div class="card alert-stat red">
-      <h3>Total Alerts</h3>
-      <div class="stat-value">3</div>
+    <div class="card alert-stat">
+      <div class="icon-box red">❗</div>
+      <div>
+        <h3>Total Alerts</h3>
+        <div class="stat-value">3</div>
+      </div>
     </div>
-    <div class="card alert-stat orange">
-      <h3>Unread Alerts</h3>
-      <div class="stat-value">2</div>
+
+    <div class="card alert-stat">
+      <div class="icon-box orange">🔔</div>
+      <div>
+        <h3>Unread Alerts</h3>
+        <div class="stat-value">2</div>
+      </div>
     </div>
-    <div class="card alert-stat green">
-      <h3>Acknowledged</h3>
-      <div class="stat-value">1</div>
+
+    <div class="card alert-stat">
+      <div class="icon-box green">✅</div>
+      <div>
+        <h3>Acknowledged</h3>
+        <div class="stat-value">1</div>
+      </div>
     </div>
   </div>
+
+
 
   <!-- Alert List -->
   <div class="card">
@@ -73,6 +87,7 @@
 <footer class="footer">
   <p>&copy; 2025 Medora. All rights reserved.</p>
 </footer>
+<jsp:include page="/WEB-INF/views/components/footer.jsp" />
 
 </body>
 </html>

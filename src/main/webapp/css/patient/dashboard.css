@@ -11,12 +11,18 @@
 }
 
 .stat-card {
-  background: var(--white);
+  background: var(--white, #ffffff);
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 15px;
+  padding: 18px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .stat-card span {
@@ -29,12 +35,23 @@
 .stat-card .stat-value {
   font-size: 1.8rem;
   font-weight: bold;
-  color: var(--dark-text);
+  color: var(--text-dark, #0f172a);
 }
 
-.stat-taken { background: #e8fdf3; border-color: #b2f0d4; }
-.stat-pending { background: #fff9e6; border-color: #ffeaa7; }
-.stat-missed { background: #fef0f0; border-color: #ffd8d8; }
+.stat-taken {
+  background: #e8fdf3;
+  border-color: #b2f0d4;
+}
+
+.stat-pending {
+  background: #fff9e6;
+  border-color: #ffeaa7;
+}
+
+.stat-missed {
+  background: #fef0f0;
+  border-color: #ffd8d8;
+}
 
 /* ===== Medication Card ===== */
 .med-card {
@@ -52,6 +69,7 @@
 
 .med-card:hover {
   background-color: #f9fafb;
+  transform: translateY(-2px);
 }
 
 /* ===== Left side (Medicine Info) ===== */
@@ -105,7 +123,7 @@
 }
 
 .btn-taken {
-  background-color: #22c55e; /* green */
+  background-color: #22c55e;
 }
 
 .btn-taken:hover {
@@ -113,7 +131,7 @@
 }
 
 .btn-missed {
-  background-color: #ef4444; /* red */
+  background-color: #ef4444;
 }
 
 .btn-missed:hover {
@@ -141,10 +159,12 @@
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
 }
 
 .btn-submit:hover {
-  background-color: #006bb0;
+  background-color: #0063a4;
 }
 
 /* ===== Container ===== */
@@ -153,48 +173,20 @@
   margin: 0 auto;
   padding: 20px;
 }
+
 /* ===== Full Timetable Section ===== */
 .full-timetable {
   background-color: #f9fafb;
   border-radius: 12px;
   padding: 30px;
   margin-top: 40px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .full-timetable h2 {
   margin-bottom: 20px;
   color: #1e293b;
   font-size: 1.5rem;
-}
-
-.date-selector {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 25px;
-}
-
-.date-selector input[type="date"] {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: white;
-}
-
-.btn-submit {
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-submit:hover {
-  background-color: #1d4ed8;
 }
 
 /* ===== Timetable Card ===== */
@@ -267,19 +259,8 @@
 
 /* Responsive */
 @media (max-width: 700px) {
-  .timetable-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
 
-/* ===== Icon colors ===== */
-.taken .med-icon { background: #28a745; }
-.pending .med-icon { background: #0077CC; }
-
-/* ===== Responsive alignment ===== */
-@media (max-width: 700px) {
+  .timetable-card,
   .med-card {
     flex-direction: column;
     align-items: flex-start;

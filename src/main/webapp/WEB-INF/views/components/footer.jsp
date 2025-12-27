@@ -19,11 +19,11 @@
 
 <style>
     .patient-footer {
-        margin-top: 50px;
-        background-color: #007dca;
+        margin-top: 80px;
+        background-color: var(--primary-blue);
         color: #ffffff;
-        padding: 32px 20px 16px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 60px 20px 30px;
+        font-family: inherit;
     }
 
     .footer-container {
@@ -31,37 +31,40 @@
         margin: 0 auto;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         flex-wrap: wrap;
-        gap: 20px;
+        gap: 40px;
     }
 
     .footer-section {
-        flex: 1 1 300px;
-        min-width: 240px;
+        flex: 1;
+        min-width: 250px;
     }
 
     .footer-section h4 {
-        margin-bottom: 8px;
-        font-weight: 600;
+        color: #fff;
+        margin-bottom: 20px;
+        font-weight: 700;
+        font-size: 1.2rem;
     }
 
     .footer-section p {
-        font-size: 0.9rem;
-        line-height: 1.5;
-        color: #d9f1ff;
+        font-size: 15px;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.8);
     }
 
     .footer-links-row {
         display: flex;
-        gap: 24px;
+        gap: 30px;
         flex-wrap: wrap;
     }
 
     .footer-links-row a {
-        color: #e2f4ff;
+        color: rgba(255, 255, 255, 0.9);
         text-decoration: none;
-        font-size: 0.92rem;
+        font-size: 15px;
+        font-weight: 500;
         transition: color 0.2s ease;
     }
 
@@ -72,11 +75,11 @@
 
     .footer-bottom {
         text-align: center;
-        padding-top: 16px;
-        font-size: 0.85rem;
-        color: #c7eaff;
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
-        margin-top: 16px;
+        padding-top: 30px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 40px;
     }
 
     @media (max-width: 768px) {
@@ -87,7 +90,7 @@
 
         .footer-links-row {
             justify-content: center;
-            margin-top: 8px;
+            margin-top: 20px;
         }
     }
 </style>

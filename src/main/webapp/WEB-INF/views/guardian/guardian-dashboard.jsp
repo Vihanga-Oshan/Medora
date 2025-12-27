@@ -55,76 +55,83 @@
   </div>
 
   <!-- Recent Alerts -->
-  <div class="card" style="background-color: #fdf2f2; border: 1px solid #fbbfbf;">
-    <div class="flex justify-between align-center mb-2">
-      <h2><span>❗</span> Recent Alerts</h2>
-      <a href="${pageContext.request.contextPath}/guardian/alerts" class="btn btn-outline">View All →</a>
-    </div>
-
-    <div class="alert-item mb-2">
-      <div class="flex justify-between align-center">
-        <div>
-          <strong>Robert Chen</strong> <span class="badge badge-high">high</span>
-          <div class="text-sm">Atorvastatin 20mg</div>
-          <div class="text-xs">Missed 2 hours ago</div>
-        </div>
-        <button class="btn btn-outline">View</button>
-      </div>
+  <!-- Recent Alerts -->
+  <div class="section-box">
+    <div class="section-header">
+      <h2>
+        <i data-lucide="alert-circle"></i>
+        Recent Alerts
+      </h2>
+      <a href="${pageContext.request.contextPath}/guardian/alerts" class="btn btn-primary">View All</a>
     </div>
 
     <div class="alert-item">
-      <div class="flex justify-between align-center">
-        <div>
-          <strong>Eleanor Rodriguez</strong> <span class="badge badge-medium">medium</span>
-          <div class="text-sm">Metformin 500mg</div>
-          <div class="text-xs">Missed Yesterday at 8:00 PM</div>
-        </div>
-        <button class="btn btn-outline">View</button>
+      <div>
+        <strong>Robert Chen</strong> <span class="badge badge-high">high</span>
+        <div class="text-sm">Atorvastatin 20mg</div>
+        <div class="text-xs">Missed 2 hours ago</div>
       </div>
+      <button class="btn btn-outline">View</button>
+    </div>
+
+    <div class="alert-item">
+      <div>
+        <strong>Eleanor Rodriguez</strong> <span class="badge badge-medium">medium</span>
+        <div class="text-sm">Metformin 500mg</div>
+        <div class="text-xs">Missed Yesterday at 8:00 PM</div>
+      </div>
+      <button class="btn btn-outline">View</button>
     </div>
   </div>
+
+
+
+
 
   <!-- Patient Cards -->
   <div class="flex justify-between align-center mb-2">
     <h2>Your Patients</h2>
-    <a href="${pageContext.request.contextPath}/guardian/patients" class="btn btn-outline">View All Patients →</a>
+    <a href="${pageContext.request.contextPath}/guardian/patients" class="btn btn-primary">View All Patients</a>
   </div>
 
   <div class="flex justify-between">
     <!-- Patient 1 -->
-<%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
-<%--      <jsp:param name="initials" value="ER"/>--%>
-<%--      <jsp:param name="name" value="Eleanor Rodriguez"/>--%>
-<%--      <jsp:param name="age" value="72"/>--%>
-<%--      <jsp:param name="conditions" value="Hypertension, Type 2 Diabetes"/>--%>
-<%--      <jsp:param name="adherence" value="92"/>--%>
-<%--      <jsp:param name="updated" value="2 hours ago"/>--%>
-<%--    </jsp:include>--%>
+    <%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
+    <%--      <jsp:param name="initials" value="ER"/>--%>
+    <%--      <jsp:param name="name" value="Eleanor Rodriguez"/>--%>
+    <%--      <jsp:param name="age" value="72"/>--%>
+    <%--      <jsp:param name="conditions" value="Hypertension, Type 2 Diabetes"/>--%>
+    <%--      <jsp:param name="adherence" value="92"/>--%>
+    <%--      <jsp:param name="updated" value="2 hours ago"/>--%>
+    <%--    </jsp:include>--%>
 
-<%--    <!-- Patient 2 -->--%>
-<%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
-<%--      <jsp:param name="initials" value="RC"/>--%>
-<%--      <jsp:param name="name" value="Robert Chen"/>--%>
-<%--      <jsp:param name="age" value="68"/>--%>
-<%--      <jsp:param name="conditions" value="Heart Disease"/>--%>
-<%--      <jsp:param name="adherence" value="78"/>--%>
-<%--      <jsp:param name="updated" value="5 hours ago"/>--%>
-<%--    </jsp:include>--%>
+    <%--    <!-- Patient 2 -->--%>
+    <%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
+    <%--      <jsp:param name="initials" value="RC"/>--%>
+    <%--      <jsp:param name="name" value="Robert Chen"/>--%>
+    <%--      <jsp:param name="age" value="68"/>--%>
+    <%--      <jsp:param name="conditions" value="Heart Disease"/>--%>
+    <%--      <jsp:param name="adherence" value="78"/>--%>
+    <%--      <jsp:param name="updated" value="5 hours ago"/>--%>
+    <%--    </jsp:include>--%>
 
-<%--    <!-- Patient 3 -->--%>
-<%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
-<%--      <jsp:param name="initials" value="MW"/>--%>
-<%--      <jsp:param name="name" value="Margaret Wilson"/>--%>
-<%--      <jsp:param name="age" value="75"/>--%>
-<%--      <jsp:param name="conditions" value="Arthritis, Osteoporosis"/>--%>
-<%--      <jsp:param name="adherence" value="95"/>--%>
-<%--      <jsp:param name="updated" value="1 hour ago"/>--%>
-<%--    </jsp:include>--%>
-<%--  </div>--%>
+    <%--    <!-- Patient 3 -->--%>
+    <%--    <jsp:include page="/WEB-INF/views/guardian/components/patient-card.jsp">--%>
+    <%--      <jsp:param name="initials" value="MW"/>--%>
+    <%--      <jsp:param name="name" value="Margaret Wilson"/>--%>
+    <%--      <jsp:param name="age" value="75"/>--%>
+    <%--      <jsp:param name="conditions" value="Arthritis, Osteoporosis"/>--%>
+    <%--      <jsp:param name="adherence" value="95"/>--%>
+    <%--      <jsp:param name="updated" value="1 hour ago"/>--%>
+    <%--    </jsp:include>--%>
+    <%--  </div>--%>
 </main>
-<footer class="footer">
-  <p>&copy; 2025 Medora. All rights reserved.</p>
-</footer>
+
+<jsp:include page="/WEB-INF/views/components/footer.jsp" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
 
 </body>
 </html>

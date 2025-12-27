@@ -1,0 +1,114 @@
+/* ==================== SHARED DESIGN TOKENS ==================== */
+:root {
+    --primary-blue: #007dca;
+    --primary-hover: #0063a4;
+    --bg-light: #f8fbff;
+    --bg-white: #ffffff;
+    --text-dark: #0f172a;
+    --text-gray: #4b5563;
+    --text-light-gray: #6b7280;
+
+    /* Shadows from landing page */
+    --card-shadow: 0 4px 20px rgba(0, 125, 202, 0.08);
+    --card-hover-shadow: 0 10px 30px rgba(0, 125, 202, 0.12);
+    --btn-shadow: 0 4px 15px rgba(0, 125, 202, 0.3);
+
+    /* Spacing & Borders */
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+}
+
+/* ==================== BASE STYLES ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-dark);
+    background-color: var(--bg-light);
+    line-height: 1.6;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* ==================== COMMON COMPONENTS ==================== */
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    font-size: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn.primary {
+    background-color: var(--primary-blue);
+    color: #fff;
+    box-shadow: var(--btn-shadow);
+}
+
+.btn.secondary {
+    border: 2px solid var(--primary-blue);
+    color: var(--primary-blue);
+    background: transparent;
+}
+
+.btn.primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.btn.secondary:hover {
+    background-color: var(--primary-blue);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* Cards */
+.card-base {
+    background: var(--bg-white);
+    padding: 30px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+}
+
+.card-base:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.card-accent-top {
+    border-top: 3px solid var(--primary-blue);
+}
+
+.card-accent-left {
+    border-left: 3px solid var(--primary-blue);
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4 {
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.highlight {
+    color: var(--primary-blue);
+}

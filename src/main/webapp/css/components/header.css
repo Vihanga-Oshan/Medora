@@ -1,30 +1,21 @@
 /* =========================
-   HEADER: Blue Fixed Navbar (Admin-Style)
+   HEADER: Medora Universal Header
 ========================= */
 
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-    background-color: #f9fbfd;
-    line-height: 2;
-}
-
-/* ===== Header Container ===== */
 .header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #007acc; /* Blue navbar */
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 48px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 12px 60px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
     z-index: 1000;
-    margin: 0;
-    border-radius: 0;
+    transition: all 0.3s ease;
 }
 
 /* ===== Logo Section ===== */
@@ -32,65 +23,88 @@ html, body {
     display: flex;
     align-items: center;
     gap: 10px;
+    text-decoration: none;
 }
 
 .logo img {
-    height: 34px;
+    height: 32px;
 }
 
 .logo span {
-    font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 20px;
-    color: #ffffff;
+    font-size: 22px;
+    color: var(--primary-blue);
+    letter-spacing: -0.5px;
 }
 
 /* ===== Navigation Links ===== */
 .nav-links {
     display: flex;
-    gap: 28px;
+    gap: 12px;
 }
 
 .nav-links a {
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    color: #ffffff; /* Default white */
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-gray);
     text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: all 0.25s ease;
+    padding: 10px 18px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 /* Hover effect */
 .nav-links a:hover {
-    background-color: #ffffff;
-    color: #007acc; /* Switch to blue on hover */
+    color: var(--primary-blue);
+    background-color: #f0f9ff;
 }
 
-/* ===== Active Link ===== */
+/* Active Link */
 .nav-links a.active {
-    background-color: #ffffff;
-    color: #007acc;
-    font-weight: 600;
+    background-color: var(--primary-blue);
+    color: #ffffff;
+}
+
+/* Logout button special style */
+.nav-links a[href*="logout"] {
+    color: #ef4444 !important;
+}
+
+.nav-links a[href*="logout"]:hover {
+    background-color: #fef2f2;
 }
 
 /* ===== Prevent Overlap ===== */
 body {
-    padding-top: 70px;
+    padding-top: 80px;
 }
 
 /* ===== Responsive ===== */
+@media (max-width: 900px) {
+    .header {
+        padding: 12px 30px;
+    }
+}
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
-        align-items: flex-start;
-        padding: 12px 24px;
+        padding: 15px 20px;
+        gap: 15px;
     }
 
     .nav-links {
         flex-wrap: wrap;
-        gap: 16px;
-        margin-top: 8px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .nav-links a {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    body {
+        padding-top: 120px;
     }
 }

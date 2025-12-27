@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+
+/* ===============================
+   CSS VARIABLES (Klaas-inspired)
+================================== */
+:root {
+    --primary-dark: #001220;
+    --accent-brown: #9b8579;
+    --accent-brown-hover: #7d6b61;
+    --bg-cream: #f4f1ee;
+    --bg-light: #faf9f8;
+    --text-dark: #0f172a;
+    --text-gray: #6b7280;
+    --white: #ffffff;
+}
+
 /* ===============================
    GLOBAL STYLES
 ================================== */
@@ -5,7 +21,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 
@@ -15,51 +31,65 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6); /* dark overlay */
+    background-color: rgba(0, 18, 32, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* VERY IMPORTANT: ensure it's above everything */
+    z-index: 9999;
 }
+
 .modal.hidden {
     display: none;
 }
 
 .modal-content {
-    background: white;
-    padding: 25px 30px;
-    border-radius: 8px;
+    background: var(--white);
+    padding: 30px 35px;
     text-align: center;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 18, 32, 0.2);
 }
 
 .modal-actions {
-    margin-top: 20px;
+    margin-top: 25px;
     display: flex;
     justify-content: space-between;
+    gap: 15px;
 }
 
 .delete-btn {
-    background-color: #e53935;
+    background-color: #dc2626;
     color: white;
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 12px 20px;
     cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #b91c1c;
 }
 
 .cancel-btn {
-    background-color: #ddd;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 20px;
     cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
 }
+
+.cancel-btn:hover {
+    background-color: #e5e7eb;
+}
+
 body {
     display: flex;
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
 }
 
 /* ===============================
@@ -70,16 +100,16 @@ body {
 ================================== */
 .sidebar {
     width: 250px;
-    background: #ffffff;
+    background: var(--primary-dark);
     height: 100vh;
-    border-right: 1px solid #e2e8f0;
+    border-right: none;
     display: flex;
     flex-direction: column;
     position: fixed;
     left: 0;
     top: 0;
-    padding-top: 16px;
-    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+    box-shadow: 3px 0 20px rgba(0, 18, 32, 0.15);
 }
 
 /* Logo */
@@ -99,19 +129,20 @@ body {
 
 
 .logo img {
-    width: 38px; /* slightly smaller for balance */
+    width: 38px;
+    /* slightly smaller for balance */
     height: auto;
     object-fit: contain;
-    transform: translateY(1px); /* fine-tuned vertical alignment */
+    transform: translateY(1px);
+    /* fine-tuned vertical alignment */
 }
 
 .logo-text {
-    font-size: 18px;
-    font-weight: 700;
-    color: #0284c7; /* Medora blue */
-    font-family: 'Inter', sans-serif;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--white);
     letter-spacing: 0.2px;
-    transform: translateY(1px); /* aligns baseline perfectly with logo */
 }
 
 
@@ -124,34 +155,35 @@ body {
 }
 
 .nav-links li {
-    margin: 10px 0; /* increased vertical spacing between items */
+    margin: 10px 0;
+    /* increased vertical spacing between items */
 }
 
 .nav-links a {
     text-decoration: none;
-    color: #64748b;
+    color: rgba(255, 255, 255, 0.7);
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 24px;
-    border-radius: 10px;
-    transition: all 0.25s ease;
+    padding: 14px 24px;
+    transition: all 0.3s ease;
     font-weight: 500;
 }
 
 .nav-links li.active a {
-    background-color: #0284c7;
-    color: #fff;
+    background-color: var(--accent-brown);
+    color: var(--white);
 }
 
 .nav-links a:hover {
-    background-color: #e0f2fe;
-    color: #0284c7;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--white);
 }
 
 .nav-links i {
     width: 15px;
     height: 18px;
+    opacity: 0.8;
 }
 
 /* Admin profile at bottom */
@@ -165,15 +197,15 @@ body {
 }
 
 .profile-icon {
-    background: #0284c7;
-    color: #fff;
-    border-radius: 50%;
+    background: var(--accent-brown);
+    color: var(--white);
     width: 42px;
     height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    font-family: 'Playfair Display', serif;
 }
 
 .profile-info .name {
@@ -193,7 +225,8 @@ body {
 .main-content {
     margin-left: 250px;
     flex-grow: 1;
-    padding: 70px 32px 32px; /* add top padding so content isn’t hidden behind topbar */
+    padding: 70px 32px 32px;
+    /* add top padding so content isn’t hidden behind topbar */
     background: #f8fafc;
 }
 
@@ -208,7 +241,8 @@ body {
     border-bottom: 1px solid #e2e8f0;
     position: fixed;
     top: 0;
-    left: 250px; /* align with sidebar edge */
+    left: 250px;
+    /* align with sidebar edge */
     right: 0;
     z-index: 1000;
 }
@@ -286,6 +320,7 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease;
 }
+
 .card:hover {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
@@ -309,12 +344,15 @@ body {
 .card-icon.blue {
     background: #3b82f6;
 }
+
 .card-icon.green {
     background: #22c55e;
 }
+
 .card-icon.purple {
     background: #6366f1;
 }
+
 .card-icon.pink {
     background: #ec4899;
 }
@@ -361,16 +399,16 @@ body {
 }
 
 .add-btn {
-    background: #0284c7;
-    color: #fff;
+    background: var(--accent-brown);
+    color: var(--white);
     border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
+    padding: 12px 22px;
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .add-btn i {
@@ -605,11 +643,11 @@ body {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: #0284c7;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(20px);
 }
 
@@ -635,23 +673,28 @@ input:checked + .slider:before {
         width: 200px;
     }
 }
+
 /* Align sidebar divider perfectly with topbar line */
 .sidebar::before {
     content: "";
     position: fixed;
-    top: 69.5px; /* was 70px — moved up 1px for perfect alignment */
+    top: 69.5px;
+    /* was 70px — moved up 1px for perfect alignment */
     left: 0;
-    width: 250px; /* match sidebar width */
+    width: 250px;
+    /* match sidebar width */
     height: 1px;
     background-color: #f1f5f9;
     z-index: 1001;
 }
+
 /* ===============================
    ADD PHARMACIST PAGE STYLES
 ================================== */
 
 .settings-card.wide {
-    max-width: 2000px;   /* wider form, similar to your settings page */
+    max-width: 2000px;
+    /* wider form, similar to your settings page */
     background: #fff;
     border-radius: 12px;
     padding: 40px 48px;
@@ -710,6 +753,7 @@ input:checked + .slider:before {
 .save-btn:hover {
     background: #0369a1;
 }
+
 /* ==================================
    ADD PHARMACIST FORM HEADER STYLE
 ==================================== */
@@ -807,6 +851,7 @@ input:checked + .slider:before {
 .action-menu li:hover {
     background: #f1f5f9;
 }
+
 /* Clean dropdown with Edit + Delete only */
 /* Dropdown for action buttons */
 .action-menu {
@@ -844,7 +889,8 @@ input:checked + .slider:before {
 
 /* ✏ Edit item */
 .action-menu li.edit {
-    color: #1e293b; /* dark gray-blue */
+    color: #1e293b;
+    /* dark gray-blue */
     font-weight: 500;
 }
 
@@ -854,7 +900,8 @@ input:checked + .slider:before {
 
 /* 🗑 Delete item */
 .action-menu li.delete {
-    color: #dc2626; /* red */
+    color: #dc2626;
+    /* red */
     font-weight: 500;
 }
 
@@ -899,6 +946,7 @@ input:checked + .slider:before {
     width: 5px;
     height: 5px;
 }
+
 /* ===============================
    RECENT ACTIVITY SECTION
 ================================== */
@@ -983,12 +1031,15 @@ input:checked + .slider:before {
 .activity-badge.green {
     background: #dcfce7;
 }
+
 .activity-badge.blue {
     background: #e0f2fe;
 }
+
 .activity-badge.red {
     background: #fee2e2;
 }
+
 .activity-badge.purple {
     background: #f3e8ff;
 }
@@ -1008,6 +1059,7 @@ input:checked + .slider:before {
     font-size: 14px;
     color: #64748b;
 }
+
 /* ===============================
    SYSTEM HEALTH SECTION
 ================================== */
@@ -1015,12 +1067,15 @@ input:checked + .slider:before {
 .system-health {
     margin-top: 40px;
 }
+
 .metric-value.red {
-    color: #dc2626; /* Tailwind red-600 */
+    color: #dc2626;
+    /* Tailwind red-600 */
 }
 
 .progress-fill.red {
-    background-color: #ef4444; /* Tailwind red-500 */
+    background-color: #ef4444;
+    /* Tailwind red-500 */
 }
 
 
@@ -1106,7 +1161,8 @@ input:checked + .slider:before {
 .progress-fill.light-green {
     background-color: #86efac;
 }
-.action-btn{
+
+.action-btn {
     background: none;
     border: none;
     outline: none;
@@ -1121,7 +1177,8 @@ input:checked + .slider:before {
 }
 
 .action-btn:hover {
-    background-color: #f1f5f9; /* optional soft hover */
+    background-color: #f1f5f9;
+    /* optional soft hover */
 }
 
 .action-btn i {
@@ -1129,11 +1186,13 @@ input:checked + .slider:before {
     width: 18px;
     height: 18px;
 }
+
 /* ===============================
    ADD PHARMACIST BUTTON HOVER EFFECT (ADMIN PHARMACIST PAGE)
 ================================== */
 .add-btn {
-    background: #0284c7; /* base blue */
+    background: #0284c7;
+    /* base blue */
     color: #fff;
     border: none;
     padding: 10px 18px;
@@ -1152,7 +1211,10 @@ input:checked + .slider:before {
 }
 
 .add-btn:hover {
-    background-color: #0369a1; /* darker Medora blue on hover */
-    transform: translateY(-2px); /* slight lift for depth */
-    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25); /* soft glowing blue shadow */
+    background-color: #0369a1;
+    /* darker Medora blue on hover */
+    transform: translateY(-2px);
+    /* slight lift for depth */
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+    /* soft glowing blue shadow */
 }

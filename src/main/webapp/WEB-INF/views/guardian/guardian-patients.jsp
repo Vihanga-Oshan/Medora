@@ -128,6 +128,7 @@
     <p>&copy; 2025 Medora. All rights reserved.</p>
 </footer>
 
+<jsp:include page="/WEB-INF/views/components/footer.jsp" />
 
 </body>
 </html>

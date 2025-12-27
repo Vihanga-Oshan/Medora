@@ -1,5 +1,7 @@
 package com.example.base.auth;
 
+import com.example.base.config.RouteConfig;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.IOException;
@@ -29,19 +31,25 @@ public class JwtAuthFilter implements Filter {
 
         LOGGER.info("JwtAuthFilter checking path: " + path);
 
-        // 1️⃣ Allow public endpoints (no authentication)
-        if (isPublicPath(path)) {
+        // 1️⃣ Skip static resources
+        if (RouteConfig.isStaticResource(path)) {
             chain.doFilter(req, resp);
             return;
         }
 
-        // 2️⃣ Determine which JWT cookie to check based on route prefix
+        // 2️⃣ Allow public endpoints (no authentication)
+        if (RouteConfig.isPublicRoute(path)) {
+            chain.doFilter(req, resp);
+            return;
+        }
+
+        // 3️⃣ Determine which JWT cookie to check based on route prefix
         String cookieName = getRoleCookieName(path);
 
         // ✅ Special handling for shared resource routes (like /prescriptionFile)
         if (cookieName == null && path.startsWith("/prescriptionFile")) {
             // Try all known JWT cookies — whichever exists first will be used
-            for (String candidate : new String[]{"JWT_PATIENT", "JWT_PHARMACIST", "JWT_ADMIN"}) {
+            for (String candidate : new String[] { "JWT_PATIENT", "JWT_PHARMACIST", "JWT_ADMIN" }) {
                 String candidateToken = getCookieValue(req, candidate);
                 if (candidateToken != null && !candidateToken.isEmpty()) {
                     cookieName = candidate;
@@ -61,7 +69,7 @@ public class JwtAuthFilter implements Filter {
             return;
         }
 
-        // 3️⃣ Validate and decode JWT
+        // 4️⃣ Validate and decode JWT
         Map<String, String> claims = JwtUtil.validateToken(secret, token);
         if (claims == null || JwtUtil.isExpired(claims)) {
             LOGGER.warning("JWT expired or invalid for cookie " + cookieName);
@@ -70,16 +78,18 @@ public class JwtAuthFilter implements Filter {
             return;
         }
 
-        // 4️⃣ Role validation: ensure the role matches the route prefix
+        // 5️⃣ Role validation: ensure the role matches the route prefix
         String role = claims.get("role");
-        if (!isAuthorizedPath(role, path) && !path.startsWith("/prescriptionFile")) {
-            // skip path restriction for prescription files
+        String requiredRole = RouteConfig.getRequiredRole(path);
+
+        // Skip role check for shared resources like prescriptionFile
+        if (requiredRole != null && !requiredRole.equals(role) && !path.startsWith("/prescriptionFile")) {
             LOGGER.warning("Unauthorized access attempt by role=" + role + " for path=" + path);
             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        // 5️⃣ Attach claims for downstream servlets
+        // 6️⃣ Attach claims for downstream servlets
         req.setAttribute("jwtClaims", claims);
         req.setAttribute("jwtRole", role);
         req.setAttribute("jwtSub", claims.get("sub"));
@@ -88,17 +98,22 @@ public class JwtAuthFilter implements Filter {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 
     // --------------------------------------------------------------------
     // 🔧 Helper Methods
     // --------------------------------------------------------------------
 
     private String getRoleCookieName(String path) {
-        if (path.startsWith("/admin")) return "JWT_ADMIN";
-        if (path.startsWith("/pharmacist")) return "JWT_PHARMACIST";
-        if (path.startsWith("/patient")) return "JWT_PATIENT";
-        if (path.startsWith("/guardian")) return "JWT_GUARDIAN";
+        if (path.startsWith("/admin"))
+            return "JWT_ADMIN";
+        if (path.startsWith("/pharmacist"))
+            return "JWT_PHARMACIST";
+        if (path.startsWith("/patient"))
+            return "JWT_PATIENT";
+        if (path.startsWith("/guardian"))
+            return "JWT_GUARDIAN";
         return null;
     }
 
@@ -106,7 +121,8 @@ public class JwtAuthFilter implements Filter {
         Cookie[] cookies = req.getCookies();
         if (cookies != null) {
             for (Cookie c : cookies) {
-                if (name.equals(c.getName())) return c.getValue();
+                if (name.equals(c.getName()))
+                    return c.getValue();
             }
         }
         return null;
@@ -120,34 +136,6 @@ public class JwtAuthFilter implements Filter {
         resp.addCookie(cookie);
     }
 
-    private boolean isPublicPath(String path) {
-        return path.equals("/") ||
-                path.equals("/index") ||
-                path.equals("/home") ||
-                path.startsWith("/assets/") ||
-                path.startsWith("/css/") ||
-                path.startsWith("/js/") ||
-                path.startsWith("/images/") ||
-                // Public auth routes
-                path.equals("/login") || path.equals("/register") ||
-                path.equals("/patient/login") || path.equals("/patient/register") ||
-                path.equals("/pharmacist/login") || path.equals("/pharmacist/register") ||
-                path.equals("/admin/login") || path.equals("/admin/register") ||
-                path.equals("/guardian/login") || path.equals("/guardian/register") ||
-                path.equals("/logout");
-    }
-
-    private boolean isAuthorizedPath(String role, String path) {
-        if (role == null) return false;
-        switch (role) {
-            case "admin": return path.startsWith("/admin");
-            case "pharmacist": return path.startsWith("/pharmacist");
-            case "patient": return path.startsWith("/patient");
-            case "guardian": return path.startsWith("/guardian");
-            default: return false;
-        }
-    }
-
     private void redirectOrReject(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getRequestURI().substring(req.getContextPath().length());
         boolean isApi = path.startsWith("/api/");
@@ -155,12 +143,9 @@ public class JwtAuthFilter implements Filter {
         if (isApi) {
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         } else {
-            String redirect = req.getContextPath() +
-                    (path.startsWith("/admin") ? "/admin/login"
-                            : path.startsWith("/pharmacist") ? "/pharmacist/login"
-                            : path.startsWith("/guardian") ? "/guardian/login"
-                            : "/login");
+            String redirect = req.getContextPath() + RouteConfig.getLoginRedirect(path);
             resp.sendRedirect(redirect);
         }
     }
+
 }

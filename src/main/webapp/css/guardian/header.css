@@ -1,77 +1,83 @@
+/* ==============================
+   Guardian Header Styles
+   Klaas-style with Medora Blue
+   ============================== */
+
 .header {
-    background-color: var(--white);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 12px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+  background: #007dca;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .logo img {
+  height: 32px;
+}
+
+.header .logo span {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.header nav {
+  display: flex;
+  gap: 25px;
+}
+
+.header nav a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.header nav a:hover,
+.header nav a.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.header .user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.header .logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.header .logout-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 1rem;
   }
-  
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: bold;
-    font-size: 1.2rem;
-  }
-  
-  .logo-icon {
-    background-color: var(--primary-blue);
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
+
+  .header nav {
+    flex-wrap: wrap;
     justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
   }
-  
-  .nav-links {
-    display: flex;
-    gap: 20px;
-    list-style: none;
-  }
-  
-  .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: background 0.2s ease;
-    text-decoration: none;
-    color: var(--dark-text);
-  }
-  
-  .nav-link:hover,
-  .nav-link.active {
-    background-color: var(--primary-blue);
-    color: var(--white);
-  }
-  
-  .logout-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
-    color: var(--dark-text);
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .logout-btn:hover {
-    color: var(--primary-blue);
-  }
+}

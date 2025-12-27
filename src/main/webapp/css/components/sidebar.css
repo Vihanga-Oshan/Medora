@@ -38,6 +38,10 @@
     background-color: #12335e;
 }
 
+.sidebar .nav a.active {
+    background-color: #007dca;
+}
+
 .sidebar .logo {
     font-size: 18px;
     font-weight: bold;

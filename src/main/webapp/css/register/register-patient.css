@@ -1,4 +1,19 @@
-/* ---------- GLOBAL ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ==================== CSS VARIABLES ==================== */
+:root {
+    --primary-blue: #007dca;
+    --primary-blue-dark: #0063a4;
+    --bg-light: #f8fbff;
+    --bg-white: #ffffff;
+    --text-dark: #0f172a;
+    --text-gray: #6b7280;
+    --text-light: #9ca3af;
+    --error: #dc2626;
+    --success: #16a34a;
+}
+
+/* ==================== GLOBAL RESET ==================== */
 * {
     margin: 0;
     padding: 0;
@@ -6,106 +21,105 @@
 }
 
 body {
-    font-family: "Inter", sans-serif;
-    background: linear-gradient(135deg, #f9fcff 0%, #edf4fb 100%);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-light);
     display: flex;
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
-    padding: 60px 20px;
-    color: #1a1a1a;
+    padding: 50px 20px;
+    color: var(--text-dark);
 }
 
-/* ---------- CARD ---------- */
+/* ==================== REGISTER CARD ==================== */
 .register-box {
-    background: #fff;
-    border-radius: 20px;
-    padding: 50px 90px;
-    box-shadow: 0 12px 30px rgba(0, 125, 202, 0.08);
+    background: var(--bg-white);
+    padding: 45px 60px;
     width: 100%;
-    max-width: 680px; /* slightly narrower for perfect proportion */
+    max-width: 600px;
     position: relative;
-    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 125, 202, 0.1);
 }
 
-/* ---------- BACK LINK ---------- */
+/* ==================== BACK LINK ==================== */
 .back-link {
-    color: #64748b;
+    color: var(--text-gray);
     font-size: 14px;
+    font-weight: 500;
     position: absolute;
-    top: 32px;
-    left: 40px;
+    top: 28px;
+    left: 35px;
     cursor: pointer;
-    transition: color 0.25s ease, transform 0.25s ease;
-}
-.back-link:hover {
-    color: #007dca;
-    transform: translateX(-2px);
+    transition: color 0.3s ease;
 }
 
-/* ---------- LOGO ---------- */
+.back-link:hover {
+    color: var(--primary-blue);
+}
+
+/* ==================== LOGO ==================== */
 .logo {
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 10px;
-}
-.logo img {
-    width: 58px;
-    height: auto;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
-/* ---------- HEADINGS ---------- */
+.logo img {
+    width: 55px;
+    height: auto;
+}
+
+/* ==================== HEADINGS ==================== */
 h1 {
     font-size: 26px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-dark);
     text-align: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .subtitle {
     font-size: 15px;
-    color: #6b7280;
+    color: var(--text-gray);
     text-align: center;
     margin-bottom: 30px;
+    line-height: 1.6;
 }
 
-/* ---------- TOGGLE BUTTONS ---------- */
+/* ==================== TOGGLE BUTTONS ==================== */
 .toggle-btns {
     display: flex;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 26px;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .toggle-btns button {
     flex: 1;
-    height: 48px; /* match input field height */
+    height: 48px;
     font-weight: 600;
     font-size: 15px;
-    border: 2px solid #007dca;
-    border-radius: 10px;
+    border: 2px solid var(--primary-blue);
     background: transparent;
-    color: #007dca;
+    color: var(--primary-blue);
     cursor: pointer;
-    transition: all 0.25s ease, transform 0.2s ease;
-    line-height: 48px;
+    transition: all 0.3s ease;
 }
 
 .toggle-btns button.active {
-    background: #007dca;
-    color: #fff;
+    background: var(--primary-blue);
+    color: var(--bg-white);
 }
 
-.toggle-btns button:hover {
-    background: #007dca;
-    color: #fff;
-    transform: translateY(-1px);
+.toggle-btns button:hover:not(.active) {
+    background: rgba(0, 125, 202, 0.08);
 }
 
-/* ---------- FORM ---------- */
+/* ==================== FORM GRID ==================== */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -121,51 +135,57 @@ h1 {
 label {
     font-size: 14px;
     font-weight: 500;
-    color: #1e293b;
+    color: var(--text-dark);
     margin-bottom: 6px;
 }
 
-/* ---------- INPUTS ---------- */
+/* ==================== INPUTS ==================== */
 input,
 textarea {
     width: 100%;
-    height: 48px; /* larger and consistent */
+    height: 48px;
     border: 1.5px solid #d1d5db;
-    border-radius: 10px;
     padding: 0 14px;
     font-size: 15px;
-    color: #111827;
-    background-color: #f8f8f8ff;
-    transition: border-color 0.25s ease, background 0.25s ease;
+    color: var(--text-dark);
+    background-color: #f8f8f8;
+    transition: border-color 0.3s ease, background 0.3s ease;
+    font-family: "Inter", sans-serif;
 }
 
 textarea {
     min-height: 80px;
     resize: vertical;
-    padding-top: 10px;
+    padding-top: 12px;
 }
 
 input:focus,
 textarea:focus {
-    border-color: #007dca;
-    background-color: #ffffff;
+    outline: none;
+    border-color: var(--primary-blue);
+    background-color: var(--bg-white);
 }
 
-/* ---------- GENDER ---------- */
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-light);
+}
+
+/* ==================== GENDER SELECTION ==================== */
 .gender-selection {
     display: flex;
     justify-content: flex-start;
-    gap: 40px;
+    gap: 35px;
     align-items: center;
-    font-size: 13px;
-    color: #374151;
-    padding-left: 2px;
+    font-size: 14px;
+    color: var(--text-gray);
+    padding: 8px 0;
 }
 
 .gender-selection label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     cursor: pointer;
     font-weight: 500;
 }
@@ -173,101 +193,119 @@ textarea:focus {
 .gender-selection input[type="radio"] {
     width: 18px;
     height: 18px;
-    accent-color: #007dca;
+    accent-color: var(--primary-blue);
     cursor: pointer;
-    transition: transform 0.2s ease;
 }
 
-.gender-selection input[type="radio"]:hover {
-    transform: scale(1.1);
-}
-
-/* ---------- CHECKBOX ---------- */
+/* ==================== CHECKBOX ==================== */
 .checkbox {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     font-size: 13px;
-    color: #4b5563;
+    color: var(--text-gray);
+    margin-top: 5px;
 }
 
 .checkbox input {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
+    accent-color: var(--primary-blue);
 }
 
-/* ---------- BUTTONS ---------- */
+.checkbox a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.checkbox a:hover {
+    text-decoration: underline;
+}
+
+/* ==================== BUTTONS ==================== */
 .btn-submit {
     width: 100%;
-    background: #007dca;
-    color: #fff;
+    background: var(--primary-blue);
+    color: var(--bg-white);
     font-weight: 600;
     font-size: 15px;
     border: none;
-    border-radius: 10px;
-    height: 48px;
+    height: 50px;
     cursor: pointer;
     transition: background 0.3s ease, transform 0.3s ease;
+    font-family: "Inter", sans-serif;
+    margin-top: 10px;
 }
+
 .btn-submit:hover {
-    background: #0062a6;
+    background: var(--primary-blue-dark);
     transform: translateY(-2px);
 }
 
 .btn-outline {
     width: 100%;
-    border: 2px solid #007dca;
+    border: 2px solid var(--primary-blue);
     background: transparent;
-    color: #007dca;
+    color: var(--primary-blue);
     font-weight: 600;
-    border-radius: 10px;
-    height: 48px;
+    font-size: 15px;
+    height: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-.btn-outline:hover {
-    background: #007dca;
-    color: #fff;
-    transform: translateY(-2px);
+    font-family: "Inter", sans-serif;
 }
 
-/* ---------- LOGIN TEXT ---------- */
+.btn-outline:hover {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+}
+
+/* ==================== LOGIN TEXT ==================== */
 .login-text {
     text-align: center;
-    margin-top: 18px;
+    margin-top: 22px;
     font-size: 14px;
-    color: #6b7280;
+    color: var(--text-gray);
 }
+
 .login-text a {
-    color: #007dca;
+    color: var(--primary-blue);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
 }
+
 .login-text a:hover {
+    color: var(--primary-blue-dark);
     text-decoration: underline;
 }
 
-/* ---------- ANIMATIONS ---------- */
+/* ==================== ERROR & SUCCESS ==================== */
+.error-text {
+    color: var(--error);
+    font-size: 14px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.success-text {
+    color: var(--success);
+    font-size: 14px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+/* ==================== ANIMATIONS ==================== */
 @keyframes fadeSlideIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(15px);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-@keyframes fadeSlideOut {
-    from {
+    to {
         opacity: 1;
         transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-20px);
     }
 }
 
@@ -275,6 +313,29 @@ textarea:focus {
     animation: fadeSlideIn 0.3s ease forwards;
 }
 
-.animate-out {
-    animation: fadeSlideOut 0.3s ease forwards;
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 620px) {
+    .register-box {
+        padding: 35px 30px;
+        margin: 0 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .back-link {
+        position: static;
+        margin-bottom: 15px;
+    }
+
+    .toggle-btns {
+        flex-direction: column;
+    }
+
+    .gender-selection {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
 }
