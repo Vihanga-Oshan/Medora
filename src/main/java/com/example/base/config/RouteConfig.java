@@ -86,6 +86,12 @@ public class RouteConfig {
         if (path == null)
             return false;
 
+        // ✅ NEVER treat prescription files as generic static resources
+        // They require JWT authentication check
+        if (path.startsWith("/prescriptionFile/")) {
+            return false;
+        }
+
         for (String prefix : STATIC_PREFIXES) {
             if (path.startsWith(prefix)) {
                 return true;

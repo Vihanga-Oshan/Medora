@@ -35,39 +35,35 @@ public class PrescriptionFileServlet extends HttpServlet {
         }
 
         // ✅ Fetch prescription record from DB
-        Prescription pres;
+        Prescription pres = null;
         try (Connection conn = dbconnection.getConnection()) {
             PrescriptionDAO dao = new PrescriptionDAO(conn);
+            // We search by path but with robustness against quotes
             pres = dao.getPrescriptionByFilePath(requested);
+
+            if (pres == null) {
+                // If not found by exact path, try to see if it exists as a "clean" path
+                LOGGER.fine("Exact path match failed for " + requested + ", trying robust search...");
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "DB lookup failed for prescription file: " + requested, e);
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-
-        if (pres == null) {
-            LOGGER.fine("No prescription DB entry for requested file: " + requested);
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
         }
 
         // ✅ JWT-based authorization
         String role = (String) req.getAttribute("jwtRole");
         String subject = (String) req.getAttribute("jwtSub"); // patient NIC or pharmacist/admin ID
 
+        LOGGER.info("Auth attempt for file: " + requested + " Role: " + role + " Sub: " + subject);
+
         boolean authorized = false;
         if (role != null) {
-            switch (role) {
-                case "pharmacist":
-                case "admin":
-                    authorized = true; // Pharmacists and admins can view all prescriptions
-                    break;
-                case "patient":
-                    // Allow patient to access only their own files
-                    if (subject != null && subject.equals(pres.getPatientNic())) {
-                        authorized = true;
-                    }
-                    break;
+            if ("pharmacist".equals(role) || "admin".equals(role)) {
+                authorized = true; // Pharmacists and admins can view all prescriptions
+            } else if ("patient".equals(role) && pres != null) {
+                // Patients can only see their own
+                if (subject != null && subject.equals(pres.getPatientNic())) {
+                    authorized = true;
+                }
             }
         }
 
@@ -80,14 +76,27 @@ public class PrescriptionFileServlet extends HttpServlet {
         // ✅ Resolve file location
         File file = resolveFile(req, requested);
         if (file == null || !file.exists() || !file.isFile()) {
-            LOGGER.warning("Requested file not found on disk: " + requested);
+            LOGGER.warning("Requested file not found on disk: " + requested + " Resolved path: "
+                    + (file != null ? file.getAbsolutePath() : "null"));
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
         // ✅ Detect MIME type
         String mime = req.getServletContext().getMimeType(file.getName());
-        if (mime == null) mime = "application/octet-stream";
+        if (mime == null) {
+            String ext = requested.substring(requested.lastIndexOf('.') + 1).toLowerCase();
+            if (ext.equals("png"))
+                mime = "image/png";
+            else if (ext.equals("jpg") || ext.equals("jpeg"))
+                mime = "image/jpeg";
+            else if (ext.equals("pdf"))
+                mime = "application/pdf";
+            else
+                mime = "application/octet-stream";
+        }
+
+        LOGGER.info("Streaming file: " + file.getAbsolutePath() + " MIME: " + mime);
 
         resp.setContentType(mime);
         resp.setContentLengthLong(file.length());
@@ -100,12 +109,12 @@ public class PrescriptionFileServlet extends HttpServlet {
         // ✅ Inline for image/pdf, otherwise download
         boolean inline = mime.startsWith("image/") || "application/pdf".equals(mime);
         resp.setHeader("Content-Disposition",
-                inline ? "inline; filename=\"" + file.getName() + "\"" :
-                        "attachment; filename=\"" + file.getName() + "\"");
+                inline ? "inline; filename=\"" + file.getName() + "\""
+                        : "attachment; filename=\"" + file.getName() + "\"");
 
         // ✅ Stream file
         try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-             BufferedOutputStream out = new BufferedOutputStream(resp.getOutputStream())) {
+                BufferedOutputStream out = new BufferedOutputStream(resp.getOutputStream())) {
 
             byte[] buffer = new byte[8192];
             int len;

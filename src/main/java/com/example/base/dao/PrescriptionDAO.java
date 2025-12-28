@@ -117,8 +117,6 @@ public class PrescriptionDAO {
         }
     }
 
-
-
     public void updateStatus(int prescriptionId, String status) {
         String sql = "UPDATE prescriptions SET status = ? WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -129,8 +127,8 @@ public class PrescriptionDAO {
             e.printStackTrace(); // Log error for debugging
         }
 
-
     }
+
     public Prescription getPrescriptionById(int id) throws SQLException {
         String sql = "SELECT * FROM prescriptions WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -142,7 +140,7 @@ public class PrescriptionDAO {
                     p.setPatientNic(rs.getString("patient_nic"));
                     p.setFilePath(rs.getString("file_path"));
                     p.setFileName(rs.getString("file_name"));
-                    p.setUploadDate(rs.getTimestamp("upload_date").toLocalDateTime());  // or the correct column name
+                    p.setUploadDate(rs.getTimestamp("upload_date").toLocalDateTime()); // or the correct column name
                     // set other fields as needed
                     return p;
                 }
@@ -153,9 +151,11 @@ public class PrescriptionDAO {
 
     // ✅ Get a prescription by stored file path (used for authorization checks)
     public Prescription getPrescriptionByFilePath(String filePath) throws SQLException {
-        String sql = "SELECT * FROM prescriptions WHERE file_path = ?";
+        // Robust lookup: handles data that might have been stored with surrounding
+        // quotes
+        String sql = "SELECT * FROM prescriptions WHERE REPLACE(file_path, '\"', '') = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, filePath);
+            stmt.setString(1, filePath.replace("\"", ""));
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Prescription p = new Prescription();
@@ -174,7 +174,7 @@ public class PrescriptionDAO {
 
     public List<Prescription> getPrescriptionsByStatus(String status) throws SQLException {
         List<Prescription> prescriptions = new ArrayList<>();
-        String sql = "SELECT * FROM prescriptions WHERE status = ?";
+        String sql = "SELECT * FROM prescriptions WHERE LOWER(status) = LOWER(?) ORDER BY upload_date DESC";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
@@ -202,6 +202,7 @@ public class PrescriptionDAO {
             stmt.executeUpdate();
         }
     }
+
     public Prescription getLatestPrescriptionByPatientNic(String nic) throws SQLException {
         String sql = "SELECT * FROM prescriptions WHERE patient_nic = ? ORDER BY upload_date DESC LIMIT 1";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -220,9 +221,5 @@ public class PrescriptionDAO {
         }
         return null;
     }
-
-
-
-
 
 }

@@ -1,104 +1,220 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Medora - Prescription Review</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/style.css">
-</head>
-<body>
-<div class="container">
+  <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+      <!DOCTYPE html>
+      <html lang="en">
 
-  <!-- Include Sidebar Component -->
-  <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Medora - Prescription Review</title>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/dashboard-style.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/prescription-review.css">
+        <style>
+          /* Specificity override for the main layout container */
+          body div.container {
+            display: flex !important;
+            width: 100% !important;
+            max-width: none !important;
+            height: 100vh !important;
+            margin: 0 !important;
+          }
+        </style>
+      </head>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Header -->
-    <header class="header">
-      <div class="user-info">
-        <img src="${pageContext.request.contextPath}/assets/register-patient1.png" alt="User Avatar" class="avatar">
-        <span class="user-role">Super Pharmacist</span>
-      </div>
-      <div class="greeting">
-        <span class="greeting-icon">☀️</span>
-        <div>
-          <span class="greeting-text">Good Morning</span>
-          <span class="date-time">14 January 2022 • 22:45:04</span>
+      <body>
+        <div class="container">
+
+          <!-- Include Sidebar Component -->
+          <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
+
+            <!-- Main Content -->
+            <main class="main-content">
+              <!-- Header -->
+              <header class="header">
+                <div class="user-info">
+                  <img src="${pageContext.request.contextPath}/assets/register-patient1.png" alt="User Avatar"
+                    class="avatar">
+                  <span class="user-role">Super Pharmacist</span>
+                </div>
+                <div class="greeting">
+                  <span class="greeting-icon">☀️</span>
+                  <div>
+                    <span class="greeting-text">Good Morning</span>
+                    <span class="date-time">14 January 2022 • 22:45:04</span>
+                  </div>
+                </div>
+              </header>
+
+              <div class="review-page-body">
+                <!-- Page Title -->
+                <h2 class="page-title">Prescription Review</h2>
+
+                <!-- Content Area -->
+                <div class="content-wrapper">
+                  <div class="prescription-image-container">
+                    <div class="image-header">
+                      <span>Prescription Document</span>
+                    </div>
+                    <div class="image-box" id="imageContainer">
+                      <c:choose>
+                        <c:when test="${not empty prescription and fn:endsWith(prescription.fileName, '.pdf')}">
+                          <div class="pdf-placeholder">
+                            <span class="pdf-icon">📄</span>
+                            <p>PDF Document</p>
+                            <a href="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}"
+                              target="_blank" class="btn secondary">Open PDF</a>
+                          </div>
+                        </c:when>
+                        <c:when test="${not empty prescription}">
+                          <c:set var="cleanPath" value="${fn:replace(prescription.filePath, '\"', '')}" />
+                          <img src="${pageContext.request.contextPath}/prescriptionFile/${cleanPath}"
+                               alt="Prescription" id="zoomable-image">
+                          <div class="zoom-controls">
+                            <div class="zoom-info" id="zoomPercent">100%</div>
+                            <button type="button" class="zoom-btn" onclick="adjustZoom(-0.2)" title="Zoom Out">−</button>
+                            <button type="button" class="zoom-btn" onclick="adjustZoom(0.2)" title="Zoom In">+</button>
+                            <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset">↺</button>
+                          </div>
+                        </c:when>
+                        <c:otherwise>
+                          <p class="error-msg">No prescription document available.</p>
+                        </c:otherwise>
+                      </c:choose>
+                    </div>
+
+                    <script>
+                      (function () {
+                        var ks = 1;
+                        var kx = 0;
+                        var ky = 0;
+                        var sx = 0;
+                        var sy = 0;
+                        var drag = false;
+
+                        // Dynamically build IDs to avoid tool mangling strings
+                        var id1 = "zoomable" + "-" + "image";
+                        var id2 = "image" + "Container";
+                        var id3 = "zoom" + "Percent";
+
+                        var target = document.getElementById(id1);
+                        var box = document.getElementById(id2);
+                        var lbl = document.getElementById(id3);
+
+                        function redraw() {
+                          if (target) {
+                            target.style.transform = "translate(" + kx + "px," + ky + "px) scale(" + ks + ")";
+                            if (lbl) lbl.innerText = Math.round(ks * 100) + "%";
+                          }
+                        }
+
+                        window.adjustZoom = function (val) {
+                          var n = ks + val;
+                          if (n >= 0.5 && n <= 5) {
+                            ks = n;
+                            redraw();
+                          }
+                        };
+
+                        window.resetZoom = function () {
+                          ks = 1; kx = 0; ky = 0;
+                          redraw();
+                        };
+
+                        if (box && target) {
+                          box.addEventListener("mousedown", function (e) {
+                            if (ks > 1) {
+                              drag = true;
+                              sx = e.clientX - kx;
+                              sy = e.clientY - ky;
+                              target.classList.add("dragging");
+                              e.preventDefault();
+                            }
+                          });
+
+                          window.addEventListener("mousemove", function (e) {
+                            if (drag) {
+                              kx = e.clientX - sx;
+                              ky = e.clientY - sy;
+                              redraw();
+                            }
+                          });
+
+                          window.addEventListener("mouseup", function () {
+                            drag = false;
+                            if (target) target.classList.remove("dragging");
+                          });
+
+                          box.addEventListener("wheel", function (e) {
+                            e.preventDefault();
+                            var d = e.deltaY > 0 ? -0.1 : 0.1;
+                            window.adjustZoom(d);
+                          }, { passive: false });
+                        }
+                      })();
+                    </script>
+                    </div>
+
+                    <div class="patient-details-card">
+                      <div class="details-header">
+                        <h3>Patient Details</h3>
+                      </div>
+                      <div class="details-body">
+                        <div class="detail-row">
+                          <span class="label">Full Name</span>
+                          <span class="value">${patient.name}</span>
+                        </div>
+                        <div class="detail-row">
+                          <span class="label">NIC</span>
+                          <span class="value">${patient.nic}</span>
+                        </div>
+                        <div class="detail-row">
+                          <span class="label">Emergency Contact</span>
+                          <span class="value">${empty patient.emergencyContact ? ' Not provided' :
+                            patient.emergencyContact}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Email</span>
+                      <span class="value">${empty patient.email ? 'Not provided' : patient.email}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Allergies</span>
+                      <span class="value highlight-danger">${empty patient.allergies ? 'None' :
+                        patient.allergies}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="label">Chronic Conditions</span>
+                      <span class="value">${empty patient.chronicIssues ? 'None' : patient.chronicIssues}</span>
+                    </div>
+
+                    <c:if test="${not empty patient.guardianNic}">
+                      <div class="detail-row">
+                        <span class="label">Guardian NIC</span>
+                        <span class="value">${patient.guardianNic}</span>
+                      </div>
+                    </c:if>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="review-actions">
+                    <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post"
+                      class="action-form">
+                      <input type="hidden" name="prescriptionId" value="${prescription.id}">
+                      <input type="hidden" name="action" value="REJECTED">
+                      <button type="submit" class="btn-reject">Reject Prescription</button>
+                    </form>
+                    <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post"
+                      class="action-form">
+                      <input type="hidden" name="prescriptionId" value="${prescription.id}">
+                      <input type="hidden" name="action" value="APPROVED">
+                      <button type="submit" class="btn-approve">Approve Prescription</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
         </div>
-      </div>
-    </header>
-
-    <!-- Page Title -->
-    <h2 class="page-title">Prescription Review</h2>
-
-
-    <!-- Content Area -->
-    <div class="content-wrapper">
-      <div class="prescription-image">
-        <div class="image-placeholder">
-          <c:choose>
-            <c:when test="${fn:endsWith(prescription.fileName, '.pdf')}">
-              <svg width="100%" height="100%" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <rect x="10" y="10" width="180" height="180" rx="20" fill="#e6eef7" stroke="#000" stroke-width="2"/>
-                <circle cx="60" cy="60" r="15" fill="none" stroke="#000" stroke-width="2"/>
-                <line x1="30" y1="170" x2="170" y2="90" stroke="#000" stroke-width="2"/>
-              </svg>
-            </c:when>
-            <c:otherwise>
-              <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}" class="preview-image"
-              alt="Prescription"
-                   style="width: 100%; height: 100%; object-fit: contain; display: block;">
-            </c:otherwise>
-          </c:choose>
+        </main>
         </div>
-      </div>
+      </body>
 
-      <div class="patient-details">
-        <h3>Patient Details</h3>
-        <div class="details-box">
-          <p><strong>Full Name:</strong> ${patient.name}</p>
-          <p><strong>DOB:</strong> <!-- You don't store DOB, so use NIC or skip -->
-            <c:choose>
-              <c:when test="${not empty patient.nic}">
-                NIC: ${patient.nic}
-              </c:when>
-              <c:otherwise>
-                Not provided
-              </c:otherwise>
-            </c:choose>
-          </p>
-          <p><strong>Emergency Contact:</strong> ${empty patient.emergencyContact ? 'Not provided' : patient.emergencyContact}</p>
-          <p><strong>Email:</strong> ${empty patient.email ? 'Not provided' : patient.email}</p>
-          <p><strong>Allergies:</strong> ${empty patient.allergies ? 'None' : patient.allergies}</p>
-          <p><strong>Chronic Conditions:</strong> ${empty patient.chronicIssues ? 'None' : patient.chronicIssues}</p>
-
-          <!-- Guardian info (optional) -->
-          <c:if test="${not empty patient.guardianNic}">
-            <p><strong>Guardian NIC:</strong> ${patient.guardianNic}</p>
-          </c:if>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons" style="margin-top: 20px; text-align: center;">
-          <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post" style="display: inline;">
-            <input type="hidden" name="prescriptionId" value="${prescription.id}">
-            <input type="hidden" name="action" value="REJECTED">
-            <button type="submit" class="btn btn-reject">Reject</button>
-          </form>
-          <form action="${pageContext.request.contextPath}/pharmacist/prescription-review" method="post" style="display: inline; margin-left: 10px;">
-            <input type="hidden" name="prescriptionId" value="${prescription.id}">
-            <input type="hidden" name="action" value="APPROVED">
-            <button type="submit" class="btn btn-approve">Approve</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-  </main>
-</div>
-</body>
-</html>
+      </html>

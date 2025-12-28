@@ -1,243 +1,275 @@
+/* ==================== PRESCRIPTION REVIEW STYLES ==================== */
+
+/* Variables - Harmonized with dashboard-style.css */
 :root {
-    --primary-color: #007acc;
-    --success-color: #10b981;
-    --danger-color: #ef4444;
-    --sidebar-width: 240px;
-    --header-height: 60px;
+    --primary-blue: #007dca;
+    --primary-hover: #0063a4;
+    --danger-red: #ef4444;
+    --success-green: #10b981;
+    --bg-light: #f8fbff;
+    --card-shadow: 0 4px 20px rgba(0, 125, 202, 0.08);
+    --border-radius: 12px;
 }
 
-* {
-    margin: 0;
+/* Page Layout */
+.review-page-body {
+    padding: 20px 30px;
+}
+
+.page-title {
+    margin: 0 0 25px 0 !important;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Content Wrapper - Two Column Layout */
+.content-wrapper {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* Left Column: Prescription Image */
+.prescription-image-container {
+    flex: 1.5;
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.image-header {
+    background: #f1f5f9;
+    padding: 12px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.image-box {
+    position: relative;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
+    height: 700px;
+    /* Fixed viewing height as requested */
+    width: 100%;
+    overflow: hidden;
     display: flex;
-    background-color: #f3f4f6;
-    min-height: 100vh;
-}
-
-.sidebar {
-    width: var(--sidebar-width);
-    background-color: #1e293b;
-    color: white;
-    padding: 1.5rem;
-    position: fixed;
-    height: 100vh;
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 2rem;
-}
-
-.nav-item {
-    display: block;
-    color: #cbd5e1;
-    text-decoration: none;
-    padding: 0.75rem 1rem;
-    margin: 0.5rem 0;
-    border-radius: 0.5rem;
-    transition: all 0.3s;
-}
-
-.nav-item:hover, .nav-item.active {
-    background-color: #2d3748;
-    color: white;
-}
-
-.main {
-    flex: 1;
-    margin-left: var(--sidebar-width);
-    padding: 2rem;
-}
-
-.top-bar {
-    display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 2rem;
+    background-color: #f8fafc;
+    cursor: grab;
 }
 
-.user-info {
+.image-box:active {
+    cursor: grabbing;
+}
+
+#zoomable-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.1s ease-out;
+    transform-origin: center center;
+    user-select: none;
+    pointer-events: none;
+    /* Let the container handle dragging if we prefer, or just handle image */
+}
+
+/* Re-enable pointer events for dragging directly if needed, but we'll use container */
+#zoomable-image.dragging {
+    transition: none;
+}
+
+.zoom-controls {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    padding: 8px;
+    border-radius: 12px;
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.avatar {
+.zoom-btn {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-}
-
-.prescription-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.prescription-card {
+    border-radius: 8px;
+    border: none;
     background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: transform 0.3s, opacity 0.3s;
+    color: #1e293b;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.prescription-card.fade-out {
-    opacity: 0;
+.zoom-btn:hover {
+    background: #f1f5f9;
+    color: #007dca;
+}
+
+.zoom-btn:active {
     transform: scale(0.95);
 }
 
-.prescription-header {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
+.zoom-info {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    border-right: 1px solid #e2e8f0;
+    margin-right: 4px;
 }
 
-.patient-name {
-    font-weight: 600;
-}
-
-.upload-date {
-    color: #6b7280;
-    font-size: 0.875rem;
-}
-
-.prescription-image {
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-    border-bottom: 1px solid #e5e7eb;
-    cursor: pointer;
-}
-
-.prescription-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.patient-details {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.patient-details p {
-    margin: 0.5rem 0;
-    font-size: 0.875rem;
-}
-
-.prescription-actions {
-    padding: 1rem;
-}
-
-.pharmacist-note {
-    width: 100%;
-    height: 80px;
-    padding: 0.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    resize: vertical;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.approve-btn, .reject-btn {
+/* Right Column: Patient Details & Actions */
+.patient-details-card {
     flex: 1;
-    padding: 0.625rem;
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: background-color 0.3s;
-    color: white;
+    flex-direction: column;
+    border: 1px solid #e2e8f0;
+    position: sticky;
+    top: 90px;
 }
 
-.approve-btn {
-    background-color: var(--success-color);
+.details-header {
+    padding: 20px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-.reject-btn {
-    background-color: var(--danger-color);
+.details-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--primary-blue);
 }
 
-.approve-btn:hover {
-    background-color: #059669;
+.details-body {
+    padding: 20px;
 }
 
-.reject-btn:hover {
-    background-color: #dc2626;
+.detail-row {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
+.detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.detail-row .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.detail-row .value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.highlight-danger {
+    color: var(--danger-red) !important;
+    font-weight: 600 !important;
+}
+
+/* Action Buttons */
+.review-actions {
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 15px;
+}
+
+.action-form {
+    flex: 1;
+}
+
+.btn-approve,
+.btn-reject {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal img {
-    max-width: 90%;
-    max-height: 90vh;
-    object-fit: contain;
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    color: white;
-    font-size: 2rem;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-/* Notification Styles */
-.notification {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    padding: 1rem 2rem;
-    border-radius: 0.375rem;
+.btn-approve {
+    background-color: var(--success-green);
     color: white;
-    animation: slideIn 0.3s ease-out;
 }
 
-.notification.success {
-    background-color: var(--success-color);
+.btn-approve:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-.notification.error {
-    background-color: var(--danger-color);
+.btn-reject {
+    background-color: #fee2e2;
+    color: var(--danger-red);
+    border: 1px solid #fecaca;
 }
 
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
+.btn-reject:hover {
+    background-color: #fecaca;
+    transform: translateY(-2px);
+}
+
+/* PDF Placeholder */
+.pdf-placeholder {
+    text-align: center;
+    padding: 40px;
+}
+
+.pdf-icon {
+    font-size: 64px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.pdf-placeholder p {
+    margin-bottom: 20px;
+    color: #64748b;
+}
+
+/* Responsive Extensions */
+@media (max-width: 1200px) {
+    .content-wrapper {
+        flex-direction: column;
     }
-    to {
-        transform: translateX(0);
-        opacity: 1;
+
+    .prescription-image-container,
+    .patient-details-card {
+        width: 100%;
+        flex: none;
+    }
+
+    .patient-details-card {
+        position: static;
     }
 }
