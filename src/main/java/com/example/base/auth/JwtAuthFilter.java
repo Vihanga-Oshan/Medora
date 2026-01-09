@@ -46,8 +46,8 @@ public class JwtAuthFilter implements Filter {
         // 3️⃣ Determine which JWT cookie to check based on route prefix
         String cookieName = getRoleCookieName(path);
 
-        // ✅ Special handling for shared resource routes (like /prescriptionFile)
-        if (cookieName == null && path.startsWith("/prescriptionFile")) {
+        // ✅ Special handling for shared resource routes (like /prescriptionFile, /chat)
+        if (cookieName == null && (path.startsWith("/prescriptionFile") || path.startsWith("/chat"))) {
             // Try all known JWT cookies — whichever exists first will be used
             for (String candidate : new String[] { "JWT_PATIENT", "JWT_PHARMACIST", "JWT_ADMIN" }) {
                 String candidateToken = getCookieValue(req, candidate);

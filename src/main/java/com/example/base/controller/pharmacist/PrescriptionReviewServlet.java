@@ -98,7 +98,25 @@ public class PrescriptionReviewServlet extends HttpServlet {
             int prescriptionId = Integer.parseInt(idParam);
             try (Connection conn = com.example.base.db.dbconnection.getConnection()) {
                 PrescriptionDAO dao = new PrescriptionDAO(conn);
+
+                // 1. Fetch prescription to get patient NIC
+                Prescription p = dao.getPrescriptionById(prescriptionId);
+                String patientNic = (p != null) ? p.getPatientNic() : null;
+
+                // 2. Update Status
                 dao.updatePrescriptionStatus(prescriptionId, action);
+
+                // 3. Create Notification
+                if (patientNic != null) {
+                    com.example.base.dao.NotificationDAO notifDao = new com.example.base.dao.NotificationDAO(conn);
+                    String message = "Your prescription has been " + action.toLowerCase() + ".";
+                    if ("APPROVED".equalsIgnoreCase(action)) {
+                        message = "Good news! Your prescription has been approved.";
+                    } else if ("REJECTED".equalsIgnoreCase(action)) {
+                        message = "Update: Your prescription was rejected. Please contact the pharmacy.";
+                    }
+                    notifDao.createNotification(patientNic, message, "PRESCRIPTION");
+                }
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to update prescription status", e);

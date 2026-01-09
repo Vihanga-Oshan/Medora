@@ -1,0 +1,12 @@
+USE medoradb;
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_nic VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    type ENUM('SYSTEM', 'PRESCRIPTION', 'MEDICATION', 'REMINDER') DEFAULT 'SYSTEM',
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_patient (patient_nic),
+    FOREIGN KEY (patient_nic) REFERENCES patients(nic) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
