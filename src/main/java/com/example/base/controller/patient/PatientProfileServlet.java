@@ -50,6 +50,7 @@ public class PatientProfileServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession();
 
         String role = (String) req.getAttribute("jwtRole");
         String patientNic = (String) req.getAttribute("jwtSub");
@@ -60,7 +61,9 @@ public class PatientProfileServlet extends HttpServlet {
         }
 
         String firstName = req.getParameter("firstName");
+        String lastName = req.getParameter("lastName"); // Combined in model as name? Or split? Model only has "name"
         String phone = req.getParameter("phone");
+        String address = req.getParameter("address");
 
         try (Connection conn = dbconnection.getConnection()) {
             patientDAO dao = new patientDAO(conn);
@@ -71,13 +74,21 @@ public class PatientProfileServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Update the model (and ideally the DB)
-            p.setName(firstName);
-            p.setEmergencyContact(phone);
+            // ✅ Update the model
+            if (firstName != null && lastName != null) {
+                p.setName(firstName + " " + lastName);
+            } else if (firstName != null) {
+                p.setName(firstName);
+            }
 
+            p.setPhone(phone);
+            p.setAddress(address);
 
+            // ✅ Persist to DB
+            dao.updatePatient(p);
 
             req.setAttribute("patient", p);
+            session.setAttribute("patient", p); // Update global session patient
             req.setAttribute("message", "Profile updated successfully");
             req.getRequestDispatcher("/WEB-INF/views/patient/profile.jsp").forward(req, resp);
 

@@ -22,7 +22,7 @@
           position: relative;
           padding: 16px 20px;
           background-color: #f4f9fd;
-          border-left: 4px solid #007dca;
+          border-left: 4px solid var(--medical-blue);
           border-radius: 6px;
           margin-bottom: 12px;
           transition: background-color 0.3s ease, transform 0.2s ease;
@@ -36,7 +36,7 @@
 
         .notification-list .date {
           font-size: 0.85rem;
-          color: #007dca;
+          color: var(--medical-blue);
           font-weight: 600;
           margin-bottom: 4px;
           display: block;
@@ -44,7 +44,7 @@
 
         .notification-list .message {
           font-size: 1rem;
-          color: #212529;
+          color: var(--navy-dark);
           font-weight: 500;
         }
 
@@ -56,19 +56,19 @@
           border: none;
           font-size: 18px;
           font-weight: bold;
-          color: #6c757d;
+          color: var(--text-muted);
           cursor: pointer;
           transition: color 0.2s;
         }
 
         .close-btn:hover {
-          color: #dc3545;
+          color: var(--accent-orange);
         }
 
         .clear-all {
           margin-top: 20px;
           padding: 10px 20px;
-          background-color: #007dca;
+          background-color: var(--medical-blue);
           color: white;
           border: none;
           border-radius: 6px;
@@ -78,7 +78,7 @@
         }
 
         .clear-all:hover {
-          background-color: #005ea6;
+          background-color: var(--medical-blue-hover);
         }
 
         .empty-state {

@@ -25,14 +25,57 @@ public class ChatDAO {
         }
     }
 
-    public List<ChatMessage> getMessagesBetween(String userId, String targetId, int lastId) throws SQLException {
-        List<ChatMessage> messages = new ArrayList<>();
+    public List<com.example.base.model.ChatConversation> getPharmacistSupplierConversations() throws SQLException {
+        List<com.example.base.model.ChatConversation> conversations = new ArrayList<>();
+        String query = "SELECT \n" +
+                "    s.id, \n" +
+                "    s.name, \n" +
+                "    m.message_text, \n" +
+                "    m.sent_at, \n" +
+                "    (SELECT COUNT(*) FROM chat_messages cm WHERE cm.sender_type = 'supplier' AND cm.sender_id = CAST(s.id AS CHAR) AND cm.receiver_id = 'PHARMACIST' AND cm.is_read = 0) as unread\n"
+                +
+                "FROM supplier s\n" +
+                "LEFT JOIN chat_messages m ON m.id = (\n" +
+                "    SELECT MAX(id) \n" +
+                "    FROM chat_messages m2 \n" +
+                "    WHERE (m2.sender_type = 'supplier' AND m2.sender_id = CAST(s.id AS CHAR) AND m2.receiver_id = 'PHARMACIST')\n"
+                +
+                "       OR (m2.receiver_id = CAST(s.id AS CHAR) AND m2.sender_type = 'pharmacist')\n" +
+                ")\n" +
+                "ORDER BY CASE WHEN m.sent_at IS NULL THEN 1 ELSE 0 END, m.sent_at DESC";
 
-        // Revised query:
-        // 1. Messages sent by the patient to 'PHARMACIST'
-        // 2. Messages sent by ANY pharmacist to this patient (receiver_id = patientId)
+        try (PreparedStatement ps = connection.prepareStatement(query);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                com.example.base.model.ChatConversation conv = new com.example.base.model.ChatConversation();
+                conv.setNic(String.valueOf(rs.getInt("id"))); // Use ID as NIC/Key for suppliers
+                conv.setName(rs.getString("name"));
+                conv.setLastMessage(rs.getString("message_text"));
+                conv.setLastMessageTime(rs.getTimestamp("sent_at"));
+                conv.setUnreadCount(rs.getInt("unread"));
+                conversations.add(conv);
+            }
+        }
+        return conversations;
+    }
+
+    public List<ChatMessage> getMessagesBetween(String userId, String targetId, int lastId, boolean isSupplier)
+            throws SQLException {
+        List<ChatMessage> messages = new ArrayList<>();
         String query;
-        if ("PHARMACIST".equals(targetId)) {
+
+        if (isSupplier) {
+            // Context: Pharmacist viewing messages for a specific SUPLIER (targetId =
+            // supplier ID)
+            // OR Supplier viewing their chat (not fully impl yet, but logic is symetric)
+            // Here we assume Pharmacist View:
+            // 1. Sender = Supplier (ID=targetId) AND Receiver = PHARMACIST
+            // 2. Sender = Pharmacist AND Receiver = Supplier (ID=targetId)
+            query = "SELECT * FROM chat_messages WHERE id > ? AND (" +
+                    "(sender_type = 'supplier' AND sender_id = ? AND receiver_id = 'PHARMACIST') OR " +
+                    "(sender_type = 'pharmacist' AND receiver_id = ?) ) " +
+                    "ORDER BY sent_at ASC";
+        } else if ("PHARMACIST".equals(targetId)) {
             // Context: Patient viewing their shared pharmacist chat
             query = "SELECT * FROM chat_messages WHERE id > ? AND (" +
                     "(sender_id = ? AND receiver_id = 'PHARMACIST') OR " +
@@ -49,7 +92,10 @@ public class ChatDAO {
 
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, lastId);
-            if ("PHARMACIST".equals(targetId)) {
+            if (isSupplier) {
+                ps.setString(2, targetId);
+                ps.setString(3, targetId);
+            } else if ("PHARMACIST".equals(targetId)) {
                 ps.setString(2, userId); // Patient is sender
                 ps.setString(3, userId); // Patient is receiver
             } else {
@@ -74,9 +120,16 @@ public class ChatDAO {
         return messages;
     }
 
-    public void markAsRead(String userId, String targetId) throws SQLException {
+    // Overload for backward compatibility
+    public List<ChatMessage> getMessagesBetween(String userId, String targetId, int lastId) throws SQLException {
+        return getMessagesBetween(userId, targetId, lastId, false);
+    }
+
+    public void markAsRead(String userId, String targetId, boolean isSupplier) throws SQLException {
         String query;
-        if ("PHARMACIST".equals(targetId)) {
+        if (isSupplier) {
+            query = "UPDATE chat_messages SET is_read = 1 WHERE receiver_id = 'PHARMACIST' AND sender_type = 'supplier' AND sender_id = ? AND is_read = 0";
+        } else if ("PHARMACIST".equals(targetId)) {
             // Context: Patient reading messages from the pharmacist pool
             query = "UPDATE chat_messages SET is_read = 1 WHERE receiver_id = ? AND sender_type = 'pharmacist' AND is_read = 0";
         } else {
@@ -85,13 +138,20 @@ public class ChatDAO {
         }
 
         try (PreparedStatement ps = connection.prepareStatement(query)) {
-            if ("PHARMACIST".equals(targetId)) {
+            if (isSupplier) {
+                ps.setString(1, targetId);
+            } else if ("PHARMACIST".equals(targetId)) {
                 ps.setString(1, userId); // userId is patient NIC
             } else {
                 ps.setString(1, targetId); // targetId is patient NIC
             }
             ps.executeUpdate();
         }
+    }
+
+    // Overload
+    public void markAsRead(String userId, String targetId) throws SQLException {
+        markAsRead(userId, targetId, false);
     }
 
     public Map<String, Integer> getUnreadCountsForPharmacist() throws SQLException {
@@ -104,5 +164,38 @@ public class ChatDAO {
             }
         }
         return counts;
+    }
+
+    public List<com.example.base.model.ChatConversation> getPharmacistConversations() throws SQLException {
+        List<com.example.base.model.ChatConversation> conversations = new ArrayList<>();
+        String query = "SELECT \n" +
+                "    p.nic, \n" +
+                "    p.name, \n" +
+                "    m.message_text, \n" +
+                "    m.sent_at, \n" +
+                "    (SELECT COUNT(*) FROM chat_messages cm WHERE cm.sender_id = p.nic AND cm.receiver_id = 'PHARMACIST' AND cm.is_read = 0) as unread\n"
+                +
+                "FROM patient p\n" +
+                "LEFT JOIN chat_messages m ON m.id = (\n" +
+                "    SELECT MAX(id) \n" +
+                "    FROM chat_messages m2 \n" +
+                "    WHERE (m2.sender_id = p.nic AND m2.receiver_id = 'PHARMACIST')\n" +
+                "       OR (m2.receiver_id = p.nic AND m2.sender_type = 'pharmacist')\n" +
+                ")\n" +
+                "ORDER BY CASE WHEN m.sent_at IS NULL THEN 1 ELSE 0 END, m.sent_at DESC";
+
+        try (PreparedStatement ps = connection.prepareStatement(query);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                com.example.base.model.ChatConversation conv = new com.example.base.model.ChatConversation();
+                conv.setNic(rs.getString("nic"));
+                conv.setName(rs.getString("name"));
+                conv.setLastMessage(rs.getString("message_text"));
+                conv.setLastMessageTime(rs.getTimestamp("sent_at"));
+                conv.setUnreadCount(rs.getInt("unread"));
+                conversations.add(conv);
+            }
+        }
+        return conversations;
     }
 }

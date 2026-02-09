@@ -9,10 +9,6 @@
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>Medora - Never Miss a Dose Again</title>
-            <link rel="preconnect" href="https://fonts.googleapis.com">
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-                rel="stylesheet">
             <link rel="stylesheet" href="${cp}/css/index.css" />
         </head>
 
@@ -63,7 +59,7 @@
                     <div class="stats-grid">
                         <div>
                             <div class="stats-icon">
-                                <img src="https://cdn-icons-png.flaticon.com/512/456/456283.png" alt="Users Icon" />
+                                <span style="font-size: 2.5rem;">&#128101;</span>
                             </div>
                             <h2>50,000+</h2>
                             <p>Active Users</p>
@@ -72,7 +68,7 @@
 
                         <div>
                             <div class="stats-icon">
-                                <img src="https://cdn-icons-png.flaticon.com/512/747/747310.png" alt="Calendar Icon" />
+                                <span style="font-size: 2.5rem;">&#128197;</span>
                             </div>
                             <h2>1M+</h2>
                             <p>Schedules Created</p>
@@ -81,7 +77,7 @@
 
                         <div>
                             <div class="stats-icon">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1827/1827370.png" alt="Bell Icon" />
+                                <span style="font-size: 2.5rem;">&#128276;</span>
                             </div>
                             <h2>5M+</h2>
                             <p>Reminders Sent</p>
@@ -90,7 +86,7 @@
 
                         <div>
                             <div class="stats-icon">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Chart Icon" />
+                                <span style="font-size: 2.5rem;">&#128200;</span>
                             </div>
                             <h2>98%</h2>
                             <p>Adherence Rate</p>

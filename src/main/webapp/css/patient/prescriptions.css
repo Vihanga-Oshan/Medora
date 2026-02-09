@@ -25,12 +25,13 @@
 }
 
 .prescription-link.edit {
-  color: #007acc;
+  color: var(--medical-blue);
 }
 
 .prescription-link.delete {
   color: #e53935;
 }
+
 .prescription-link {
   text-decoration: none;
   font-weight: 500;
@@ -40,7 +41,7 @@
 }
 
 .prescription-link.edit {
-  color: #007acc;
+  color: var(--medical-blue);
 }
 
 .prescription-link.delete {
@@ -87,7 +88,7 @@ input[type="file"] {
 }
 
 .btn-upload {
-  background-color: #007acc;
+  background-color: var(--medical-blue);
   color: white;
   padding: 10px 24px;
   font-weight: 600;
@@ -97,13 +98,13 @@ input[type="file"] {
 }
 
 .btn-upload:hover {
-  background-color: #005999;
+  background-color: var(--medical-blue-hover);
 }
 
 .back-link {
   display: inline-block;
   margin-left: 16px;
-  color: #007acc;
+  color: var(--medical-blue);
   text-decoration: none;
   font-weight: 500;
 }
@@ -112,6 +113,7 @@ input[type="file"] {
   color: red;
   margin-top: 16px;
 }
+
 .upload-area {
   border: 2px dashed #ccc;
   padding: 2rem;
@@ -126,6 +128,7 @@ input[type="file"] {
   align-items: center;
   justify-content: center;
 }
+
 .preview-container {
   display: flex;
   flex-direction: column;
@@ -139,7 +142,7 @@ input[type="file"] {
   max-height: 360px;
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
 .pdf-preview svg {
@@ -156,8 +159,8 @@ input[type="file"] {
 }
 
 .upload-area.drag-over {
-  border-color: #007acc;
-  background-color: rgba(0,122,204,0.04);
+  border-color: var(--medical-blue);
+  background-color: rgba(0, 122, 204, 0.04);
 }
 
 /* Utility class to force-hide the upload area when a file is selected */
@@ -169,8 +172,10 @@ input[type="file"] {
 .preview-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 0; /* no extra gap */
-  padding: 0 12px; /* align with card padding */
+  margin-top: 0;
+  /* no extra gap */
+  padding: 0 12px;
+  /* align with card padding */
   box-sizing: border-box;
   width: 100%;
 }
@@ -179,8 +184,10 @@ input[type="file"] {
 .preview-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 0; /* no extra gap */
-  padding: 0 12px; /* align with card padding */
+  margin-top: 0;
+  /* no extra gap */
+  padding: 0 12px;
+  /* align with card padding */
   box-sizing: border-box;
   width: 100%;
 }
@@ -193,13 +200,16 @@ input[type="file"] {
   flex-direction: column;
   align-items: center;
   background-color: #ffffff;
-  padding: 2rem; /* match the upload-area's vertical spacing */
+  padding: 2rem;
+  /* match the upload-area's vertical spacing */
   border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   margin: 0 auto;
-  overflow: hidden; /* prevent child overflow */
-  min-height: 120px; /* ensure the preview block occupies reasonable vertical space like the upload area */
+  overflow: hidden;
+  /* prevent child overflow */
+  min-height: 120px;
+  /* ensure the preview block occupies reasonable vertical space like the upload area */
 }
 
 /* Ensure image fills the preview container nicely */
@@ -209,7 +219,8 @@ input[type="file"] {
   max-height: 360px;
   object-fit: contain;
   border-radius: 6px;
-  display: block; /* remove inline gaps */
+  display: block;
+  /* remove inline gaps */
   margin: 0 auto;
 }
 
@@ -233,7 +244,8 @@ input[type="file"] {
 /* Minimal button reset for preview actions to avoid inheriting large styles */
 .preview-wrapper .preview-container .preview-actions {
   display: flex;
-  gap: 16px; /* more breathing room */
+  gap: 16px;
+  /* more breathing room */
   margin-top: 18px;
   align-items: center;
   justify-content: center;
@@ -248,11 +260,12 @@ input[type="file"] {
   font-size: 0.98rem;
   font-weight: 600;
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   background-color: #f6f9fb;
   color: #1f2d3d;
   cursor: pointer;
-  min-width: 110px; /* make buttons less cramped */
+  min-width: 110px;
+  /* make buttons less cramped */
 }
 
 .preview-actions .btn:hover {
@@ -261,15 +274,15 @@ input[type="file"] {
 
 /* Primary look for Change (blue) and danger look for Remove (outline/red) */
 .preview-wrapper .preview-container .preview-actions .btn-change {
-  background-color: #007acc !important;
+  background-color: var(--medical-blue) !important;
   color: #fff !important;
-  border: 1px solid #007acc !important;
+  border: 1px solid var(--medical-blue) !important;
 }
 
 .preview-wrapper .preview-container .preview-actions .btn-remove {
   background-color: #fff !important;
   color: #dc3545 !important;
-  border: 1px solid rgba(220,53,69,0.12) !important;
+  border: 1px solid rgba(220, 53, 69, 0.12) !important;
 }
 
 /* Prescription list tiles */
@@ -293,7 +306,7 @@ input[type="file"] {
   width: calc(33.333% - 8px);
   max-width: 280px;
   min-width: 150px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   position: relative;
 }
 
@@ -305,18 +318,19 @@ input[type="file"] {
 }
 
 .prescription-tile:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .btn-sm {
   font-size: 0.85rem;
   padding: 3px 6px;
-  color: #007acc;
+  color: var(--medical-blue);
   border: none;
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
-  text-decoration: none; /* removes underline */
+  text-decoration: none;
+  /* removes underline */
   transition: color 0.2s ease;
   position: absolute;
   top: 8px;
@@ -328,7 +342,7 @@ input[type="file"] {
 }
 
 .prescription-thumb {
-  width:70px;
+  width: 70px;
   height: 70px;
   display: inline-flex;
   align-items: center;
@@ -370,6 +384,7 @@ input[type="file"] {
   font-size: 0.82rem;
   color: #6c757d;
 }
+
 .edit-layout {
   display: flex;
   flex-wrap: wrap;
@@ -397,7 +412,7 @@ input[type="file"] {
   max-height: 320px;
   border-radius: 8px;
   object-fit: contain;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .edit-form form {
@@ -427,7 +442,8 @@ input[type="file"] {
 
 .prescription-actions {
   display: flex;
-  flex-direction: row; /* Make Edit/Delete side by side */
+  flex-direction: row;
+  /* Make Edit/Delete side by side */
   gap: 12px;
   align-items: center;
   justify-content: flex-end;
@@ -452,7 +468,8 @@ input[type="file"] {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6); /* dark overlay */
+  background-color: rgba(0, 0, 0, 0.6);
+  /* dark overlay */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -508,6 +525,7 @@ input[type="file"] {
 .cancel-btn:hover {
   background-color: #bbb;
 }
+
 .action-btn {
   background: none;
   border: none;
@@ -533,8 +551,10 @@ input[type="file"] {
 
 .action-menu {
   position: absolute;
-  right: 0; /* align to the right of the button */
-  transform: translateX(-40%); /* shift it left */
+  right: 0;
+  /* align to the right of the button */
+  transform: translateX(-40%);
+  /* shift it left */
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -602,8 +622,13 @@ input[type="file"] {
 }
 
 @media (max-width: 900px) {
-  .prescription-tile { width: calc(50% - 8px); }
+  .prescription-tile {
+    width: calc(50% - 8px);
+  }
 }
+
 @media (max-width: 520px) {
-  .prescription-tile { width: 100%; }
+  .prescription-tile {
+    width: 100%;
+  }
 }

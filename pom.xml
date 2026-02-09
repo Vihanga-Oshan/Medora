@@ -34,12 +34,6 @@
     </dependency>
 
 
-    <dependency>
-          <groupId>org.jetbrains</groupId>
-          <artifactId>annotations</artifactId>
-          <version>RELEASE</version>
-          <scope>compile</scope>
-      </dependency>
 
 
       <!-- JSTL 1.2 bundled into your WAR -->

@@ -8,8 +8,6 @@
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Messages | Medora</title>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
-                    rel="stylesheet">
                 <c:choose>
                     <c:when test="${role == 'pharmacist'}">
                         <link rel="stylesheet"
@@ -21,22 +19,23 @@
                 </c:choose>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/components/chat-style.css">
                 <style>
-                    /* --- Global Layout Reset for Messaging --- */
-                    <c:choose><c:when test="${role == 'pharmacist'}">html,
-                    body {
+                    /* --- Global Layout Reset --- */
+                    body.role-pharmacist {
                         height: 100vh !important;
                         margin: 0;
                         padding: 0;
                         overflow: hidden !important;
                     }
 
-                    .container {
+                    body.role-pharmacist .container {
                         height: 100vh;
                         overflow: hidden;
                         display: flex;
+                        width: 100%;
+                        max-width: none;
                     }
 
-                    .main-content {
+                    body.role-pharmacist .main-content {
                         flex: 1;
                         display: flex;
                         flex-direction: column;
@@ -45,18 +44,16 @@
                         background: var(--bg-light);
                     }
 
-                    </c:when><c:otherwise>.container {
+                    body.role-patient .container {
                         width: 95%;
                         max-width: 1200px;
                         margin: 0 auto;
                         display: block;
                     }
 
-                    .main-content {
+                    body.role-patient .main-content {
                         padding-top: 20px;
                     }
-
-                    </c:otherwise></c:choose>
 
                     /* --- Chat Layout --- */
                     .chat-layout {
@@ -177,57 +174,10 @@
                         padding: 20px 40px 0;
                         margin-bottom: 30px;
                     }
-
-                    /* --- Components --- */
-                    .unread-dot {
-                        display: inline-block;
-                        width: 10px;
-                        height: 10px;
-                        background-color: #ff4d4f;
-                        border-radius: 50%;
-                        margin-right: 10px;
-                        vertical-align: middle;
-                        box-shadow: 0 0 8px rgba(255, 77, 79, 0.4);
-                        animation: pulse 2s infinite;
-                    }
-
-                    @keyframes pulse {
-                        0% {
-                            transform: scale(1);
-                            box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4);
-                        }
-
-                        70% {
-                            transform: scale(1.1);
-                            box-shadow: 0 0 0 10px rgba(255, 77, 79, 0);
-                        }
-
-                        100% {
-                            transform: scale(1);
-                            box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
-                        }
-                    }
-
-                    .contact-item.has-unread h4 {
-                        font-weight: 700;
-                        color: var(--chat-primary);
-                    }
-
-                    .new-badge {
-                        display: inline-block;
-                        background: #ff4d4f;
-                        color: white;
-                        font-size: 10px;
-                        font-weight: 800;
-                        padding: 2px 6px;
-                        border-radius: 4px;
-                        margin-left: 8px;
-                        text-transform: uppercase;
-                    }
                 </style>
             </head>
 
-            <body class="dashboard-body">
+            <body class="dashboard-body role-${role}">
                 <c:if test="${role == 'patient'}">
                     <%@ include file="/WEB-INF/views/components/header.jsp" %>
                         <!-- Ensure receiverId is set for patients even if servlet failed -->
@@ -247,13 +197,26 @@
                     </c:choose>
 
                     <main class="main-content">
-                        <c:if test="${role != 'patient'}">
-                            <div class="chat-page-title-box" style="margin-bottom: 30px;">
-                                <div class="greeting">
-                                    <span class="greeting-icon">&#128172;</span>
-                                    <div class="greeting-content">
-                                        <h2>Messaging</h2>
-                                        <p class="date-time">Communicate with your ${roleText}</p>
+                        <c:if test="${role == 'patient'}">
+                            <div class="chat-page-title-box" style="padding: 0 40px;">
+                                <div
+                                    style="background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 24px 40px; border-radius: 24px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.4); display: flex; align-items: center; gap: 24px; margin-bottom: 24px;">
+                                    <div
+                                        style="width: 64px; height: 64px; background: var(--chat-primary-gradient); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-vibrant); color: white;">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path
+                                                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2
+                                            style="margin: 0; font-size: 26px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;">
+                                            Pharmacy Care Center</h2>
+                                        <p
+                                            style="margin: 6px 0 0; color: var(--text-muted); font-size: 15px; font-weight: 500;">
+                                            Your direct line to expert healthcare advice and support</p>
                                     </div>
                                 </div>
                             </div>
@@ -263,11 +226,30 @@
                             <!-- Contact List - Hidden for Patients -->
                             <c:if test="${role != 'patient'}">
                                 <div class="contact-list">
+                                    <div class="contact-tabs" style="display: flex; border-bottom: 1px solid #f0f2f5;">
+                                        <a href="?type=patients"
+                                            class="tab-link ${empty chatType || chatType == 'patients' ? 'active' : ''}"
+                                            style="flex: 1; text-align: center; padding: 15px; text-decoration: none; color: #666; font-weight: 500;">Patients</a>
+                                        <a href="?type=suppliers"
+                                            class="tab-link ${chatType == 'suppliers' ? 'active' : ''}"
+                                            style="flex: 1; text-align: center; padding: 15px; text-decoration: none; color: #666; font-weight: 500;">Suppliers</a>
+                                    </div>
+                                    <style>
+                                        .tab-link.active {
+                                            color: var(--chat-primary) !important;
+                                            border-bottom: 2px solid var(--chat-primary);
+                                            background: #f8fafc;
+                                        }
+
+                                        .tab-link:hover {
+                                            background: #f8fafc;
+                                        }
+                                    </style>
                                     <c:forEach var="c" items="${contacts}">
                                         <c:set var="contactId" value="${role == 'patient' ? c.id : c.nic}" />
                                         <c:set var="unread" value="${unreadCounts[contactId]}" />
                                         <div class="contact-item ${contactId == receiverId ? 'active' : ''} ${unread > 0 ? 'has-unread' : ''}"
-                                            onclick="window.location.href='?with=${contactId}'">
+                                            onclick="window.location.href='?type=${chatType}&with=${contactId}'">
                                             <div class="contact-avatar">
                                                 ${fn:substring(c.name, 0, 1)}
                                             </div>
@@ -278,7 +260,19 @@
                                                     </c:if>
                                                     ${c.name}
                                                 </h4>
-                                                <p>${role == 'patient' ? 'Pharmacist' : 'Patient'}</p>
+
+                                                <c:choose>
+                                                    <c:when test="${role == 'pharmacist'}">
+                                                        <p
+                                                            style="font-size: 0.85em; color: #666; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
+                                                            ${not empty c.lastMessage ? c.lastMessage : '<i>No
+                                                                messages</i>'}
+                                                        </p>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <p>Pharmacist</p>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </div>
                                     </c:forEach>
@@ -292,40 +286,61 @@
                                         <div class="chat-container">
                                             <div class="chat-header">
                                                 <div class="status-dot"></div>
-                                                <c:choose>
-                                                    <c:when test="${role == 'patient'}">
-                                                        <strong id="chatting-with">Pharmacy Support</strong>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <c:forEach var="ct" items="${contacts}">
-                                                            <c:set var="ctId"
-                                                                value="${role == 'patient' ? ct.id : ct.nic}" />
-                                                            <c:if test="${ctId == receiverId}">
-                                                                <c:set var="receiverName" value="${ct.name}" />
-                                                            </c:if>
-                                                        </c:forEach>
-                                                        <strong id="chatting-with">${not empty receiverName ?
-                                                            receiverName :
-                                                            'Loading...'}</strong>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <div style="display: flex; flex-direction: column;">
+                                                    <c:choose>
+                                                        <c:when test="${role == 'patient'}">
+                                                            <h3>Pharmacy Support</h3>
+                                                            <div
+                                                                style="font-size: 12px; color: #10b981; font-weight: 500;">
+                                                                Online</div>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <c:forEach var="ct" items="${contacts}">
+                                                                <c:set var="ctId"
+                                                                    value="${role == 'patient' ? ct.id : ct.nic}" />
+                                                                <c:if test="${ctId == receiverId}">
+                                                                    <c:set var="receiverName" value="${ct.name}" />
+                                                                </c:if>
+                                                            </c:forEach>
+                                                            <h3>${not empty receiverName ? receiverName : 'Loading...'}
+                                                            </h3>
+                                                            <div
+                                                                style="font-size: 12px; color: #10b981; font-weight: 500;">
+                                                                Active Session</div>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
                                             </div>
                                             <div class="chat-messages" id="message-container">
                                                 <!-- Messages loaded via JS -->
                                             </div>
                                             <form class="chat-input-area" id="chat-form">
-                                                <input type="text" class="chat-input" id="msg-input"
-                                                    placeholder="Type a message..." autocomplete="off">
+                                                <div
+                                                    style="position: relative; flex: 1; display: flex; align-items: center;">
+                                                    <input type="text" class="chat-input" id="msg-input"
+                                                        placeholder="Write your message..." autocomplete="off">
+                                                </div>
                                                 <button type="submit" class="send-btn">
-                                                    🚀
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                                    </svg>
                                                 </button>
                                             </form>
                                         </div>
                                     </c:when>
                                     <c:otherwise>
                                         <div class="no-selection">
-                                            <h3>Select a conversation to start chatting</h3>
-                                            <p>Communicate directly with your healthcare providers</p>
+                                            <div class="no-selection-icon">
+                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8Z" />
+                                                </svg>
+                                            </div>
+                                            <h3>Your Conversations</h3>
+                                            <p>Select a contact from the list to start a secure messaging session.</p>
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
@@ -338,6 +353,7 @@
                     const userId = "${userId}";
                     const receiverId = "${receiverId}";
                     const contextPath = "${pageContext.request.contextPath}";
+                    const isSupplier = "${chatType}" === "suppliers";
                     let lastId = 0;
 
                     if (receiverId) {
@@ -370,17 +386,29 @@
                         };
 
                         function poll() {
-                            fetch(contextPath + '/chat?receiverId=' + receiverId + '&lastId=' + lastId)
+                            fetch(contextPath + '/chat?receiverId=' + receiverId + '&lastId=' + lastId + '&isSupplier=' + isSupplier)
                                 .then(res => res.json())
                                 .then(data => {
                                     data.forEach(m => {
                                         const div = document.createElement('div');
                                         div.className = 'message ' + (m.senderId === userId ? 'sent' : 'received');
-                                        let msgHtml = m.message;
+
+                                        const textSpan = document.createElement('span');
+                                        textSpan.textContent = m.message;
+                                        div.appendChild(textSpan);
+
                                         if (!m.isRead && m.senderId !== userId) {
-                                            msgHtml += '<span class="new-badge">New</span>';
+                                            const badge = document.createElement('span');
+                                            badge.className = 'new-badge';
+                                            badge.textContent = 'New';
+                                            div.appendChild(badge);
                                         }
-                                        div.innerHTML = msgHtml + '<span class="message-time">' + m.sentAt + '</span>';
+
+                                        const timeSpan = document.createElement('span');
+                                        timeSpan.className = 'message-time';
+                                        timeSpan.textContent = m.sentAt;
+                                        div.appendChild(timeSpan);
+
                                         container.appendChild(div);
                                         lastId = m.id;
                                     });

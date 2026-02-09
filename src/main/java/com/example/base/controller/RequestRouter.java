@@ -26,6 +26,8 @@ public class RequestRouter extends HttpServlet {
 
     // Controllers - instantiated once and reused
     private AuthController authController;
+    private ShopController shopController;
+    private PharmacistOrderController pharmacistOrderController;
 
     @Override
     public void init() throws ServletException {
@@ -33,6 +35,8 @@ public class RequestRouter extends HttpServlet {
 
         // Initialize all controllers
         authController = new AuthController();
+        shopController = new ShopController();
+        pharmacistOrderController = new PharmacistOrderController();
 
         LOGGER.info("RequestRouter initialized with controllers");
     }
@@ -71,6 +75,12 @@ public class RequestRouter extends HttpServlet {
         // Skip static resources - let default servlet handle them
         if (isStaticResource(path)) {
             req.getRequestDispatcher(path).forward(req, resp);
+            return;
+        }
+
+        // Handle sub-path routing for Shop
+        if (path.startsWith("/shop")) {
+            routeShop(path, req, resp);
             return;
         }
 
@@ -126,6 +136,14 @@ public class RequestRouter extends HttpServlet {
                 }
                 break;
 
+            case "/pharmacist/orders":
+                pharmacistOrderController.handleManageOrders(req, resp);
+                break;
+
+            case "/pharmacist/orders/update":
+                pharmacistOrderController.handleUpdateStatus(req, resp);
+                break;
+
             case "/admin/login":
                 if ("POST".equals(method)) {
                     authController.handleAdminLogin(req, resp);
@@ -169,6 +187,35 @@ public class RequestRouter extends HttpServlet {
                 LOGGER.warning("No route found for: " + path);
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Route not found: " + path);
                 break;
+        }
+    }
+
+    private void routeShop(String path, HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String lowerPath = path.toLowerCase();
+        if (lowerPath.equals("/shop") || lowerPath.equals("/shop/")) {
+            shopController.handleCatalog(req, resp);
+        } else if (lowerPath.equals("/shop/search")) {
+            shopController.handleSearch(req, resp);
+        } else if (lowerPath.equals("/shop/item")) {
+            shopController.handleItemDetails(req, resp);
+        } else if (lowerPath.equals("/shop/cart")) {
+            shopController.handleCart(req, resp);
+        } else if (lowerPath.equals("/shop/order")) {
+            shopController.handleOrderDetail(req, resp);
+        } else if (lowerPath.equals("/shop/cart/add")) {
+            shopController.handleAddToCart(req, resp);
+        } else if (lowerPath.equals("/shop/cart/remove")) {
+            shopController.handleRemoveFromCart(req, resp);
+        } else if (lowerPath.equals("/shop/checkout")) {
+            shopController.handleCheckout(req, resp);
+        } else if (lowerPath.equals("/shop/orders")) {
+            shopController.handleMyOrders(req, resp);
+        } else if (lowerPath.equals("/shop/orders/complete")) {
+            shopController.handleCompleteOrder(req, resp);
+        } else {
+            LOGGER.warning("Shop route not found: " + path);
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 

@@ -12,8 +12,13 @@
             <a href="${pageContext.request.contextPath}/patient/upload-prescription">Prescriptions</a>
             <a href="${pageContext.request.contextPath}/patient/adherence-history">History</a>
             <a href="${pageContext.request.contextPath}/patient/messages">Messages</a>
-            <a href="${pageContext.request.contextPath}/patient/notifications">Notifications</a>
+
             <a href="${pageContext.request.contextPath}/patient/profile">Profile</a>
             <a href="${pageContext.request.contextPath}/logout?next=/login">Logout</a>
         </nav>
     </header>
+
+    <!-- Global Decorative Elements -->
+    <div class="decorative-blob blob-1"></div>
+    <div class="decorative-blob blob-2"></div>
+    <div class="decorative-blob blob-3"></div>

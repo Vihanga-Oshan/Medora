@@ -79,7 +79,12 @@ public class AuthController {
             session.setAttribute("currentUser", p);
             session.setAttribute("userRole", "patient");
 
-            resp.sendRedirect(req.getContextPath() + "/patient/dashboard");
+            String redirect = req.getParameter("redirect");
+            if (redirect != null && !redirect.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + redirect);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/patient/dashboard");
+            }
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error during patient login", e);

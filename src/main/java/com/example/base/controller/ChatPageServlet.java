@@ -4,7 +4,6 @@ import com.example.base.config.DB;
 
 import com.example.base.dao.ChatDAO;
 import com.example.base.dao.PharmacistDAO;
-import com.example.base.dao.patientDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -37,13 +36,11 @@ public class ChatPageServlet extends HttpServlet {
         req.setAttribute("userId", userId);
 
         // ✅ For patients, always chat with the "PHARMACIST" pool
-        String receiverId = req.getParameter("with");
-        if ("patient".equals(role)) {
-            receiverId = "PHARMACIST";
+        String type = req.getParameter("type");
+        if (type == null || type.isEmpty()) {
+            type = "patients"; // Default
         }
-        if (receiverId != null) {
-            req.setAttribute("receiverId", receiverId);
-        }
+        req.setAttribute("chatType", type);
 
         try (Connection conn = DB.getConnection()) {
             ChatDAO chatDAO = new ChatDAO(conn);
@@ -51,9 +48,14 @@ public class ChatPageServlet extends HttpServlet {
                 PharmacistDAO pharmacistDAO = new PharmacistDAO(conn);
                 req.setAttribute("contacts", pharmacistDAO.getAllPharmacists());
             } else if ("pharmacist".equals(role)) {
-                patientDAO patientDAO = new patientDAO(conn);
-                req.setAttribute("contacts", patientDAO.getAllPatients());
-                req.setAttribute("unreadCounts", chatDAO.getUnreadCountsForPharmacist());
+                if ("suppliers".equals(type)) {
+                    req.setAttribute("contacts", chatDAO.getPharmacistSupplierConversations());
+                } else {
+                    req.setAttribute("contacts", chatDAO.getPharmacistConversations());
+                }
+                req.setAttribute("unreadCounts", chatDAO.getUnreadCountsForPharmacist()); // This might need update for
+                                                                                          // suppliers too but sticking
+                                                                                          // to simple count for now
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error loading chat contacts", e);

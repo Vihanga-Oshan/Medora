@@ -57,6 +57,7 @@ public class ChatServlet extends HttpServlet {
         String senderId = (String) req.getAttribute("jwtSub");
         String receiverId = req.getParameter("receiverId");
         String lastIdStr = req.getParameter("lastId");
+        boolean isSupplier = "true".equals(req.getParameter("isSupplier"));
         int lastId = (lastIdStr != null) ? Integer.parseInt(lastIdStr) : 0;
 
         if (senderId == null || receiverId == null) {
@@ -69,8 +70,8 @@ public class ChatServlet extends HttpServlet {
 
         try (Connection conn = DB.getConnection(); PrintWriter out = resp.getWriter()) {
             ChatDAO chatDAO = new ChatDAO(conn);
-            List<ChatMessage> messages = chatDAO.getMessagesBetween(senderId, receiverId, lastId);
-            chatDAO.markAsRead(senderId, receiverId); // Mark messages received from others as read
+            List<ChatMessage> messages = chatDAO.getMessagesBetween(senderId, receiverId, lastId, isSupplier);
+            chatDAO.markAsRead(senderId, receiverId, isSupplier); // Mark messages received from others as read
 
             // Manual JSON construction
             out.print("[");

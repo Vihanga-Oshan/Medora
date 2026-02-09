@@ -1,4 +1,4 @@
-package com.example.base.controller;
+package com.example.base.controller.pharmacist;
 
 import com.example.base.db.dbconnection;
 import javax.servlet.*;
@@ -34,8 +34,7 @@ public class SubmitScheduleServlet extends HttpServlet {
             // Insert master schedule (optional step)
             PreparedStatement masterStmt = conn.prepareStatement(
                     "INSERT INTO schedule_master (prescription_id, patient_nic) VALUES (?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
+                    Statement.RETURN_GENERATED_KEYS);
             masterStmt.setInt(1, Integer.parseInt(prescriptionId));
             masterStmt.setString(2, patientNic);
             masterStmt.executeUpdate();
@@ -50,7 +49,8 @@ public class SubmitScheduleServlet extends HttpServlet {
 
             // Insert each medication row
             String sql = "INSERT INTO medication_schedule " +
-                    "(schedule_master_id, medicine_id, dosage_id, frequency_id, meal_timing_id, start_date, duration_days, instructions) " +
+                    "(schedule_master_id, medicine_id, dosage_id, frequency_id, meal_timing_id, start_date, duration_days, instructions) "
+                    +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
@@ -76,16 +76,55 @@ public class SubmitScheduleServlet extends HttpServlet {
             stmt.executeBatch();
             stmt.close();
 
-
             PreparedStatement updateStatusStmt = conn.prepareStatement(
-                    "UPDATE prescriptions SET status = 'SCHEDULED' WHERE id = ?"
-            );
+                    "UPDATE prescriptions SET status = 'SCHEDULED' WHERE id = ?");
             updateStatusStmt.setInt(1, Integer.parseInt(prescriptionId));
             updateStatusStmt.executeUpdate();
             updateStatusStmt.close();
 
-            response.sendRedirect(request.getContextPath() + "/pharmacist/approved-prescriptions");
+            // Handle Delivery Order Creation
+            String createOrder = request.getParameter("createOrder");
+            if ("true".equals(createOrder)) {
+                com.example.base.model.Order order = new com.example.base.model.Order();
+                order.setPatientNic(patientNic);
 
+                java.util.List<com.example.base.model.OrderItem> orderItems = new java.util.ArrayList<>();
+                double totalAmount = 0;
+
+                for (int i = 0; i < medicineIds.length; i++) {
+                    int medId = Integer.parseInt(medicineIds[i]);
+                    // Assuming quantity 1 pack per schedule or we could add a quantity field.
+                    // For now, let's default to 1 unit per scheduled item to keep it simple,
+                    // or maybe match duration?
+                    // Let's stick to 1 unit as the "pack" being prescribed/sent.
+                    int quantity = 1;
+
+                    com.example.base.model.Medicine med = com.example.base.dao.MedicineDAO.getById(conn, medId);
+                    if (med != null) {
+                        com.example.base.model.OrderItem item = new com.example.base.model.OrderItem();
+                        item.setMedicineId(medId);
+                        item.setQuantity(quantity);
+                        item.setPrice(med.getPrice());
+
+                        totalAmount += med.getPrice() * quantity;
+                        orderItems.add(item);
+                    }
+                }
+
+                if (!orderItems.isEmpty()) {
+                    order.setTotalAmount(totalAmount);
+                    order.setItems(orderItems);
+
+                    int orderId = com.example.base.dao.OrderDAO.createOrder(conn, order);
+
+                    // Auto-approve since Pharmacist initiated it
+                    if (orderId != -1) {
+                        com.example.base.dao.OrderDAO.updateStatus(conn, orderId, "APPROVED");
+                    }
+                }
+            }
+
+            response.sendRedirect(request.getContextPath() + "/pharmacist/approved-prescriptions");
 
         } catch (Exception e) {
             e.printStackTrace();

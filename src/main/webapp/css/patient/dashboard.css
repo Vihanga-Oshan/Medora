@@ -1,274 +1,486 @@
-/* =========================
-   DASHBOARD & TIMETABLE STYLES
-   ========================= */
+/* =========================================
+   Medora Patient Dashboard - Modern Medical Design
+   Inspired by Hamilton Company Aesthetic
+   ========================================= */
 
-/* ===== Stats Section ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+/* Layout Containers */
+.dashboard-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout {
+  max-width: 1200px;
+  margin: -60px auto 40px;
+  padding: 0 20px;
+  z-index: 10;
+  position: relative;
+  width: 100%;
+}
+
+/* Hero Section */
+.dashboard-hero {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
+  padding: 60px 20px 100px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.hero-content {
+  max-width: 600px;
+}
+
+.hero-title {
+  font-size: 2.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+  color: white;
+}
+
+.highlight-text {
+  color: var(--medical-blue);
+  font-weight: 700;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  font-weight: 300;
+}
+
+.hero-actions {
+  display: flex;
   gap: 15px;
+}
+
+/* Stats Overview */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
   margin-bottom: 30px;
 }
 
 .stat-card {
-  background: var(--white, #ffffff);
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 18px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--border-color);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
 }
 
-.stat-card span {
-  display: block;
-  font-size: 0.9rem;
-  color: #6c757d;
-  margin-bottom: 5px;
-}
-
-.stat-card .stat-value {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: var(--text-dark, #0f172a);
-}
-
-.stat-taken {
-  background: #e8fdf3;
-  border-color: #b2f0d4;
-}
-
-.stat-pending {
-  background: #fff9e6;
-  border-color: #ffeaa7;
-}
-
-.stat-missed {
-  background: #fef0f0;
-  border-color: #ffd8d8;
-}
-
-/* ===== Medication Card ===== */
-.med-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+.stat-icon-wrapper {
+  width: 50px;
+  height: 50px;
   border-radius: 12px;
-  padding: 18px 24px;
-  margin: 12px 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
-}
-
-.med-card:hover {
-  background-color: #f9fafb;
-  transform: translateY(-2px);
-}
-
-/* ===== Left side (Medicine Info) ===== */
-.med-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-}
-
-.med-info h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.med-details {
   display: flex;
   align-items: center;
-  gap: 25px;
-  flex-wrap: wrap;
-  color: #374151;
-  font-size: 0.95rem;
-}
-
-.med-details em {
-  color: #6b7280;
-  font-style: italic;
-}
-
-/* ===== Right side (Action Buttons) ===== */
-.med-actions {
-  display: flex;
-  gap: 12px;
+  justify-content: center;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
-/* ===== Buttons ===== */
-.btn-taken,
-.btn-missed {
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 18px;
-  cursor: pointer;
-  color: white;
-  transition: background-color 0.2s ease;
+.bg-blue {
+  background-color: #e0f2fe;
+  color: var(--navy-dark);
 }
 
-.btn-taken {
-  background-color: #22c55e;
+.bg-green {
+  background-color: #dcfce7;
+  color: var(--success-green);
 }
 
-.btn-taken:hover {
-  background-color: #16a34a;
+.bg-yellow {
+  background-color: #fef3c7;
+  color: var(--warning-yellow);
 }
 
-.btn-missed {
-  background-color: #ef4444;
+.bg-red {
+  background-color: #fee2e2;
+  color: var(--danger-red);
 }
 
-.btn-missed:hover {
-  background-color: #dc2626;
-}
-
-/* ===== Date Selector ===== */
-.date-selector {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px 0 25px;
-}
-
-.date-selector input[type="date"] {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.btn-submit {
-  background-color: #007dca;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-}
-
-.btn-submit:hover {
-  background-color: #0063a4;
-}
-
-/* ===== Container ===== */
-.medication-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-/* ===== Full Timetable Section ===== */
-.full-timetable {
-  background-color: #f9fafb;
-  border-radius: 12px;
-  padding: 30px;
-  margin-top: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.full-timetable h2 {
-  margin-bottom: 20px;
-  color: #1e293b;
-  font-size: 1.5rem;
-}
-
-/* ===== Timetable Card ===== */
-.timetable-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 18px 22px;
-  margin: 12px 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-}
-
-.timetable-card:hover {
-  background-color: #f8fafc;
-  transform: translateY(-1px);
-}
-
-/* Left info block */
-.timetable-info {
+.stat-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
-.timetable-info h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.timetable-info p {
-  margin: 2px 0;
-  color: #374151;
-  font-size: 0.95rem;
-}
-
-.timetable-info em {
-  color: #6b7280;
-}
-
-/* Status badge */
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 999px;
+.stat-label {
   font-size: 0.85rem;
+  color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Common Card Panel Style */
+.card-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  padding: 25px;
+  height: fit-content;
+  border: 1px solid var(--border-color);
+  margin-bottom: 30px;
+}
+
+.card-panel h2 {
+  font-size: 1.25rem;
+  margin: 0 0 20px 0;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-panel h2 a {
+  font-size: 0.85rem;
+  color: var(--medical-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.card-panel h2 a:hover {
+  text-decoration: underline;
+}
+
+/* Adherence Widget */
+.adherence-widget {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.adherence-chart {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(var(--success-green) var(--adherence-deg, 0deg), #e2e8f0 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adherence-chart::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+}
+
+.adherence-score {
+  position: relative;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+}
+
+.adherence-text p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.adherence-text h3 {
+  margin: 0;
+  color: var(--navy-dark);
+  font-size: 1.1rem;
+}
+
+/* Notifications Widget */
+.notification-list-widget {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.notif-msg {
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Schedule List */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.medication-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  border-left: 4px solid var(--medical-blue);
+  gap: 20px;
+  transition: background 0.2s;
+}
+
+.medication-item:hover {
+  background-color: #fdfdfd;
+}
+
+.med-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  text-align: center;
+  padding-right: 20px;
+  border-right: 1px solid var(--border-color);
+}
+
+.time-slot {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy-dark);
+}
+
+.meal-timing {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.med-info-block {
+  flex-grow: 1;
+}
+
+.med-info-block h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.15rem;
+}
+
+.dosage-info,
+.instructions {
+  margin: 2px 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dosage-info i,
+.instructions i {
+  color: var(--medical-blue);
+  width: 16px;
+  text-align: center;
+}
+
+.med-actions-block {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: transform 0.2s, background 0.2s;
+  background: var(--bg-body);
+}
+
+.btn-check {
+  color: var(--success-green);
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+}
+
+.btn-check:hover {
+  background: var(--success-green);
+  color: white;
+  transform: scale(1.1);
+}
+
+.btn-cross {
+  color: var(--danger-red);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+}
+
+.btn-cross:hover {
+  background: var(--danger-red);
+  color: white;
+  transform: scale(1.1);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+/* Timetable */
+.modern-date-selector {
+  margin-bottom: 25px;
+}
+
+.modern-date-selector label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.input-group input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  color: var(--navy-dark);
+}
+
+.btn-icon {
+  background: var(--medical-blue);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  width: 42px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-icon:hover {
+  background: var(--medical-blue-hover);
+}
+
+.timetable-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.timetable-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.timetable-row:last-child {
+  border-bottom: none;
+}
+
+.row-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+.row-info span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.status-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
 .status-pending {
-  background-color: #fef3c7;
-  color: #92400e;
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .status-taken {
-  background-color: #dcfce7;
-  color: #166534;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .status-missed {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-/* Responsive */
-@media (max-width: 700px) {
-
-  .timetable-card,
-  .med-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .med-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
+  background: #fee2e2;
+  color: #b91c1c;
 }

@@ -9,8 +9,6 @@
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/dashboard-style.css">
                 <link rel="stylesheet"
                     href="${pageContext.request.contextPath}/css/pharmacist/prescription-validation.css">
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
-                    rel="stylesheet">
                 <style>
                     /* Specificity override for the main layout container */
                     body div.container {

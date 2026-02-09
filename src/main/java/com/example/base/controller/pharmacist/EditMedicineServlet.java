@@ -1,6 +1,7 @@
 package com.example.base.controller.pharmacist;
 
 import com.example.base.dao.MedicineDAO;
+import com.example.base.dao.CategoryDAO;
 import com.example.base.db.dbconnection;
 import com.example.base.model.Medicine;
 
@@ -50,6 +51,11 @@ public class EditMedicineServlet extends HttpServlet {
                     m.setAddedBy(rs.getInt("added_by"));
 
                     req.setAttribute("medicine", m);
+                    // Fetch categories for dropdown
+                    req.setAttribute("categories", CategoryDAO.getAll(conn));
+                    req.setAttribute("dosageForms", com.example.base.dao.DosageFormDAO.getAll(conn));
+                    req.setAttribute("sellingUnits", com.example.base.dao.SellingUnitDAO.getAll(conn));
+
                     req.getRequestDispatcher("/WEB-INF/views/pharmacist/edit-medicine.jsp").forward(req, resp);
                     return;
                 } else {

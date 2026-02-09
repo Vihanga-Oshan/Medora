@@ -29,6 +29,13 @@ public class JwtAuthFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
         String path = req.getRequestURI().substring(req.getContextPath().length());
 
+        // Handle /router prefix for NewPath architecture
+        if (path.startsWith("/router")) {
+            path = path.substring("/router".length());
+            if (path.isEmpty())
+                path = "/";
+        }
+
         LOGGER.info("JwtAuthFilter checking path: " + path);
 
         // 1️⃣ Skip static resources
@@ -111,6 +118,8 @@ public class JwtAuthFilter implements Filter {
         if (path.startsWith("/pharmacist"))
             return "JWT_PHARMACIST";
         if (path.startsWith("/patient"))
+            return "JWT_PATIENT";
+        if (path.startsWith("/shop"))
             return "JWT_PATIENT";
         if (path.startsWith("/guardian"))
             return "JWT_GUARDIAN";

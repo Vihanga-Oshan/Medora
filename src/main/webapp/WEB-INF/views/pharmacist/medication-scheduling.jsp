@@ -1,132 +1,154 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!DOCTYPE html>
-<html>
-<head>
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+            <!DOCTYPE html>
+            <html>
 
-    <title>Medication Scheduling</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pharmacist/medication-scheduling.css">
-</head>
+            <head>
 
-<body>
-<div class="container">
-    <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
+                <title>Medication Scheduling</title>
+                <link rel="stylesheet"
+                    href="${pageContext.request.contextPath}/css/pharmacist/medication-scheduling.css">
+            </head>
 
-    <div class="main-content">
+            <body>
+                <div class="container">
+                    <%@ include file="/WEB-INF/views/components/sidebar.jsp" %>
 
-        <h1>Medication Scheduling</h1>
+                        <div class="main-content">
 
-        <div class="scheduling-grid">
+                            <h1>Medication Scheduling</h1>
 
-            <!-- ======= Schedule Form ======= -->
-            <form action="${pageContext.request.contextPath}/pharmacist/submitSchedule"
-                  method="post" class="schedule-form">
+                            <div class="scheduling-grid">
 
-                <!-- Hidden values -->
-                <input type="hidden" name="prescriptionId" value="${prescription.id}">
-                <input type="hidden" name="patientNic" value="${prescription.patientNic}">
+                                <!-- ======= Schedule Form ======= -->
+                                <form action="${pageContext.request.contextPath}/pharmacist/submitSchedule"
+                                    method="post" class="schedule-form">
 
-                <h3>Medication Schedules</h3>
+                                    <!-- Hidden values -->
+                                    <input type="hidden" name="prescriptionId" value="${prescription.id}">
+                                    <input type="hidden" name="patientNic" value="${prescription.patientNic}">
 
-                <!-- Dynamic rows -->
-                <div id="med-rows">
-                    <div class="med-row" data-row>
-                        <label>Medicine</label>
-                        <select name="medicineId" required>
-                            <c:forEach var="m" items="${medicines}">
-                                <option value="${m[0]}">${m[1]}</option>
-                            </c:forEach>
-                        </select>
+                                    <h3>Medication Schedules</h3>
 
-                        <label>Dosage</label>
-                        <select name="dosageId" required>
-                            <c:forEach var="d" items="${dosages}">
-                                <option value="${d[0]}">${d[1]}</option>
-                            </c:forEach>
-                        </select>
+                                    <!-- Dynamic rows -->
+                                    <div id="med-rows">
+                                        <div class="med-row" data-row>
+                                            <label>Medicine</label>
+                                            <select name="medicineId" required>
+                                                <c:forEach var="m" items="${medicines}">
+                                                    <option value="${m[0]}">${m[1]}</option>
+                                                </c:forEach>
+                                            </select>
 
-                        <label>Frequency</label>
-                        <select name="frequencyId" required>
-                        <c:forEach var="f" items="${frequencies}">
-                            <option value="${f[0]}">${f[1]}</option>
-                        </c:forEach>
-                         </select>
+                                            <label>Dosage</label>
+                                            <select name="dosageId" required>
+                                                <c:forEach var="d" items="${dosages}">
+                                                    <option value="${d[0]}">${d[1]}</option>
+                                                </c:forEach>
+                                            </select>
+
+                                            <label>Frequency</label>
+                                            <select name="frequencyId" required>
+                                                <c:forEach var="f" items="${frequencies}">
+                                                    <option value="${f[0]}">${f[1]}</option>
+                                                </c:forEach>
+                                            </select>
 
 
-                        <label>Meal Timing</label>
-                        <select name="mealTimingId">
-                            <option value="">— Select —</option>
-                            <c:forEach var="mt" items="${mealTimings}">
-                                <option value="${mt[0]}">${mt[1]}</option>
-                            </c:forEach>
-                        </select>
+                                            <label>Meal Timing</label>
+                                            <select name="mealTimingId">
+                                                <option value="">— Select —</option>
+                                                <c:forEach var="mt" items="${mealTimings}">
+                                                    <option value="${mt[0]}">${mt[1]}</option>
+                                                </c:forEach>
+                                            </select>
 
-                        <label>Start Date</label>
-                        <input type="date" name="startDate" required>
+                                            <label>Start Date</label>
+                                            <input type="date" name="startDate" required>
 
-                        <label>Duration (Days)</label>
-                        <input type="number" name="durationDays" min="1" value="7" required>
+                                            <label>Duration (Days)</label>
+                                            <input type="number" name="durationDays" min="1" value="7" required>
 
-                        <label>Instructions (optional)</label>
-                        <textarea name="instructions" rows="2" placeholder="E.g. Take with water..."></textarea>
+                                            <label>Instructions (optional)</label>
+                                            <textarea name="instructions" rows="2"
+                                                placeholder="E.g. Take with water..."></textarea>
 
-                        <button type="button" class="btn-reject" onclick="removeRow(this)">Remove</button>
-                        <br>  <br>
-                        <hr>
-                    </div>
+                                            <button type="button" class="btn-reject"
+                                                onclick="removeRow(this)">Remove</button>
+                                            <br> <br>
+                                            <hr>
+                                        </div>
+                                    </div>
+
+                                    <!-- Add another medicine -->
+                                    <div class="btn-group">
+                                        <button type="button" class="btn-reject" onclick="addRow()">+ Add Another
+                                            Medicine</button>
+                                    </div>
+
+                                    <!-- Delivery Option -->
+                                    <div
+                                        style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                        <label
+                                            style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; color: #007dca;">
+                                            <input type="checkbox" name="createOrder" value="true"
+                                                style="width: auto; margin: 0;">
+                                            Create Delivery Order for these items
+                                        </label>
+                                        <p style="margin: 5px 0 0 25px; font-size: 0.9em; color: #6c757d;">
+                                            This will create an APPROVED order for the patient. They can then pay and
+                                            finalize the delivery/pickup from their dashboard.
+                                        </p>
+                                    </div>
+
+                                    <!-- Submit -->
+                                    <div class="btn-group">
+                                        <button type="submit" class="btn-submit">Submit Schedule</button>
+                                    </div>
+                                </form>
+
+                                <!-- ======= Prescription Preview ======= -->
+                                <div class="patient-details-box">
+                                    <div class="preview-placeholder">
+                                        <c:choose>
+                                            <c:when test="${fn:endsWith(prescription.fileName, '.pdf')}">
+                                                <span class="pdf-icon">📄 PDF</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}"
+                                                    alt="Prescription" class="preview-image" />
+
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 </div>
 
-                <!-- Add another medicine -->
-                <div class="btn-group">
-                    <button type="button" class="btn-reject" onclick="addRow()">+ Add Another Medicine</button>
-                </div>
+                <!-- ======= JavaScript Logic ======= -->
+                <script>
+                    function addRow() {
+                        const container = document.getElementById('med-rows');
+                        const template = container.querySelector('[data-row]');
+                        const clone = template.cloneNode(true);
 
-                <!-- Submit -->
-                <div class="btn-group">
-                    <button type="submit" class="btn-submit">Submit Schedule</button>
-                </div>
-            </form>
+                        clone.querySelectorAll('input, textarea, select').forEach(el => {
+                            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                            else el.value = '';
+                        });
 
-            <!-- ======= Prescription Preview ======= -->
-            <div class="patient-details-box">
-                <div class="preview-placeholder">
-                    <c:choose>
-                        <c:when test="${fn:endsWith(prescription.fileName, '.pdf')}">
-                            <span class="pdf-icon">📄 PDF</span>
-                        </c:when>
-                        <c:otherwise>
-                            <img src="${pageContext.request.contextPath}/prescriptionFile/${prescription.filePath}" alt="Prescription" class="preview-image" />
+                        container.appendChild(clone);
+                    }
 
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                    function removeRow(btn) {
+                        const container = document.getElementById('med-rows');
+                        if (container.querySelectorAll('[data-row]').length > 1) {
+                            btn.closest('[data-row]').remove();
+                        }
+                    }
+                </script>
+            </body>
 
-<!-- ======= JavaScript Logic ======= -->
-<script>
-    function addRow() {
-        const container = document.getElementById('med-rows');
-        const template = container.querySelector('[data-row]');
-        const clone = template.cloneNode(true);
-
-        clone.querySelectorAll('input, textarea, select').forEach(el => {
-            if (el.tagName === 'SELECT') el.selectedIndex = 0;
-            else el.value = '';
-        });
-
-        container.appendChild(clone);
-    }
-
-    function removeRow(btn) {
-        const container = document.getElementById('med-rows');
-        if (container.querySelectorAll('[data-row]').length > 1) {
-            btn.closest('[data-row]').remove();
-        }
-    }
-</script>
-</body>
-</html>
+            </html>

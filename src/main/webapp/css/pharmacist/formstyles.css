@@ -1,89 +1,170 @@
 .form-section {
     background-color: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    margin: 30px;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    margin: 20px;
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 35px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 20px;
 }
 
 .section-header h2 {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 26px;
+    color: #1e293b;
+    font-weight: 700;
     margin: 0;
 }
 
 .section-header p {
     font-size: 14px;
-    color: #666;
+    color: #64748b;
     margin: 5px 0 0;
 }
 
 .styled-form {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-section-title {
+    grid-column: span 2;
+    font-size: 18px;
+    font-weight: 600;
+    color: #007dca;
+    margin: 15px 0 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-section-title i {
+    color: #94a3b8;
 }
 
 .styled-form label {
-    font-weight: 500;
-    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
 .styled-form input,
 .styled-form textarea,
 .styled-form select {
     width: 100%;
-    padding: 10px 12px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fafafa;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    color: #1e293b;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.styled-form input:focus,
+.styled-form textarea:focus,
+.styled-form select:focus {
+    border-color: #007dca;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(0, 125, 202, 0.1);
 }
 
 .styled-form textarea {
+    min-height: 100px;
     resize: vertical;
 }
 
 .btn-group {
-    margin-top: 20px;
+    grid-column: span 2;
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .btn-submit {
-    background-color: #2563eb;
+    background-color: #007dca;
     color: white;
-    padding: 10px 20px;
+    padding: 14px 40px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 125, 202, 0.2);
 }
 
 .btn-submit:hover {
-    background-color: #1e40af;
+    background-color: #006bb0;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 125, 202, 0.3);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
 }
 
 .add-btn {
-    background-color: #10b981;
-    color: white;
+    background-color: #f1f5f9;
+    color: #475569;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 14px;
-    border-radius: 8px;
+    font-weight: 600;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
-.add-btn i {
-    width: 16px;
-    height: 16px;
+.add-btn:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+}
+
+/* Category select with plus button */
+.category-input-group {
+    display: flex;
+    gap: 12px;
+}
+
+.category-add-btn {
+    background-color: #007dca;
+    color: white;
+    border: none;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-add-btn:hover {
+    background-color: #006bb0;
 }

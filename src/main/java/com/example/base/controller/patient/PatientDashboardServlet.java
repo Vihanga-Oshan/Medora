@@ -1,5 +1,7 @@
 package com.example.base.controller.patient;
 
+import com.example.base.dao.NotificationDAO;
+import com.example.base.model.Notification;
 import com.example.base.dao.ScheduleDAO;
 import com.example.base.db.dbconnection;
 import com.example.base.model.MedicationSchedule;
@@ -42,29 +44,48 @@ public class PatientDashboardServlet extends HttpServlet {
 
         try (Connection conn = dbconnection.getConnection()) {
             ScheduleDAO scheduleDAO = new ScheduleDAO(conn);
+            NotificationDAO notificationDAO = new NotificationDAO(conn);
 
+            // 1. Fetch Schedule
             List<MedicationSchedule> meds = scheduleDAO.getMedicationByDate(patientNic, selectedDate);
             List<MedicationSchedule> todaysMeds = scheduleDAO.getMedicationByDate(patientNic, today);
 
-            // ✅ Separate by status
+            // 2. Fetch Notifications (Limit to 3 recent)
+            List<Notification> allNotifications = notificationDAO.getNotificationsByPatient(patientNic);
+            List<Notification> recentNotifications = allNotifications.stream()
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            // 3. Separate by status
             List<MedicationSchedule> pendingTodaysMeds = todaysMeds.stream()
                     .filter(m -> "PENDING".equalsIgnoreCase(m.getStatus()))
                     .collect(Collectors.toList());
+
+            // 4. Calculate Counts & Adherence (Based on SELECTED date or TODAY?)
+            // Usually dashboard stats are for the selected view, but adherence score is
+            // often 'today'.
+            // Let's stick to the 'meds' (selected date) for the counts, but 'todaysMeds'
+            // for the score if we want "Today's Score".
+            // Actually, calculating adherence for the SELECTED day is consistent.
 
             int total = meds.size();
             int taken = (int) meds.stream().filter(m -> "TAKEN".equalsIgnoreCase(m.getStatus())).count();
             int missed = (int) meds.stream().filter(m -> "MISSED".equalsIgnoreCase(m.getStatus())).count();
             int pending = total - taken - missed;
 
+            int adherenceScore = (total > 0) ? (int) ((double) taken / total * 100) : 0;
+
             // ✅ Add data to request scope
             req.setAttribute("patientNic", patientNic);
             req.setAttribute("pendingMedications", pendingTodaysMeds);
             req.setAttribute("medications", meds);
+            req.setAttribute("notifications", recentNotifications); // NEW
             req.setAttribute("selectedDate", selectedDate);
             req.setAttribute("totalCount", total);
             req.setAttribute("takenCount", taken);
             req.setAttribute("missedCount", missed);
             req.setAttribute("pendingCount", pending);
+            req.setAttribute("adherenceScore", adherenceScore); // NEW
 
             // ✅ Forward to JSP
             req.getRequestDispatcher("/WEB-INF/views/patient/patient-dashboard.jsp").forward(req, resp);

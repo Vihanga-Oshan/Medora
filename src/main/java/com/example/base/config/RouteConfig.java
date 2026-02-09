@@ -49,6 +49,7 @@ public class RouteConfig {
     public static final String PHARMACIST_PREFIX = "/pharmacist";
     public static final String ADMIN_PREFIX = "/admin";
     public static final String GUARDIAN_PREFIX = "/guardian";
+    public static final String SHOP_PREFIX = "/shop";
 
     /**
      * Check if a route is public (no authentication required).
@@ -129,6 +130,8 @@ public class RouteConfig {
             return "patient";
         if (path.startsWith(GUARDIAN_PREFIX))
             return "guardian";
+        if (path.startsWith(SHOP_PREFIX))
+            return "patient";
 
         return null;
     }
@@ -146,6 +149,8 @@ public class RouteConfig {
             return "/pharmacist/login";
         if (path.startsWith(GUARDIAN_PREFIX))
             return "/guardian/login";
+        if (path.startsWith(SHOP_PREFIX))
+            return "/patient/login";
 
         return "/login"; // Default to patient login
     }
