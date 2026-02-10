@@ -80,8 +80,8 @@
                             </div>
                             <% } %>
 
-                                <form class="admin-form" action="${pageContext.request.contextPath}/admin/addpharmacist"
-                                    method="post">
+                                <form class="admin-form"
+                                    action="${pageContext.request.contextPath}/admin/add-pharmacist" method="post">
                                     <div class="form-group">
                                         <label for="license">License Number</label>
                                         <input type="text" id="license" name="license"

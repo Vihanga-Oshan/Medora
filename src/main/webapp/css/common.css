@@ -3,12 +3,11 @@
     /* Hamilton-Inspired Palette */
     --navy-dark: #0f172a;
     --navy-light: #1e293b;
-    --medical-blue: #007dca;
-    --medical-blue-hover: #005f99;
+    --medical-blue: #0078c3;
+    --medical-blue-hover: #0066a5;
     --accent-orange: #ef4444;
     --success-green: #10b981;
     --warning-yellow: #f59e0b;
-
     /* Mapped for backward compatibility */
     --primary-blue: var(--medical-blue);
     --primary-hover: var(--medical-blue-hover);
@@ -31,6 +30,21 @@
     --border-radius: 0.5rem;
     /* 8px */
     --transition: all 0.2s ease;
+
+    /* Shared Auth & Form Tokens */
+    --auth-bg: var(--bg-light);
+    --auth-card-bg: var(--bg-white);
+    --auth-shadow: 0 8px 30px rgba(0, 125, 202, 0.1);
+
+    --input-bg: #f8f8f8;
+    --input-border: #d1d5db;
+    --input-focus-border: var(--medical-blue);
+
+    --error-red: #dc2626;
+    --success-green-alt: #16a34a;
+
+    --transition-fast: all 0.2s ease;
+    --transition-mid: all 0.3s ease;
 }
 
 /* ==================== BASE STYLES ==================== */

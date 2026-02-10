@@ -61,8 +61,20 @@
 
 /* Active Link */
 .nav-links a.active {
-    background-color: var(--medical-blue);
-    color: #ffffff;
+    color: var(--medical-blue);
+    background-color: transparent;
+    position: relative;
+}
+
+.nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 18px;
+    right: 18px;
+    height: 2px;
+    background: var(--medical-blue);
+    border-radius: 10px;
 }
 
 /* Logout button special style */

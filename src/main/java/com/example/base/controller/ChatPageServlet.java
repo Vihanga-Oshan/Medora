@@ -4,7 +4,8 @@ import com.example.base.config.DB;
 
 import com.example.base.dao.ChatDAO;
 import com.example.base.dao.PharmacistDAO;
-
+import com.example.base.dao.ScheduleDAO;
+import com.example.base.model.MedicationSchedule;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,6 +49,11 @@ public class ChatPageServlet extends HttpServlet {
             if ("patient".equals(role)) {
                 PharmacistDAO pharmacistDAO = new PharmacistDAO(conn);
                 req.setAttribute("contacts", pharmacistDAO.getAllPharmacists());
+
+                // Fetch active medications for the patient
+                ScheduleDAO scheduleDAO = new ScheduleDAO(conn);
+                List<MedicationSchedule> meds = scheduleDAO.getMedicationByDate(userId, java.time.LocalDate.now());
+                req.setAttribute("activeMeds", meds);
             } else if ("pharmacist".equals(role)) {
                 if ("suppliers".equals(type)) {
                     req.setAttribute("contacts", chatDAO.getPharmacistSupplierConversations());

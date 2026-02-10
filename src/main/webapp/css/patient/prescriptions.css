@@ -48,25 +48,17 @@
   color: #e53935;
 }
 
-.upload-container {
-  max-width: 600px;
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 32px;
-  margin: 40px auto;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  font-family: 'Inter', sans-serif;
+/* Page-specific refinements for the Upload Area */
+.card-title {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: var(--navy-dark);
 }
 
-.upload-container h1 {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.upload-container .subtext {
-  color: #666;
+.card-subtitle {
+  color: #64748b;
   margin-bottom: 24px;
+  font-size: 0.95rem;
 }
 
 .form-group {
@@ -90,15 +82,19 @@ input[type="file"] {
 .btn-upload {
   background-color: var(--medical-blue);
   color: white;
-  padding: 10px 24px;
+  padding: 12px 28px;
   font-weight: 600;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 120, 195, 0.2);
 }
 
 .btn-upload:hover {
   background-color: var(--medical-blue-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 120, 195, 0.3);
 }
 
 .back-link {
@@ -114,19 +110,49 @@ input[type="file"] {
   margin-top: 16px;
 }
 
+/* Upload Area Refinement */
 .upload-area {
-  border: 2px dashed #ccc;
-  padding: 2rem;
+  border: 2px dashed #cbd5e1;
+  padding: 2.5rem 2rem;
+  /* Reduced vertical breathing room */
   text-align: center;
-  border-radius: 12px;
-  background-color: #f8f9fa;
-  margin-bottom: 0.5rem;
+  border-radius: 16px;
+  background-color: #f8fafc;
+  margin-bottom: 24px;
+  /* Reduced space before upload button */
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  /* ✅ Flexbox centering */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
+}
+
+.upload-area:hover {
+  border-color: var(--medical-blue);
+  background-color: #f1f5f9;
+}
+
+.upload-area svg {
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
+}
+
+.upload-area:hover svg {
+  transform: translateY(-5px);
+}
+
+.upload-area span {
+  font-weight: 600;
+  color: #334155;
+}
+
+.upload-area .small {
+  font-weight: 400;
+  color: #64748b;
+  font-size: 0.85rem;
 }
 
 .preview-container {

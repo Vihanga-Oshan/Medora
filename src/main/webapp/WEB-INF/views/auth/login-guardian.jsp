@@ -1,65 +1,75 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="cp" value="${pageContext.request.contextPath}" />
+  <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+    <c:set var="cp" value="${pageContext.request.contextPath}" />
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Login - Guardian</title>
-  <link rel="stylesheet" href="${cp}/css/login/login-guardian.css"/>
-</head>
-<body class="login-page">
+    <!DOCTYPE html>
+    <html lang="en">
 
-<div class="login-container">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Login - Guardian</title>
+      <link rel="stylesheet" href="${cp}/css/common.css" />
+      <link rel="stylesheet" href="${cp}/css/auth.css" />
+    </head>
 
-  <!-- Back to Home -->
-  <div class="back-link" onclick="window.location.href='${cp}/index.jsp'">← Back to Home</div>
+    <body class="auth-page">
 
-  <!-- Logo -->
-  <div class="logo">
-    <img src="${cp}/assets/logo.png" alt="Medora Logo"/>
-  </div>
+      <div class="auth-container">
 
-  <!-- Heading -->
-  <h1>Welcome Back</h1>
-  <p class="subtitle">Login to manage your patients’ health with care</p>
+        <!-- Back to Home -->
+        <div class="back-link" onclick="window.location.href='${cp}/index.jsp'">← Back to Home</div>
 
-  <!-- Toggle Buttons -->
-  <div class="form-toggle">
-    <button type="button" onclick="location.href='${cp}/login'">Patient</button>
-    <button type="button" class="active">Guardian</button>
-  </div>
+        <!-- Logo -->
+        <div class="logo">
+          <img src="${cp}/assets/logo.png" alt="Medora Logo" />
+        </div>
 
-  <!-- Show error message if login failed -->
-  <c:if test="${not empty error}">
-    <p class="error-text" style="color:#e11d48; margin-top:.75rem;">${error}</p>
-  </c:if>
+        <!-- Heading -->
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Login to manage your patients' health with care</p>
 
-  <!-- Login Form -->
-  <form method="post" action="${cp}/guardian/login" novalidate
-        onsubmit="return window.loginValidate && window.loginValidate(this);">
+        <!-- Toggle Buttons -->
+        <div class="form-toggle">
+          <button type="button" onclick="location.href='${cp}/login'">Patient</button>
+          <button type="button" class="active">Guardian</button>
+        </div>
 
-    <label for="nic">NIC</label>
-    <input type="text" id="nic" name="nic" value="${param.nic}" placeholder="Enter your NIC" required/>
+        <!-- Login Form -->
+        <form method="post" action="${cp}/guardian/login" novalidate
+          onsubmit="return window.loginValidate && window.loginValidate(this);">
 
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password" placeholder="Enter your password" required/>
+          <div class="form-group">
+            <label for="nic">NIC</label>
+            <input type="text" id="nic" name="nic" class="form-input" value="${param.nic}" placeholder="Enter your NIC"
+              required />
+          </div>
 
-    <div class="form-options">
-      <label><input type="checkbox" name="remember"/> Remember Me</label>
-      <a href="#" class="forgot-password">Forgot Password?</a>
-    </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password"
+              required />
+          </div>
 
-    <button type="submit" class="btn-submit">Login</button>
-  </form>
+          <div class="form-options">
+            <label><input type="checkbox" name="remember" /> Remember Me</label>
+            <a href="#" class="forgot-password">Forgot Password?</a>
+          </div>
 
-  <p class="bottom-text">
-    Don’t have an account? <a href="${cp}/guardian/register">Register here</a>
-  </p>
-</div>
+          <button type="submit" class="btn-auth-submit">Login</button>
 
-<script src="${cp}/js/form-validation.js?v=1" defer></script>
-</body>
-</html>
+          <!-- Show error message if login failed -->
+          <c:if test="${not empty error}">
+            <p class="error-text">${error}</p>
+          </c:if>
+        </form>
+
+        <p class="bottom-text">
+          Don't have an account? <a href="${cp}/guardian/register">Register here</a>
+        </p>
+      </div>
+
+      <script src="${cp}/js/form-validation.js?v=1" defer></script>
+    </body>
+
+    </html>

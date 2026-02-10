@@ -20,7 +20,7 @@
 <style>
     .patient-footer {
         margin-top: 80px;
-        background-color: var(--navy-dark);
+        background-color: var(--medical-blue);
         color: #ffffff;
         padding: 60px 20px 30px;
         font-family: inherit;

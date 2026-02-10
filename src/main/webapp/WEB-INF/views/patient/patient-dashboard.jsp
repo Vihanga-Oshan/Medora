@@ -21,8 +21,8 @@
                     /* Color Palette */
                     --navy-dark: #0f172a;
                     --navy-light: #1e293b;
-                    --medical-blue: #007acc;
-                    --medical-blue-hover: #005999;
+                    --medical-blue: #0078c3;
+                    --medical-blue-hover: #0066a5;
                     --accent-orange: #ef4444;
                     --accent-orange-hover: #dc2626;
 
@@ -51,6 +51,8 @@
                     color: var(--text-main);
                     margin: 0;
                     padding: 0;
+                    padding-top: 0 !important;
+                    /* Allow hero to flow under navbar */
                     box-sizing: border-box;
                 }
 
@@ -81,14 +83,51 @@
 
                 /* Hero Section */
                 .dashboard-hero {
-                    background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
-                    padding: 60px 20px 100px;
+                    position: relative;
+                    background-color: var(--medical-blue);
+                    /* Fallback */
+                    padding: 120px 20px 100px;
                     color: white;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     flex-wrap: wrap;
                     gap: 20px;
+                    overflow: hidden;
+                }
+
+                .dashboard-hero::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-image: url('${pageContext.request.contextPath}/assets/hero-image.jpg');
+                    background-size: cover;
+                    background-position: center 30%;
+                    filter: blur(3px);
+                    opacity: 0.5;
+                    /* Increased from 0.25 */
+                    z-index: 0;
+                }
+
+                .dashboard-hero::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(135deg, rgba(0, 120, 195, 0.75) 0%, rgba(0, 74, 124, 0.6) 100%);
+                    /* Reduced alpha from 0.95 */
+                    z-index: 1;
+                }
+
+                .hero-content,
+                .hero-actions {
+                    position: relative;
+                    z-index: 2;
                 }
 
                 .hero-content {
@@ -104,14 +143,18 @@
                 }
 
                 .highlight-text {
-                    color: var(--medical-blue);
-                    font-weight: 700;
+                    color: white;
+                    /* Changed to white for visibility on blue background */
+                    font-weight: 800;
+                    text-decoration: underline;
+                    text-underline-offset: 4px;
                 }
 
                 .hero-subtitle {
                     font-size: 1.1rem;
-                    color: #94a3b8;
-                    font-weight: 300;
+                    color: rgba(255, 255, 255, 0.9);
+                    /* Brightened for better contrast */
+                    font-weight: 400;
                 }
 
                 .hero-actions {
@@ -135,7 +178,7 @@
                 .btn-primary {
                     background-color: var(--medical-blue);
                     color: white;
-                    box-shadow: 0 4px 6px rgba(0, 125, 202, 0.2);
+                    box-shadow: 0 4px 6px rgba(0, 120, 195, 0.2);
                 }
 
                 .btn-primary:hover {
@@ -152,6 +195,29 @@
 
                 .btn-outline:hover {
                     background-color: rgba(255, 255, 255, 0.2);
+                }
+
+                .dashboard-hero .btn-primary {
+                    background-color: white;
+                    color: #0078c3;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                }
+
+                .dashboard-hero .btn-primary:hover {
+                    background-color: #f8fbff;
+                    transform: translateY(-2px);
+                }
+
+                .dashboard-hero .btn-outline {
+                    background-color: rgba(255, 255, 255, 0.15);
+                    backdrop-filter: blur(8px);
+                    color: white;
+                    border: 1.5px solid rgba(255, 255, 255, 0.4);
+                }
+
+                .dashboard-hero .btn-outline:hover {
+                    background-color: rgba(255, 255, 255, 0.25);
+                    border-color: rgba(255, 255, 255, 0.6);
                 }
 
                 /* Stats Overview */

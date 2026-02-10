@@ -3,6 +3,25 @@
 /* Import Common Styles */
 @import url("../common.css");
 
+/* ==================== LAYOUT & SPACING ==================== */
+.container {
+  padding: 20px 20px 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  color: var(--navy-dark);
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-light-gray);
+  margin-bottom: 24px;
+}
+
 /* ==================== DASHBOARD SPECIFIC ==================== */
 
 .stats-grid {
@@ -58,11 +77,15 @@
 
 .card {
   background: var(--bg-white);
-  padding: 40px;
-  border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
-  margin-bottom: 30px;
-  border-top: 4px solid var(--primary-blue);
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 40px;
+  border-top: 4px solid var(--medical-blue);
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card-title {

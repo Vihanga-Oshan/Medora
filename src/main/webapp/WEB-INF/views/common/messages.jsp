@@ -19,41 +19,8 @@
                 </c:choose>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/components/chat-style.css">
                 <style>
-                    /* --- Global Layout Reset --- */
-                    body.role-pharmacist {
-                        height: 100vh !important;
-                        margin: 0;
-                        padding: 0;
-                        overflow: hidden !important;
-                    }
+                    /* --- Chat Layout --- */
 
-                    body.role-pharmacist .container {
-                        height: 100vh;
-                        overflow: hidden;
-                        display: flex;
-                        width: 100%;
-                        max-width: none;
-                    }
-
-                    body.role-pharmacist .main-content {
-                        flex: 1;
-                        display: flex;
-                        flex-direction: column;
-                        height: 100%;
-                        overflow: hidden;
-                        background: var(--bg-light);
-                    }
-
-                    body.role-patient .container {
-                        width: 95%;
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        display: block;
-                    }
-
-                    body.role-patient .main-content {
-                        padding-top: 20px;
-                    }
 
                     /* --- Chat Layout --- */
                     .chat-layout {
@@ -148,16 +115,75 @@
 
                     /* --- Patient View Overrides --- */
                     .patient-view .chat-layout {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: 1fr 300px;
                         width: 100%;
-                        max-width: 1100px;
-                        margin: 20px auto 40px;
+                        max-width: 1150px;
+                        margin: 0 auto;
                         height: 600px;
+                        border-radius: 20px;
+                        border: 1px solid var(--glass-border);
+                        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+                    }
+
+                    @media (max-width: 1100px) {
+                        .patient-view .chat-layout {
+                            grid-template-columns: 1fr;
+                        }
+
+                        .chat-sidebar {
+                            display: none;
+                        }
                     }
 
                     .patient-view .chat-container {
-                        height: 600px;
-                        min-height: 600px;
+                        height: 100%;
+                        min-height: 0;
+                    }
+
+                    /* --- Chat Sidebar (Meds Widget) --- */
+                    .chat-sidebar {
+                        background: #fcfcfc;
+                        border-left: 1px solid #f0f2f5;
+                        padding: 24px;
+                        overflow-y: auto;
+                    }
+
+                    .sidebar-section h3 {
+                        font-size: 12px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.1em;
+                        color: var(--medical-blue);
+                        margin-bottom: 24px;
+                        border-bottom: 1px solid #f1f5f9;
+                        padding-bottom: 10px;
+                    }
+
+                    .med-widget-item {
+                        padding: 16px;
+                        background: white;
+                        border-radius: 16px;
+                        border: 1px solid #f1f5f9;
+                        margin-bottom: 12px;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+                    }
+
+                    .med-widget-item h4 {
+                        margin: 0 0 4px 0;
+                        font-size: 15px;
+                        color: var(--text-main);
+                    }
+
+                    .med-widget-item .dosage {
+                        font-size: 13px;
+                        color: var(--chat-primary);
+                        font-weight: 600;
+                    }
+
+                    .med-widget-item .frequency {
+                        font-size: 12px;
+                        color: var(--text-muted);
+                        margin-top: 4px;
                     }
 
                     .patient-view .chat-page-title-box {
@@ -179,11 +205,11 @@
 
             <body class="dashboard-body role-${role}">
                 <c:if test="${role == 'patient'}">
-                    <%@ include file="/WEB-INF/views/components/header.jsp" %>
-                        <!-- Ensure receiverId is set for patients even if servlet failed -->
-                        <c:if test="${empty receiverId}">
-                            <c:set var="receiverId" value="PHARMACIST" scope="request" />
-                        </c:if>
+                    <jsp:include page="/WEB-INF/views/components/header.jsp" />
+                    <!-- Ensure receiverId is set for patients even if servlet failed -->
+                    <c:if test="${empty receiverId}">
+                        <c:set var="receiverId" value="PHARMACIST" scope="request" />
+                    </c:if>
                 </c:if>
                 <div class="container ${role == 'patient' ? 'patient-view' : ''}">
                     <!-- Sidebar -->
@@ -197,30 +223,7 @@
                     </c:choose>
 
                     <main class="main-content">
-                        <c:if test="${role == 'patient'}">
-                            <div class="chat-page-title-box" style="padding: 0 40px;">
-                                <div
-                                    style="background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 24px 40px; border-radius: 24px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.4); display: flex; align-items: center; gap: 24px; margin-bottom: 24px;">
-                                    <div
-                                        style="width: 64px; height: 64px; background: var(--chat-primary-gradient); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-vibrant); color: white;">
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path
-                                                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h2
-                                            style="margin: 0; font-size: 26px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;">
-                                            Pharmacy Care Center</h2>
-                                        <p
-                                            style="margin: 6px 0 0; color: var(--text-muted); font-size: 15px; font-weight: 500;">
-                                            Your direct line to expert healthcare advice and support</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </c:if>
+
 
                         <div class="chat-layout">
                             <!-- Contact List - Hidden for Patients -->
@@ -289,10 +292,11 @@
                                                 <div style="display: flex; flex-direction: column;">
                                                     <c:choose>
                                                         <c:when test="${role == 'patient'}">
-                                                            <h3>Pharmacy Support</h3>
+                                                            <h3 style="color: var(--medical-blue); font-weight: 700;">
+                                                                Pharmacy Support</h3>
                                                             <div
-                                                                style="font-size: 12px; color: #10b981; font-weight: 500;">
-                                                                Online</div>
+                                                                style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+                                                                Expert Healthcare Advisor</div>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <c:forEach var="ct" items="${contacts}">
@@ -305,7 +309,7 @@
                                                             <h3>${not empty receiverName ? receiverName : 'Loading...'}
                                                             </h3>
                                                             <div
-                                                                style="font-size: 12px; color: #10b981; font-weight: 500;">
+                                                                style="font-size: 12px; color: var(--medical-blue); font-weight: 600;">
                                                                 Active Session</div>
                                                         </c:otherwise>
                                                     </c:choose>
@@ -345,6 +349,33 @@
                                     </c:otherwise>
                                 </c:choose>
                             </div>
+
+                            <!-- Right Sidebar for Patients: Active Medications -->
+                            <c:if test="${role == 'patient'}">
+                                <div class="chat-sidebar">
+                                    <div class="sidebar-section">
+                                        <h3>Active Medications</h3>
+                                        <c:choose>
+                                            <c:when test="${empty activeMeds}">
+                                                <p style="font-size: 14px; color: var(--text-muted);">No active
+                                                    prescriptions found.</p>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="meds-list">
+                                                    <c:forEach var="med" items="${activeMeds}">
+                                                        <div class="med-widget-item">
+                                                            <h4>${med.medicineName}</h4>
+                                                            <div class="dosage">${med.dosage}</div>
+                                                            <div class="frequency">${med.frequency} • ${med.mealTiming}
+                                                            </div>
+                                                        </div>
+                                                    </c:forEach>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+                            </c:if>
                         </div>
                     </main>
                 </div>
@@ -423,6 +454,9 @@
                         setInterval(poll, 3000);
                     }
                 </script>
+                <c:if test="${role == 'patient'}">
+                    <jsp:include page="/WEB-INF/views/components/footer.jsp" />
+                </c:if>
             </body>
 
             </html>

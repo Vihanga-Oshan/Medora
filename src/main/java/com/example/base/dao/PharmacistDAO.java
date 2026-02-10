@@ -31,7 +31,6 @@ public class PharmacistDAO {
     }
 
     public static Pharmacist validate(String email, String password) {
-        Pharmacist pharmacist = null;
         try (Connection conn = dbconnection.getConnection()) {
             String sql = "SELECT * FROM pharmacist WHERE email = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -40,73 +39,75 @@ public class PharmacistDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                pharmacist = new Pharmacist();
+                Pharmacist pharmacist = new Pharmacist();
                 pharmacist.setId(rs.getInt("id"));
                 pharmacist.setName(rs.getString("name"));
                 pharmacist.setEmail(rs.getString("email"));
                 pharmacist.setPassword(rs.getString("password"));
+                return pharmacist;
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error validating pharmacist credentials", e);
         }
-        return pharmacist;}
+        return null;
+    }
 
-        public static Pharmacist validateById ( int id, String password){
-            Pharmacist pharmacist = null;
-            try (Connection conn = dbconnection.getConnection()) {
-                String sql = "SELECT * FROM pharmacist WHERE id = ? AND password = ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setInt(1, id);
-                stmt.setString(2, PasswordUtil.hashPassword(password));
-                ResultSet rs = stmt.executeQuery();
+    public static Pharmacist validateById(int id, String password) {
+        try (Connection conn = dbconnection.getConnection()) {
+            String sql = "SELECT * FROM pharmacist WHERE id = ? AND password = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            stmt.setString(2, PasswordUtil.hashPassword(password));
+            ResultSet rs = stmt.executeQuery();
 
+            if (rs.next()) {
+                Pharmacist pharmacist = new Pharmacist();
+                pharmacist.setId(rs.getInt("id"));
+                pharmacist.setName(rs.getString("name"));
+                pharmacist.setEmail(rs.getString("email"));
+                pharmacist.setPassword(rs.getString("password"));
+                return pharmacist;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error validating pharmacist credentials by id", e);
+        }
+        return null;
+    }
+
+    public Pharmacist getPharmacistById(int id) throws SQLException {
+        String sql = "SELECT * FROM pharmacist WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    pharmacist = new Pharmacist();
-                    pharmacist.setId(rs.getInt("id"));
-                    pharmacist.setName(rs.getString("name"));
-                    pharmacist.setEmail(rs.getString("email"));
-                    pharmacist.setPassword(rs.getString("password"));
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Error validating pharmacist credentials by id", e);
-            }
-            return pharmacist;
-        }
-
-        public Pharmacist getPharmacistById ( int id) throws SQLException {
-            String sql = "SELECT * FROM pharmacist WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        Pharmacist pharmacist = new Pharmacist();
-                        pharmacist.setId(rs.getInt("id"));
-                        pharmacist.setName(rs.getString("name"));
-                        pharmacist.setEmail(rs.getString("email"));
-                        pharmacist.setPassword(rs.getString("password"));
-                        return pharmacist;
-                    }
-                }
-            }
-            return null;
-        }
-
-        public List<Pharmacist> getAllPharmacists () throws SQLException {
-            List<Pharmacist> pharmacists = new ArrayList<>();
-            String sql = "SELECT * FROM pharmacist ORDER BY created_at DESC";
-            try (PreparedStatement stmt = conn.prepareStatement(sql);
-                 ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
                     Pharmacist pharmacist = new Pharmacist();
                     pharmacist.setId(rs.getInt("id"));
                     pharmacist.setName(rs.getString("name"));
                     pharmacist.setEmail(rs.getString("email"));
                     pharmacist.setPassword(rs.getString("password"));
-                    pharmacists.add(pharmacist);
+                    return pharmacist;
                 }
             }
-            return pharmacists;
         }
+        return null;
+    }
+
+    public List<Pharmacist> getAllPharmacists() throws SQLException {
+        List<Pharmacist> pharmacists = new ArrayList<>();
+        String sql = "SELECT * FROM pharmacist ORDER BY created_at DESC";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Pharmacist pharmacist = new Pharmacist();
+                pharmacist.setId(rs.getInt("id"));
+                pharmacist.setName(rs.getString("name"));
+                pharmacist.setEmail(rs.getString("email"));
+                pharmacist.setPassword(rs.getString("password"));
+                pharmacists.add(pharmacist);
+            }
+        }
+        return pharmacists;
+    }
 
     public void updatePharmacist(Pharmacist pharmacist) throws SQLException {
         // 1️⃣ Fetch the current record
@@ -134,34 +135,32 @@ public class PharmacistDAO {
         }
     }
 
-
     public boolean deletePharmacist(int id) throws SQLException {
-            String sql = "DELETE FROM pharmacist WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                stmt.executeUpdate();
-            }
-            return false;
+        String sql = "DELETE FROM pharmacist WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
         }
+    }
 
-        public boolean idExists(int id) throws SQLException {
-            String sql = "SELECT 1 FROM pharmacist WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    return rs.next();
-                }
+    public boolean idExists(int id) throws SQLException {
+        String sql = "SELECT 1 FROM pharmacist WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
             }
         }
+    }
 
-        public boolean emailExists(String email) throws SQLException {
-            String sql = "SELECT 1 FROM pharmacist WHERE email = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, email);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    return rs.next();
-                }
+    public boolean emailExists(String email) throws SQLException {
+        String sql = "SELECT 1 FROM pharmacist WHERE email = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
             }
         }
+    }
 
 }
