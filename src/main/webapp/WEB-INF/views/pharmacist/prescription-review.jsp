@@ -18,6 +18,13 @@
             max-width: none !important;
             height: 100vh !important;
             margin: 0 !important;
+            overflow: hidden !important;
+          }
+
+          /* Ensure main content doesn't scroll itself */
+          .main-content {
+            height: 100vh !important;
+            overflow: hidden !important;
           }
         </style>
       </head>

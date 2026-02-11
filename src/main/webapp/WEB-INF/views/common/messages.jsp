@@ -29,13 +29,35 @@
                         grid-template-rows: 1fr;
                         flex: 1;
                         min-height: 0;
-                        /* Critical for flex scrolling */
                         background: white;
                         border-radius: 20px;
                         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
                         overflow: hidden;
-                        border: 1px solid var(--glass-border);
+                        border: 1px solid #e2e8f0;
                         margin: 0 40px 40px;
+                    }
+
+                    /* Pharmacist Role Fixes */
+                    body.role-pharmacist .container {
+                        display: flex;
+                        height: 100vh;
+                        overflow: hidden;
+                    }
+
+                    body.role-pharmacist .main-content {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        height: 100vh;
+                        overflow: hidden;
+                        background: var(--bg-light);
+                    }
+
+                    body.role-pharmacist .chat-layout {
+                        height: calc(100vh - 80px);
+                        margin: 20px;
+                        flex: 1;
+                        min-height: 0;
                     }
 
                     .contact-list {
@@ -53,15 +75,30 @@
                         gap: 12px;
                         position: relative;
                         transition: all 0.2s;
+                        user-select: none;
+                        z-index: 1;
                     }
 
                     .contact-item:hover {
                         background: #f8fafc;
+                        transform: translateX(2px);
                     }
 
                     .contact-item.active {
                         background: #e6f0ff;
                         border-right: 3px solid var(--chat-primary);
+                    }
+
+                    .contact-item.has-unread {
+                        background: #fef3f2;
+                    }
+
+                    .contact-item.has-unread:hover {
+                        background: #fee2e2;
+                    }
+
+                    .contact-item.has-unread .contact-info h4 {
+                        font-weight: 700;
                     }
 
                     .contact-avatar {
@@ -103,6 +140,76 @@
                         min-height: 0;
                     }
 
+                    /* Message Bubbles */
+                    .message {
+                        display: flex;
+                        flex-direction: column;
+                        max-width: 70%;
+                        padding: 12px 16px;
+                        border-radius: 16px;
+                        position: relative;
+                        word-wrap: break-word;
+                        animation: slideIn 0.3s ease;
+                    }
+
+                    @keyframes slideIn {
+                        from {
+                            opacity: 0;
+                            transform: translateY(10px);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+
+                    .message.sent {
+                        align-self: flex-end;
+                        background: var(--chat-primary);
+                        color: white;
+                        border-bottom-right-radius: 4px;
+                    }
+
+                    .message.received {
+                        align-self: flex-start;
+                        background: white;
+                        color: var(--text-main);
+                        border: 1px solid #e2e8f0;
+                        border-bottom-left-radius: 4px;
+                    }
+
+                    .message-time {
+                        font-size: 11px;
+                        opacity: 0.7;
+                        margin-top: 6px;
+                        align-self: flex-end;
+                    }
+
+                    @keyframes pulse {
+
+                        0%,
+                        100% {
+                            transform: scale(1);
+                            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+                        }
+
+                        50% {
+                            transform: scale(1.05);
+                            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.6);
+                        }
+                    }
+
+                    .unread-dot {
+                        display: inline-block;
+                        width: 8px;
+                        height: 8px;
+                        background: #ef4444;
+                        border-radius: 50%;
+                        margin-right: 8px;
+                        animation: pulse 2s infinite;
+                    }
+
                     .chat-input-area {
                         padding: 20px 32px;
                         background: white;
@@ -111,6 +218,25 @@
                         gap: 16px;
                         align-items: center;
                         flex-shrink: 0;
+                    }
+
+                    .no-selection {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100%;
+                        text-align: center;
+                        padding: 60px 40px;
+                        color: var(--text-muted);
+                    }
+
+                    .chat-window.has-selection .no-selection {
+                        display: none;
+                    }
+
+                    .chat-window:not(.has-selection) .chat-container {
+                        display: none;
                     }
 
                     /* --- Patient View Overrides --- */
@@ -206,9 +332,9 @@
             <body class="dashboard-body role-${role}">
                 <c:if test="${role == 'patient'}">
                     <jsp:include page="/WEB-INF/views/components/header.jsp" />
-                    <!-- Ensure receiverId is set for patients even if servlet failed -->
-                    <c:if test="${empty receiverId}">
-                        <c:set var="receiverId" value="PHARMACIST" scope="request" />
+                    <!-- Ensure selectedContactId is set for patients even if servlet failed -->
+                    <c:if test="${empty requestScope.selectedContactId}">
+                        <c:set var="selectedContactId" value="PHARMACIST" scope="request" />
                     </c:if>
                 </c:if>
                 <div class="container ${role == 'patient' ? 'patient-view' : ''}">
@@ -249,10 +375,12 @@
                                         }
                                     </style>
                                     <c:forEach var="c" items="${contacts}">
-                                        <c:set var="contactId" value="${role == 'patient' ? c.id : c.nic}" />
-                                        <c:set var="unread" value="${unreadCounts[contactId]}" />
-                                        <div class="contact-item ${contactId == receiverId ? 'active' : ''} ${unread > 0 ? 'has-unread' : ''}"
-                                            onclick="window.location.href='?type=${chatType}&with=${contactId}'">
+                                        <c:set var="currContactId" value="${role == 'patient' ? c.id : c.nic}" />
+                                        <c:set var="isThisActive"
+                                            value="${not empty requestScope.selectedContactId and currContactId eq requestScope.selectedContactId}" />
+                                        <div class="contact-item ${isThisActive ? 'active' : ''} ${unreadCounts[currContactId] > 0 ? 'has-unread' : ''}"
+                                            data-contact-id="${currContactId}" data-contact-name="${c.name}"
+                                            data-chat-type="${chatType}">
                                             <div class="contact-avatar">
                                                 ${fn:substring(c.name, 0, 1)}
                                             </div>
@@ -283,71 +411,77 @@
                             </c:if>
 
                             <!-- Chat Window -->
-                            <div class="chat-window">
-                                <c:choose>
-                                    <c:when test="${not empty receiverId}">
-                                        <div class="chat-container">
-                                            <div class="chat-header">
-                                                <div class="status-dot"></div>
-                                                <div style="display: flex; flex-direction: column;">
-                                                    <c:choose>
-                                                        <c:when test="${role == 'patient'}">
-                                                            <h3 style="color: var(--medical-blue); font-weight: 700;">
-                                                                Pharmacy Support</h3>
-                                                            <div
-                                                                style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
-                                                                Expert Healthcare Advisor</div>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <c:forEach var="ct" items="${contacts}">
+                            <div class="chat-window ${not empty requestScope.selectedContactId ? 'has-selection' : ''}">
+                                <!-- Welcome Screen (shown when no selection) -->
+                                <div class="no-selection">
+                                    <div class="no-selection-icon"
+                                        style="margin-bottom: 24px; color: var(--chat-primary); opacity: 0.4;">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8Z" />
+                                        </svg>
+                                    </div>
+                                    <h3
+                                        style="font-size: 22px; font-weight: 600; margin-bottom: 12px; color: var(--text-main);">
+                                        Your Conversations</h3>
+                                    <p style="font-size: 15px; color: var(--text-muted); max-width: 400px;">Select a
+                                        contact from the list to start a secure messaging session.</p>
+                                </div>
+
+                                <!-- Chat Container (shown when has-selection) -->
+                                <div class="chat-container">
+                                    <div class="chat-header">
+                                        <div class="status-dot"></div>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <c:choose>
+                                                <c:when test="${role == 'patient'}">
+                                                    <h3 style="color: var(--medical-blue); font-weight: 700;">Pharmacy
+                                                        Support</h3>
+                                                    <div
+                                                        style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+                                                        Expert Healthcare Advisor</div>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:set var="selectedName" value="Loading..." />
+                                                    <c:set var="matchFound" value="false" />
+                                                    <c:if test="${not empty requestScope.selectedContactId}">
+                                                        <c:forEach var="ct" items="${contacts}">
+                                                            <c:if test="${not matchFound}">
                                                                 <c:set var="ctId"
                                                                     value="${role == 'patient' ? ct.id : ct.nic}" />
-                                                                <c:if test="${ctId == receiverId}">
-                                                                    <c:set var="receiverName" value="${ct.name}" />
+                                                                <c:if test="${ctId eq requestScope.selectedContactId}">
+                                                                    <c:set var="selectedName" value="${ct.name}" />
+                                                                    <c:set var="matchFound" value="true" />
                                                                 </c:if>
-                                                            </c:forEach>
-                                                            <h3>${not empty receiverName ? receiverName : 'Loading...'}
-                                                            </h3>
-                                                            <div
-                                                                style="font-size: 12px; color: var(--medical-blue); font-weight: 600;">
-                                                                Active Session</div>
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </div>
-                                            </div>
-                                            <div class="chat-messages" id="message-container">
-                                                <!-- Messages loaded via JS -->
-                                            </div>
-                                            <form class="chat-input-area" id="chat-form">
-                                                <div
-                                                    style="position: relative; flex: 1; display: flex; align-items: center;">
-                                                    <input type="text" class="chat-input" id="msg-input"
-                                                        placeholder="Write your message..." autocomplete="off">
-                                                </div>
-                                                <button type="submit" class="send-btn">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                                                    </svg>
-                                                </button>
-                                            </form>
+                                                            </c:if>
+                                                        </c:forEach>
+                                                    </c:if>
+                                                    <h3 id="current-chat-name">${selectedName}</h3>
+                                                    <div
+                                                        style="font-size: 12px; color: var(--medical-blue); font-weight: 600;">
+                                                        Active Session</div>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="no-selection">
-                                            <div class="no-selection-icon">
-                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8Z" />
-                                                </svg>
-                                            </div>
-                                            <h3>Your Conversations</h3>
-                                            <p>Select a contact from the list to start a secure messaging session.</p>
+                                    </div>
+                                    <div class="chat-messages" id="message-container">
+                                        <!-- Messages loaded via JS -->
+                                    </div>
+                                    <form class="chat-input-area" id="chat-form">
+                                        <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                                            <input type="text" class="chat-input" id="msg-input"
+                                                placeholder="Write your message..." autocomplete="off">
                                         </div>
-                                    </c:otherwise>
-                                </c:choose>
+                                        <button type="submit" class="send-btn">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <!-- Right Sidebar for Patients: Active Medications -->
@@ -382,27 +516,80 @@
 
                 <script>
                     const userId = "${userId}";
-                    const receiverId = "${receiverId}";
+                    let receiverId = "${requestScope.selectedContactId}";
                     const contextPath = "${pageContext.request.contextPath}";
-                    const isSupplier = "${chatType}" === "suppliers";
+                    let isSupplier = "${chatType}" === "suppliers";
                     let lastId = 0;
+                    let pollInterval;
 
-                    if (receiverId) {
-                        const form = document.getElementById('chat-form');
-                        const input = document.getElementById('msg-input');
-                        const container = document.getElementById('message-container');
+                    // Handle contact item clicks for smooth switching
+                    document.querySelectorAll('.contact-item').forEach(item => {
+                        item.addEventListener('click', function () {
+                            const contactId = this.dataset.contactId;
+                            const contactName = this.dataset.contactName;
+                            const chatType = this.dataset.chatType;
 
-                        // Highlight active messages link in navbar for patients
-                        document.querySelectorAll('.nav-links a').forEach(link => {
-                            if (link.getAttribute('href').includes('/messages')) {
-                                link.classList.add('active');
+                            // Update URL without reload
+                            const newUrl = `?type=${chatType}&with=${contactId}`;
+                            window.history.pushState({}, '', newUrl);
+
+                            // Update active state
+                            document.querySelectorAll('.contact-item').forEach(c => c.classList.remove('active'));
+                            this.classList.add('active');
+
+                            // Remove unread indicators from this contact
+                            this.classList.remove('has-unread');
+                            const unreadDot = this.querySelector('.unread-dot');
+                            if (unreadDot) {
+                                unreadDot.remove();
                             }
-                        });
 
-                        form.onsubmit = function (e) {
+                            // Switch chat
+                            switchChat(contactId, contactName);
+                        });
+                    });
+
+                    function switchChat(newReceiverId, contactName) {
+                        receiverId = newReceiverId;
+                        lastId = 0;
+
+                        // Show chat UI and hide welcome screen
+                        const chatWindow = document.querySelector('.chat-window');
+                        if (chatWindow) {
+                            chatWindow.classList.add('has-selection');
+                        }
+
+                        // Clear existing messages
+                        const msgContainer = document.getElementById('message-container');
+                        if (msgContainer) {
+                            msgContainer.innerHTML = '';
+                        }
+
+                        // Update chat header
+                        const chatHeader = document.querySelector('.chat-header h3');
+                        if (chatHeader && contactName) {
+                            chatHeader.textContent = contactName;
+                        }
+
+                        // Stop old polling and start new
+                        if (pollInterval) {
+                            clearInterval(pollInterval);
+                        }
+
+                        // Start polling for new chat
+                        if (receiverId) {
+                            fetchMessages();
+                            pollInterval = setInterval(fetchMessages, 3000);
+                        }
+                    }
+
+                    // Global event listener for form (delegation)
+                    document.addEventListener('submit', function (e) {
+                        if (e.target && e.target.id === 'chat-form') {
                             e.preventDefault();
+                            const input = document.getElementById('msg-input');
                             const msg = input.value.trim();
-                            if (!msg) return;
+                            if (!msg || !receiverId) return;
 
                             fetch(contextPath + '/chat', {
                                 method: 'POST',
@@ -411,12 +598,17 @@
                             }).then(res => {
                                 if (res.ok) {
                                     input.value = '';
-                                    poll();
+                                    fetchMessages();
                                 }
                             });
-                        };
+                        }
+                    });
 
-                        function poll() {
+                    if (receiverId) {
+                        function fetchMessages() {
+                            const container = document.getElementById('message-container');
+                            if (!container) return;
+
                             fetch(contextPath + '/chat?receiverId=' + receiverId + '&lastId=' + lastId + '&isSupplier=' + isSupplier)
                                 .then(res => res.json())
                                 .then(data => {
@@ -427,13 +619,6 @@
                                         const textSpan = document.createElement('span');
                                         textSpan.textContent = m.message;
                                         div.appendChild(textSpan);
-
-                                        if (!m.isRead && m.senderId !== userId) {
-                                            const badge = document.createElement('span');
-                                            badge.className = 'new-badge';
-                                            badge.textContent = 'New';
-                                            div.appendChild(badge);
-                                        }
 
                                         const timeSpan = document.createElement('span');
                                         timeSpan.className = 'message-time';
@@ -449,9 +634,9 @@
                                 });
                         }
 
-                        // Initial poll and set interval
-                        poll();
-                        setInterval(poll, 3000);
+                        // Initial fetch and set interval
+                        fetchMessages();
+                        pollInterval = setInterval(fetchMessages, 3000);
                     }
                 </script>
                 <c:if test="${role == 'patient'}">

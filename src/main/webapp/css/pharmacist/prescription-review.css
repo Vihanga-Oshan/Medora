@@ -11,27 +11,35 @@
     --border-radius: 12px;
 }
 
-/* Page Layout */
+/* Page Layout - Lock to Viewport */
 .review-page-body {
-    padding: 20px 30px;
+    padding: 10px 30px 15px;
+    height: calc(100vh - 72px);
+    /* Calc based on header height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .page-title {
-    margin: 0 0 25px 0 !important;
-    font-size: 24px;
+    margin: 0 0 12px 0 !important;
+    font-size: 20px;
     font-weight: 700;
 }
 
-/* Content Wrapper - Two Column Layout */
+/* Content Wrapper - Flex Driven */
 .content-wrapper {
     display: flex;
-    gap: 30px;
-    align-items: flex-start;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+    overflow: hidden;
 }
 
 /* Left Column: Prescription Image */
 .prescription-image-container {
-    flex: 1.5;
+    flex: 1;
     background: white;
     border-radius: var(--border-radius);
     overflow: hidden;
@@ -39,21 +47,23 @@
     border: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .image-header {
     background: #f1f5f9;
-    padding: 12px 20px;
+    padding: 8px 16px;
     border-bottom: 1px solid #e2e8f0;
     font-weight: 600;
+    font-size: 13px;
     color: var(--text-dark);
 }
 
 .image-box {
     position: relative;
     padding: 0;
-    height: 700px;
-    /* Fixed viewing height as requested */
+    flex: 1;
+    min-height: 0;
     width: 100%;
     overflow: hidden;
     display: flex;
@@ -68,45 +78,43 @@
 }
 
 #zoomable-image {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 95%;
+    max-height: 95%;
     object-fit: contain;
     transition: transform 0.1s ease-out;
     transform-origin: center center;
     user-select: none;
     pointer-events: none;
-    /* Let the container handle dragging if we prefer, or just handle image */
 }
 
-/* Re-enable pointer events for dragging directly if needed, but we'll use container */
 #zoomable-image.dragging {
     transition: none;
 }
 
 .zoom-controls {
     position: absolute;
-    bottom: 24px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(8px);
-    padding: 8px;
-    border-radius: 12px;
+    padding: 6px;
+    border-radius: 10px;
     display: flex;
-    gap: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     z-index: 10;
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .zoom-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     border: none;
     background: white;
     color: #1e293b;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -120,62 +128,56 @@
     color: #007dca;
 }
 
-.zoom-btn:active {
-    transform: scale(0.95);
-}
-
 .zoom-info {
     display: flex;
     align-items: center;
-    padding: 0 12px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
     color: #64748b;
     border-right: 1px solid #e2e8f0;
-    margin-right: 4px;
+    margin-right: 2px;
 }
 
 /* Right Column: Patient Details & Actions */
 .patient-details-card {
-    flex: 1;
+    width: 340px;
+    flex-shrink: 0;
     background: white;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
     display: flex;
     flex-direction: column;
     border: 1px solid #e2e8f0;
-    position: sticky;
-    top: 90px;
+    overflow: hidden;
 }
 
 .details-header {
-    padding: 20px;
+    padding: 15px 20px;
     border-bottom: 1px solid #f1f5f9;
 }
 
 .details-header h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
     color: var(--primary-blue);
 }
 
 .details-body {
-    padding: 20px;
+    padding: 15px 20px;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .detail-row {
-    margin-bottom: 18px;
+    margin-bottom: 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-}
-
-.detail-row:last-child {
-    margin-bottom: 0;
+    gap: 2px;
 }
 
 .detail-row .label {
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     color: #64748b;
     font-weight: 600;
@@ -183,37 +185,32 @@
 }
 
 .detail-row .value {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-dark);
 }
 
 .highlight-danger {
     color: var(--danger-red) !important;
-    font-weight: 600 !important;
 }
 
 /* Action Buttons */
 .review-actions {
-    padding: 20px;
+    padding: 15px 20px;
     background: #f8fafc;
     border-top: 1px solid #f1f5f9;
     display: flex;
-    gap: 15px;
-}
-
-.action-form {
-    flex: 1;
+    gap: 12px;
 }
 
 .btn-approve,
 .btn-reject {
-    width: 100%;
-    padding: 12px;
+    flex: 1;
+    padding: 10px;
     border: none;
     border-radius: 8px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -226,7 +223,6 @@
 .btn-approve:hover {
     background-color: #059669;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
 .btn-reject {
@@ -243,33 +239,44 @@
 /* PDF Placeholder */
 .pdf-placeholder {
     text-align: center;
-    padding: 40px;
+    padding: 30px;
 }
 
 .pdf-icon {
-    font-size: 64px;
-    margin-bottom: 15px;
+    font-size: 48px;
+    margin-bottom: 12px;
     display: block;
 }
 
-.pdf-placeholder p {
-    margin-bottom: 20px;
-    color: #64748b;
+/* Scrollbar styling for details-body */
+.details-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.details-body::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
 }
 
 /* Responsive Extensions */
-@media (max-width: 1200px) {
+@media (max-width: 1000px) {
     .content-wrapper {
         flex-direction: column;
     }
 
-    .prescription-image-container,
     .patient-details-card {
         width: 100%;
-        flex: none;
+        height: 300px;
+        flex-shrink: 1;
     }
 
-    .patient-details-card {
-        position: static;
+    .review-page-body {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+    }
+
+    .content-wrapper {
+        overflow: visible;
     }
 }

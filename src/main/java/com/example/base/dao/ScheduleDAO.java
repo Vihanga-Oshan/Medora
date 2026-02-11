@@ -18,41 +18,41 @@ public class ScheduleDAO {
         List<MedicationSchedule> meds = new ArrayList<>();
 
         String sql = """
-            SELECT 
-                ms.id,
-                med.name AS medicine_name,
-                dc.label AS dosage,
-                f.label AS frequency,
-                mt.label AS meal_timing,
-                ms.instructions,
-                ms.start_date,
-                ms.duration_days,
-                COALESCE(ml.status, 'PENDING') AS status
-            FROM medication_schedule ms
-            JOIN schedule_master sm ON sm.id = ms.schedule_master_id
-            JOIN medicines med ON med.id = ms.medicine_id
-            JOIN dosage_categories dc ON dc.id = ms.dosage_id
-            JOIN frequencies f ON f.id = ms.frequency_id
-            LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
-            LEFT JOIN medication_log ml 
-                ON ml.medication_schedule_id = ms.id
-                AND ml.dose_date = ?
-                AND ml.patient_nic = sm.patient_nic
-                AND ml.time_slot = f.label
-            WHERE sm.patient_nic = ?
-              AND ? BETWEEN ms.start_date AND DATE_ADD(ms.start_date, INTERVAL ms.duration_days - 1 DAY)
-            ORDER BY 
-                CASE 
-                    WHEN f.label LIKE '%morning%' THEN 1
-                    WHEN f.label LIKE '%day%' THEN 2
-                    WHEN f.label LIKE '%afternoon%' THEN 3
-                    WHEN f.label LIKE '%evening%' THEN 4
-                    WHEN f.label LIKE '%night%' THEN 5
-                    WHEN f.label LIKE '%bed%' THEN 6
-                    ELSE 7
-                END,
-                med.name
-        """;
+                    SELECT
+                        ms.id,
+                        med.name AS medicine_name,
+                        dc.label AS dosage,
+                        f.label AS frequency,
+                        mt.label AS meal_timing,
+                        ms.instructions,
+                        ms.start_date,
+                        ms.duration_days,
+                        COALESCE(ml.status, 'PENDING') AS status
+                    FROM medication_schedule ms
+                    JOIN schedule_master sm ON sm.id = ms.schedule_master_id
+                    JOIN medicines med ON med.id = ms.medicine_id
+                    JOIN dosage_categories dc ON dc.id = ms.dosage_id
+                    JOIN frequencies f ON f.id = ms.frequency_id
+                    LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
+                    LEFT JOIN medication_log ml
+                        ON ml.medication_schedule_id = ms.id
+                        AND ml.dose_date = ?
+                        AND ml.patient_nic = sm.patient_nic
+                        AND ml.time_slot = f.label
+                    WHERE sm.patient_nic = ?
+                      AND ? BETWEEN ms.start_date AND DATE_ADD(ms.start_date, INTERVAL ms.duration_days - 1 DAY)
+                    ORDER BY
+                        CASE
+                            WHEN f.label LIKE '%morning%' THEN 1
+                            WHEN f.label LIKE '%day%' THEN 2
+                            WHEN f.label LIKE '%afternoon%' THEN 3
+                            WHEN f.label LIKE '%evening%' THEN 4
+                            WHEN f.label LIKE '%night%' THEN 5
+                            WHEN f.label LIKE '%bed%' THEN 6
+                            ELSE 7
+                        END,
+                        med.name
+                """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, Date.valueOf(date));
@@ -79,12 +79,12 @@ public class ScheduleDAO {
 
                         // 🔍 Fetch status for this specific time slot
                         String statusQuery = """
-            SELECT status FROM medication_log
-            WHERE medication_schedule_id = ? 
-              AND patient_nic = ? 
-              AND dose_date = ? 
-              AND time_slot = ?
-        """;
+                                    SELECT status FROM medication_log
+                                    WHERE medication_schedule_id = ?
+                                      AND patient_nic = ?
+                                      AND dose_date = ?
+                                      AND time_slot = ?
+                                """;
                         try (PreparedStatement statusStmt = conn.prepareStatement(statusQuery)) {
                             statusStmt.setInt(1, rs.getInt("id"));
                             statusStmt.setString(2, patientNic);
@@ -111,28 +111,35 @@ public class ScheduleDAO {
     }
 
     private int getTimeOrder(String frequency) {
-        if (frequency == null) return 99;
+        if (frequency == null)
+            return 99;
         String f = frequency.toLowerCase();
-        if (f.contains("morning")) return 1;
-        if (f.contains("day") || f.contains("afternoon")) return 2;
-        if (f.contains("evening")) return 3;
-        if (f.contains("night")) return 4;
-        if (f.contains("bed")) return 5;
+        if (f.contains("morning"))
+            return 1;
+        if (f.contains("day") || f.contains("afternoon"))
+            return 2;
+        if (f.contains("evening"))
+            return 3;
+        if (f.contains("night"))
+            return 4;
+        if (f.contains("bed"))
+            return 5;
         return 99;
     }
+
     public boolean updateMedicationSchedule(int id, String dosage, String frequency,
-                                            String mealTiming, String instructions,
-                                            LocalDate startDate, int durationDays) throws SQLException {
+            String mealTiming, String instructions,
+            LocalDate startDate, int durationDays) throws SQLException {
         String sql = """
-        UPDATE medication_schedule
-        SET dosage_id = (SELECT id FROM dosage_categories WHERE label = ? LIMIT 1),
-            frequency_id = (SELECT id FROM frequencies WHERE label = ? LIMIT 1),
-            meal_timing_id = (SELECT id FROM meal_timing WHERE label = ? LIMIT 1),
-            start_date = ?, 
-            duration_days = ?, 
-            instructions = ?
-        WHERE id = ?
-    """;
+                    UPDATE medication_schedule
+                    SET dosage_id = (SELECT id FROM dosage_categories WHERE label = ? LIMIT 1),
+                        frequency_id = (SELECT id FROM frequencies WHERE label = ? LIMIT 1),
+                        meal_timing_id = (SELECT id FROM meal_timing WHERE label = ? LIMIT 1),
+                        start_date = ?,
+                        duration_days = ?,
+                        instructions = ?
+                    WHERE id = ?
+                """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, dosage);
@@ -145,18 +152,19 @@ public class ScheduleDAO {
             return stmt.executeUpdate() > 0;
         }
     }
+
     public MedicationSchedule getScheduleById(int id) throws SQLException {
         String sql = """
-        SELECT ms.id, med.name AS medicine_name, dc.label AS dosage,
-               f.label AS frequency, mt.label AS meal_timing,
-               ms.instructions, ms.start_date, ms.duration_days
-        FROM medication_schedule ms
-        JOIN medicines med ON med.id = ms.medicine_id
-        JOIN dosage_categories dc ON dc.id = ms.dosage_id
-        JOIN frequencies f ON f.id = ms.frequency_id
-        LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
-        WHERE ms.id = ?
-    """;
+                    SELECT ms.id, med.name AS medicine_name, dc.label AS dosage,
+                           f.label AS frequency, mt.label AS meal_timing,
+                           ms.instructions, ms.start_date, ms.duration_days
+                    FROM medication_schedule ms
+                    JOIN medicines med ON med.id = ms.medicine_id
+                    JOIN dosage_categories dc ON dc.id = ms.dosage_id
+                    JOIN frequencies f ON f.id = ms.frequency_id
+                    LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
+                    WHERE ms.id = ?
+                """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
@@ -177,16 +185,80 @@ public class ScheduleDAO {
         return null;
     }
 
-        public boolean deleteScheduleById(int id) {
-            String sql = "DELETE FROM medication_schedule WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, id);
-                int rowsAffected = stmt.executeUpdate();
-                return rowsAffected > 0;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
+    public boolean deleteScheduleById(int id) {
+        String sql = "DELETE FROM medication_schedule WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // --- Adherence History Methods ---
+
+    public int getOverallAdherence(String patientNic) throws SQLException {
+        String sql = "SELECT ROUND(COUNT(CASE WHEN status = 'TAKEN' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) " +
+                "FROM medication_log WHERE patient_nic = ? AND status != 'PENDING'";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, patientNic);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         }
+        return 0;
+    }
 
+    public List<java.util.Map<String, Object>> getWeeklyAdherence(String patientNic) throws SQLException {
+        List<java.util.Map<String, Object>> weekly = new ArrayList<>();
+        String sql = "SELECT DATE(dose_date) as day_date, " +
+                "ROUND(COUNT(CASE WHEN status = 'TAKEN' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) as percentage " +
+                "FROM medication_log " +
+                "WHERE patient_nic = ? AND dose_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) " +
+                "GROUP BY DATE(dose_date) " +
+                "ORDER BY DATE(dose_date) ASC";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, patientNic);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    java.util.Map<String, Object> entry = new java.util.HashMap<>();
+                    LocalDate d = rs.getDate("day_date").toLocalDate();
+                    entry.put("day", d.getDayOfWeek().name().substring(0, 3));
+                    entry.put("percentage", rs.getInt("percentage"));
+                    weekly.add(entry);
+                }
+            }
+        }
+        return weekly;
+    }
+
+    public List<java.util.Map<String, String>> getMedicationHistory(String patientNic) throws SQLException {
+        List<java.util.Map<String, String>> history = new ArrayList<>();
+        String sql = "SELECT ml.dose_date, m.name, ml.status, ml.time_slot " +
+                "FROM medication_log ml " +
+                "JOIN medication_schedule ms ON ml.medication_schedule_id = ms.id " +
+                "JOIN medicines m ON ms.medicine_id = m.id " +
+                "WHERE ml.patient_nic = ? " +
+                "ORDER BY ml.dose_date DESC, ml.id DESC " +
+                "LIMIT 50";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, patientNic);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    java.util.Map<String, String> entry = new java.util.HashMap<>();
+                    entry.put("date", rs.getDate("dose_date").toString());
+                    entry.put("medicine", rs.getString("name") + " (" + rs.getString("time_slot") + ")");
+                    entry.put("status", rs.getString("status"));
+                    history.add(entry);
+                }
+            }
+        }
+        return history;
+    }
 }

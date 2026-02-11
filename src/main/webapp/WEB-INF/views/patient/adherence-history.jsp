@@ -56,24 +56,39 @@
 
         <div class="card">
           <h2 class="card-title">Medication History</h2>
-          <p class="card-subtitle">Complete log of your medication intake</p>
+          <p class="card-subtitle">Complete log of your medication intake (Last 50 entries)</p>
 
           <c:choose>
             <c:when test="${not empty medicationHistory}">
-              <ul>
-                <c:forEach var="log" items="${medicationHistory}">
-                  <li>${log.date} - ${log.medicine} - ${log.status}</li>
-                </c:forEach>
-              </ul>
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Medicine & Slot</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <c:forEach var="log" items="${medicationHistory}">
+                    <c:set var="statusLower" value="${log.status.toLowerCase()}" />
+                    <tr>
+                      <td>${log.date}</td>
+                      <td>${log.medicine}</td>
+                      <td>
+                        <span class="status-badge status-${statusLower}">${log.status}</span>
+                      </td>
+                    </tr>
+                  </c:forEach>
+                </tbody>
+              </table>
             </c:when>
             <c:otherwise>
               <div class="empty-state">
-                <svg width="48" height="48" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="#6c757d" stroke-width="2" />
-                  <path d="M12 6V12L16 14" stroke="#6c757d" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round" />
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" opacity="0.2"></circle>
+                  <path d="M12 6v6l4 2" opacity="0.5"></path>
                 </svg>
-                <p>No medication history yet</p>
+                <p>No medication history recorded yet.</p>
               </div>
             </c:otherwise>
           </c:choose>

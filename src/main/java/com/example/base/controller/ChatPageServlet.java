@@ -37,6 +37,12 @@ public class ChatPageServlet extends HttpServlet {
         req.setAttribute("roleText", "pharmacist".equals(role) ? "Patient" : "Pharmacist");
         req.setAttribute("userId", userId);
 
+        // ✅ Handle 'with' parameter for selecting a specific conversation
+        String withParam = req.getParameter("with");
+        if (withParam != null && !withParam.isEmpty()) {
+            req.setAttribute("selectedContactId", withParam);
+        }
+
         // ✅ For patients, always chat with the "PHARMACIST" pool
         String type = req.getParameter("type");
         if (type == null || type.isEmpty()) {
