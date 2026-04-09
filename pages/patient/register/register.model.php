@@ -54,7 +54,9 @@ class RegisterModel
         self::addColumn($table, $columns, $values, 'gender', $data['gender']);
         self::addColumn($table, $columns, $values, 'emergency_contact', $data['emergencyContact']);
         self::addColumn($table, $columns, $values, 'email', $data['email']);
-        self::addColumn($table, $columns, $values, 'password', password_hash($data['password'], PASSWORD_BCRYPT));
+        $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+        self::addColumn($table, $columns, $values, 'password', $hashedPassword);
+        self::addColumn($table, $columns, $values, 'password_hash', $hashedPassword);
         self::addColumn($table, $columns, $values, 'allergies', $data['allergies'] ?: null);
         self::addColumn($table, $columns, $values, 'chronic_issues', $data['chronic'] ?: null);
         self::addColumn($table, $columns, $values, 'guardian_nic', $data['guardianNic'] ?: null);
