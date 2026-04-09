@@ -9,6 +9,8 @@ if (Request::isPost()) {
     $nic = trim(Request::post('nic') ?? '');
     $password = Request::post('password') ?? '';
 
+    
+
     if ($nic === '' || $password === '') {
         $error = 'NIC and password are required.';
     } else {

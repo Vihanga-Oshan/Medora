@@ -11,12 +11,16 @@ class Database
     public static function setUpConnection()
     {
         if (!isset(self::$connection)) {
-            self::$connection = new mysqli(
+            self::$connection = mysqli_init();
+            self::$connection->ssl_set(null, null, null, null, null);
+            self::$connection->real_connect(
                 env('DB_HOST', 'localhost'),
                 env('DB_USER', 'root'),
-                env('DB_PASS', ''),
-                env('DB_NAME', 'medoradb'),
-                env('DB_PORT', '3306')
+                env('DB_PASS', 'Pasidu2003@'),
+                env('DB_NAME', 'new_path_2'),
+                (int) env('DB_PORT', '3308'),
+                null,
+                MYSQLI_CLIENT_SSL
             );
 
             if (self::$connection->connect_error) {

@@ -23,10 +23,11 @@ class RegisterModel
             return false;
         }
 
-        $safeNic = Database::$connection->real_escape_string($nic);
+        $normalizedNic = self::normalizeNic($nic);
+        $safeNic = Database::$connection->real_escape_string($normalizedNic);
         $safeEmail = Database::$connection->real_escape_string($email);
 
-        $where = "nic = '$safeNic'";
+        $where = "REPLACE(REPLACE(UPPER(nic), ' ', ''), '-', '') = '$safeNic'";
         if (self::columnExists($table, 'email')) {
             $where .= " OR email = '$safeEmail'";
         }
@@ -116,6 +117,12 @@ class RegisterModel
         }
 
         return $value;
+    }
+
+    private static function normalizeNic(string $nic): string
+    {
+        $nic = strtoupper(trim($nic));
+        return preg_replace('/[\s\-]+/', '', $nic) ?? $nic;
     }
 
     private static function resolvePatientTable(): ?string
