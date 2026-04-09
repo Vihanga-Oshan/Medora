@@ -16,15 +16,19 @@ class LoginModel
         }
 
         $nameCol = self::columnExists($table, 'name') ? 'name' : 'display_name';
-        $passCol = self::columnExists($table, 'password') ? 'password' : 'password_hash';
+        $passCol = self::columnExists($table, 'password') ? 'password' : null;
+        $passHashCol = self::columnExists($table, 'password_hash') ? 'password_hash' : null;
         $nicCol = self::columnExists($table, 'nic') ? 'nic' : (self::columnExists($table, 'username') ? 'username' : null);
 
-        if ($nicCol === null) {
+        if ($nicCol === null || ($passCol === null && $passHashCol === null)) {
             return null;
         }
 
+        $passExpr = $passCol !== null ? $passCol : $passHashCol;
+        $passHashExpr = $passHashCol !== null ? $passHashCol : "''";
+
         return Database::fetchOne("
-            SELECT $nicCol AS nic, $nameCol AS patient_name, $passCol AS password_value
+            SELECT $nicCol AS nic, $nameCol AS patient_name, $passExpr AS password_value, $passHashExpr AS password_hash_value
             FROM `$table`
             WHERE $nicCol = ?
             LIMIT 1

@@ -16,21 +16,33 @@ if (Request::isPost()) {
         require_once __DIR__ . '/login.model.php';
         $user = LoginModel::findByNic($nic);
 
-        $stored = $user['password_value'] ?? '';
-
         $isValid = false;
         if ($user !== null) {
-            if (str_starts_with($stored, '$2a$') || str_starts_with($stored, '$2y$') || str_starts_with($stored, '$2b$')) {
-                if (str_starts_with($stored, '$2a$')) {
-                    $stored = '$2y$' . substr($stored, 4);
+            $candidates = [];
+            foreach (['password_value', 'password_hash_value'] as $field) {
+                $value = (string)($user[$field] ?? '');
+                if ($value !== '' && !in_array($value, $candidates, true)) {
+                    $candidates[] = $value;
                 }
-                $isValid = password_verify($password, $stored);
-            } elseif (preg_match('/^[a-f0-9]{64}$/i', $stored)) {
-                // Legacy SHA-256 hashes in older Medora datasets.
-                $isValid = hash_equals(strtolower($stored), hash('sha256', $password));
-            } else {
-                // Legacy plain-text fallback.
-                $isValid = hash_equals((string)$stored, (string)$password);
+            }
+
+            foreach ($candidates as $stored) {
+                if (str_starts_with($stored, '$2a$') || str_starts_with($stored, '$2y$') || str_starts_with($stored, '$2b$')) {
+                    if (str_starts_with($stored, '$2a$')) {
+                        $stored = '$2y$' . substr($stored, 4);
+                    }
+                    $isValid = password_verify($password, $stored);
+                } elseif (preg_match('/^[a-f0-9]{64}$/i', $stored)) {
+                    // Legacy SHA-256 hashes in older Medora datasets.
+                    $isValid = hash_equals(strtolower($stored), hash('sha256', $password));
+                } else {
+                    // Legacy plain-text fallback.
+                    $isValid = hash_equals((string)$stored, (string)$password);
+                }
+
+                if ($isValid) {
+                    break;
+                }
             }
         }
 

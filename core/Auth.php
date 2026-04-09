@@ -126,7 +126,7 @@ class Auth
                 'path'     => '/',
                 'httponly' => true,
                 'samesite' => 'Strict',
-                'secure'   => isset($_SERVER['HTTPS']),
+                'secure'   => self::isHttps(),
             ]);
         }
 
@@ -136,7 +136,7 @@ class Auth
             'path'     => '/',
             'httponly' => true,
             'samesite' => 'Strict',
-            'secure'   => isset($_SERVER['HTTPS']),   // true on HTTPS, false on local
+            'secure'   => self::isHttps(),   // true on HTTPS, false on local HTTP
         ]);
     }
 
@@ -202,5 +202,20 @@ class Auth
     private static function denyAccess(): never
     {
         Response::redirect('/auth/login');
+    }
+
+    private static function isHttps(): bool
+    {
+        $https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
+        if ($https === 'on' || $https === '1') {
+            return true;
+        }
+
+        $forwarded = strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+        if ($forwarded === 'https') {
+            return true;
+        }
+
+        return false;
     }
 }
