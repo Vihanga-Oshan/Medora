@@ -1,0 +1,10 @@
+Options -Indexes
+RewriteEngine On
+
+# Canonicalize only direct browser requests that include /public in the URL.
+# This avoids redirect loops for internal rewrites from root .htaccess.
+RewriteCond %{THE_REQUEST} \s/+Medora/public(?:[\s?]|/) [NC]
+RewriteRule ^$ /Medora/ [R=302,L]
+
+RewriteCond %{THE_REQUEST} \s/+Medora/public/([^\s?]+) [NC]
+RewriteRule ^ /Medora/%1 [R=302,L]

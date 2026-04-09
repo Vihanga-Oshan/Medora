@@ -1,0 +1,3 @@
+/* Patient medications page styles.
+   Reuse dashboard styles for card/table/button tokens. */
+@import url('./dashboard.css');

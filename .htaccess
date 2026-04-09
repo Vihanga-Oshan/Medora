@@ -1,0 +1,21 @@
+Options -Indexes
+
+RewriteEngine On
+RewriteBase /Medora/
+
+# Canonical: hide /public from URL
+RewriteRule ^public/?$ /Medora/ [R=302,L,NC]
+RewriteRule ^public/(.*)$ /Medora/$1 [R=302,L,NC]
+
+# Serve static files from public/
+RewriteRule ^assets/(.*)$ public/assets/$1 [L,NC]
+RewriteRule ^uploads/(.*)$ public/uploads/$1 [L,NC]
+
+# Existing real files/folders at project root
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route app pages through root front controller
+RewriteRule ^ index.php [QSA,L]
+

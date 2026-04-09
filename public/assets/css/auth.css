@@ -1,0 +1,432 @@
+/* ==================== COMMON AUTHENTICATION STYLES ==================== */
+/* Relying on design tokens from common.css */
+
+:root {
+    --auth-card-width: 460px;
+    --auth-glass: rgba(255, 255, 255, 0.85);
+    --auth-glass-border: rgba(255, 255, 255, 0.5);
+}
+
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: var(--bg-body);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Premium Mesh Background */
+.mesh-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background:
+        radial-gradient(at 0% 0%, hsla(203, 92%, 94%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, hsla(202, 100%, 88%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(188, 100%, 91%, 1) 0, transparent 50%),
+        radial-gradient(at 0% 100%, hsla(203, 92%, 94%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 100%, hsla(202, 100%, 88%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(188, 100%, 91%, 1) 0, transparent 50%);
+}
+
+.auth-container {
+    background: var(--auth-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 30px 40px;
+    width: 90%;
+    max-width: var(--auth-card-width);
+    border-radius: 24px;
+    border: 1px solid var(--auth-glass-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+/* Hide scrollbar for Chrome/Safari/Edge */
+.auth-container::-webkit-scrollbar,
+.register-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.auth-container::-webkit-scrollbar-thumb,
+.register-box::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.auth-container>*,
+.register-box>* {
+    flex-shrink: 0;
+}
+
+
+
+/* Animations */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Back Link */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-gray);
+    font-size: 14px;
+    font-weight: 600;
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    text-decoration: none;
+    transition: var(--transition-mid);
+    opacity: 0.8;
+}
+
+.back-link:hover {
+    color: var(--primary-blue);
+    opacity: 1;
+    transform: translateX(-4px);
+}
+
+/* Logo & Brand */
+.logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 8px;
+}
+
+.logo img {
+    width: 64px;
+    height: auto;
+    filter: drop-shadow(0 4px 12px rgba(0, 120, 195, 0.2));
+}
+
+.brand-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: -0.5px;
+}
+
+/* Headings */
+h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-bottom: 24px;
+    line-height: 1.4;
+}
+
+/* Form Toggle */
+.form-toggle {
+    display: flex;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    gap: 4px;
+}
+
+.form-toggle button {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    background: transparent;
+    color: var(--text-gray);
+    cursor: pointer;
+    transition: var(--transition-mid);
+}
+
+.form-toggle button.active {
+    background: var(--bg-white);
+    color: var(--primary-blue);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.form-toggle button:hover:not(.active) {
+    color: var(--text-dark);
+}
+
+/* Form Groups & Inputs */
+.form-group {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    display: block;
+    padding-left: 2px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.form-input {
+    width: 100%;
+    height: 48px;
+    border: 1.5px solid rgba(0, 0, 0, 0.06);
+    padding: 0 16px 0 46px;
+    font-size: 14px;
+    color: var(--text-dark);
+    background-color: var(--bg-white);
+    border-radius: 12px;
+    transition: var(--transition-mid);
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.input-icon {
+    position: absolute;
+    left: 20px;
+    color: var(--text-light-gray);
+    pointer-events: none;
+    transition: var(--transition-mid);
+    display: flex;
+    align-items: center;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(0, 120, 195, 0.1);
+}
+
+.form-input:focus+.input-icon {
+    color: var(--primary-blue);
+}
+
+/* Options */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 13px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-gray);
+    user-select: none;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: var(--bg-white);
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    transition: var(--transition-mid);
+}
+
+.checkbox-container:hover input~.checkmark {
+    border-color: var(--primary-blue);
+}
+
+.checkbox-container input:checked~.checkmark {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.forgot-password {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Submit Button */
+.btn-auth-submit {
+    width: 100%;
+    height: 48px;
+    background: var(--primary-blue);
+    color: var(--bg-white);
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 10px 20px rgba(0, 120, 195, 0.2);
+}
+
+.btn-auth-submit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 24px rgba(0, 120, 195, 0.25);
+}
+
+.btn-auth-submit:active {
+    transform: translateY(0);
+}
+
+/* Message Boxes */
+.message-box {
+    margin-top: 24px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+
+.error-box {
+    background-color: #fef2f2;
+    color: var(--error-red);
+    border: 1px solid rgba(220, 38, 38, 0.1);
+}
+
+.success-box {
+    background-color: #f0fdf4;
+    color: var(--success-green-alt);
+    border: 1px solid rgba(22, 163, 74, 0.1);
+}
+
+/* Bottom Text */
+.bottom-text {
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.bottom-text a {
+    color: var(--primary-blue);
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 4px;
+}
+
+.bottom-text a:hover {
+    text-decoration: underline;
+}
+
+/* Multi-Step & Register Variations */
+.register-box {
+    background: var(--auth-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 30px 40px;
+    width: 95%;
+    max-width: 600px;
+    max-height: 95vh;
+    border-radius: 24px;
+    border: 1px solid var(--auth-glass-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 640px) {
+
+    .auth-container,
+    .register-box {
+        padding: 30px 20px;
+        margin: 10px;
+        border-radius: 20px;
+        max-height: 98vh;
+    }
+
+    .back-link {
+        top: 24px;
+        left: 24px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    .logo img {
+        width: 50px;
+    }
+}

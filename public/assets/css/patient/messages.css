@@ -1,0 +1,181 @@
+body.patient-messages-page {
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.patient-messages-page .container.patient-view {
+    max-width: 1180px;
+    height: calc(100vh - 80px);
+    padding: 22px 20px 20px;
+}
+
+.patient-view .patient-chat-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    height: 100%;
+    min-height: 0;
+    border-radius: 20px;
+    border: 1px solid #dbe7f3;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.patient-chat-layout .chat-window {
+    border-right: 1px solid #e2e8f0;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.patient-chat-layout .chat-container {
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.patient-chat-layout .chat-header {
+    padding: 24px 32px;
+    background: #ffffff;
+    border-bottom: 1px solid #eef2f7;
+    flex-shrink: 0;
+}
+
+.patient-chat-layout .chat-header h3 {
+    color: var(--medical-blue);
+    font-size: 20px;
+    letter-spacing: 0;
+}
+
+.pm-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.patient-chat-layout .chat-messages {
+    padding: 24px;
+    background: #edf1f6;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.patient-chat-layout .message {
+    max-width: 72%;
+    padding: 12px 16px;
+    font-size: 15px;
+}
+
+.patient-chat-layout .chat-input-area {
+    padding: 20px 32px;
+    background: #ffffff;
+    border-top: 1px solid #eef2f7;
+    margin-top: auto;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+}
+
+.patient-chat-layout .chat-input {
+    padding: 14px 20px;
+    font-size: 15px;
+    border-radius: 16px;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+}
+
+.patient-chat-layout .send-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+}
+
+.patient-chat-layout .send-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.patient-chat-layout .chat-sidebar {
+    background: #ffffff;
+    border-left: none;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.patient-chat-layout .sidebar-section h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--medical-blue);
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+}
+
+.patient-chat-layout .med-widget-item {
+    padding: 13px 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.patient-chat-layout .med-widget-item h4 {
+    font-size: 14px;
+}
+
+.patient-chat-layout .dosage {
+    font-size: 12px;
+}
+
+.patient-chat-layout .frequency {
+    font-size: 12px;
+}
+
+.pm-no-meds {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.pm-empty-chat {
+    display: none;
+}
+
+@media (max-width: 1100px) {
+    .patient-view .patient-chat-layout {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .patient-chat-layout .chat-window {
+        border-right: 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .patient-chat-layout .chat-sidebar {
+        max-height: 280px;
+    }
+
+    .patient-chat-layout .chat-header h3 {
+        font-size: 24px;
+    }
+
+    .pm-subtitle {
+        font-size: 14px;
+    }
+
+    .pm-no-meds {
+        font-size: 14px;
+    }
+}

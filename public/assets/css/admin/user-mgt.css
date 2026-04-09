@@ -1,0 +1,991 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    display: flex;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+}
+
+.sidebar {
+    width: 18vw;
+    background-color: #011632;
+    color: white;
+    padding: 20px;
+}
+
+.logo-brand {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    margin-left: -5px;
+}
+
+.logo {
+    height: 60px;
+}
+
+.small-brand {
+    font-weight: bold;
+    font-size: 19px;
+    margin-left: 2px;
+    padding-bottom:17px;
+
+
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.sidebar nav a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.sidebar nav a.active,
+.sidebar nav a:hover {
+    background-color: #4080BF;
+}
+
+.main-content {
+    flex: 1;
+    background-color: #f5f5f5;
+    padding: 30px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar h1 {
+    font-size: 26px;
+
+}
+
+.add-link {
+    text-decoration: none;
+    font-size: 15px;
+    color: black;
+    font-weight:bold;
+    padding:6px;
+    padding-top:5px;
+    padding-bottom:15px;
+
+}
+.btn{
+    border:1.5px solid black;
+    border-radius:20px;
+}
+
+
+.search-bar {
+    margin: 20px 0;
+    width:40vw;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.table-container {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #A7DCF5;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+}
+
+tbody {
+    background-color: #f5f5f5;
+}
+
+tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.status-active {
+    background-color: #3B5998;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.status-inactive {
+    background-color: #eee;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.actions {
+    color: red;
+    font-size: 14px;
+}
+
+/* ==================================================
+   Medora PHP pharmacists page compatibility styles
+   (matches pages/admin/pharmacists/pharmacists.layout.php)
+================================================== */
+
+/* Keep content below the fixed topbar from admin-style.css */
+.main-content {
+    margin-left: 250px;
+    padding: 94px 36px 32px;
+    background: #f8fafc;
+}
+
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 250px;
+    right: 0;
+    height: 70px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    z-index: 1000;
+}
+
+.section-container {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.section-header h1 {
+    font-size: 30px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px;
+}
+
+.section-header p {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.btn.btn-primary {
+    background: #0284c7;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn.btn-primary:hover {
+    background: #0369a1;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.stat-mini-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.stat-mini-card h3 {
+    font-size: 15px;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.stat-mini-card h2 {
+    font-size: 36px;
+    line-height: 1;
+    color: #0f172a;
+}
+
+.text-success { color: #16a34a; }
+.text-danger { color: #dc2626; }
+
+.table-card.card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px;
+    display: block;
+}
+
+.filter-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.filter-form input {
+    width: 320px;
+    max-width: 100%;
+    height: 44px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 16px;
+}
+
+.filter-form button {
+    height: 44px;
+    border: 1px solid #0284c7;
+    background: #0284c7;
+    color: #fff;
+    border-radius: 8px;
+    padding: 0 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter-form button:hover {
+    background: #0369a1;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.data-table thead {
+    background: #a7dcf5;
+}
+
+.data-table th,
+.data-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 16px;
+}
+
+.data-table th {
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.empty-msg {
+    color: #334155;
+    font-size: 16px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.badge-active { background: #dcfce7; color: #166534; }
+.badge-suspended,
+.badge-deleted { background: #fee2e2; color: #991b1b; }
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.menu-dots {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+}
+
+.dropdown-content {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 180px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(2, 6, 23, 0.08);
+    padding: 6px;
+    display: none;
+    z-index: 1001;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    text-decoration: none;
+    color: #0f172a;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+    background: #f1f5f9;
+}
+
+.dropdown-content button.danger {
+    color: #dc2626;
+}
+
+@media (max-width: 980px) {
+    .main-content {
+        margin-left: 70px;
+        padding: 90px 16px 20px;
+    }
+
+    .topbar {
+        left: 70px;
+        padding: 0 16px;
+    }
+
+    .stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-form input {
+        width: 100%;
+    }
+}
+
+/* ==================================================
+   Pharmacist page visual match (scoped)
+================================================== */
+.admin-pharmacists-page {
+    background: #eef2f6;
+}
+
+.admin-pharmacists-page .sidebar {
+    width: 250px;
+    background: #011a31;
+    box-shadow: none;
+    padding: 6px 0 0;
+    z-index: 1100;
+}
+
+.admin-pharmacists-page .logo {
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 22px 28px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.35);
+}
+
+.admin-pharmacists-page .logo img {
+    width: 26px;
+    height: 26px;
+}
+
+.admin-pharmacists-page .logo span {
+    color: #f8fafc;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.admin-pharmacists-page .nav-links {
+    margin-top: 24px;
+}
+
+.admin-pharmacists-page .nav-links li {
+    margin: 0;
+}
+
+.admin-pharmacists-page .nav-links a {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 22px 28px;
+    gap: 12px;
+}
+
+.admin-pharmacists-page .nav-links i {
+    width: 20px;
+    text-align: center;
+}
+
+.admin-pharmacists-page .nav-links li.active a {
+    background: #9f8d82;
+}
+
+.admin-pharmacists-page .admin-profile {
+    border-top: 1px solid rgba(226, 232, 240, 0.35);
+    padding: 20px 24px;
+    gap: 14px;
+}
+
+.admin-pharmacists-page .profile-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    border-radius: 0;
+    background: #b79f93;
+}
+
+.admin-pharmacists-page .profile-info .name {
+    color: #f8fafc;
+    font-size: 14px;
+}
+
+.admin-pharmacists-page .profile-info .email {
+    color: #b8c5d2;
+    font-size: 12px;
+}
+
+.admin-pharmacists-page .main-content {
+    background: #eef2f6;
+    padding: 108px 46px 32px;
+}
+
+.admin-pharmacists-page .topbar {
+    background: #f7f8fa;
+    border-bottom: 1px solid #d6dee7;
+    height: 80px;
+    padding: 0 46px 0 40px;
+}
+
+.admin-pharmacists-page .search-bar {
+    width: 430px;
+    border-radius: 14px;
+    background: #e5e9ef;
+    padding: 14px 20px;
+    gap: 12px;
+}
+
+.admin-pharmacists-page .search-bar span {
+    font-size: 20px;
+}
+
+.admin-pharmacists-page .search-bar input {
+    font-size: 18px;
+    color: #334155;
+}
+
+.admin-pharmacists-page .search-bar input::placeholder {
+    color: #64748b;
+}
+
+.admin-pharmacists-page .top-icons i {
+    font-size: 18px;
+}
+
+.admin-pharmacists-page .section-header h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.admin-pharmacists-page .section-header p {
+    font-size: 16px;
+}
+
+.admin-pharmacists-page .btn.btn-primary {
+    height: 52px;
+    border-radius: 12px;
+    padding: 0 26px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.admin-pharmacists-page .stats-row {
+    margin: 26px 0 22px;
+    gap: 20px;
+}
+
+.admin-pharmacists-page .stat-mini-card {
+    border: 1px solid #e6ebf2;
+    border-radius: 18px;
+    padding: 24px 26px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.admin-pharmacists-page .stat-mini-card h3 {
+    color: #536f92;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.admin-pharmacists-page .stat-mini-card h2 {
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.admin-pharmacists-page .table-card.card {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+}
+
+.admin-pharmacists-page .filter-form {
+    margin: 6px 0 18px;
+    width: 580px;
+    max-width: 100%;
+    border-radius: 14px;
+    background: #e5e9ef;
+    height: 52px;
+    padding: 0 18px;
+}
+
+.admin-pharmacists-page .filter-form .search-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.admin-pharmacists-page .filter-form input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    height: 100%;
+    font-size: 16px;
+}
+
+.admin-pharmacists-page .filter-form input:focus {
+    outline: none;
+}
+
+.admin-pharmacists-page .data-table {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.admin-pharmacists-page .data-table th,
+.admin-pharmacists-page .data-table td {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 22px 24px;
+    font-size: 16px;
+}
+
+.admin-pharmacists-page .data-table th {
+    color: #4f6b90;
+    font-weight: 700;
+    background: #ffffff;
+}
+
+.admin-pharmacists-page .data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-pharmacists-page .menu-dots {
+    border: 0;
+    background: transparent;
+    font-size: 24px;
+    width: auto;
+    height: auto;
+    line-height: 1;
+    color: #0f172a;
+}
+
+.admin-pharmacists-page .menu-dots:hover {
+    background: transparent;
+}
+
+.admin-pharmacists-page .dropdown-content {
+    min-width: 200px;
+}
+
+@media (max-width: 1400px) {
+    .admin-pharmacists-page .logo span {
+        font-size: 30px;
+    }
+
+    .admin-pharmacists-page .nav-links a {
+        font-size: 16px;
+        padding: 16px 24px;
+    }
+
+    .admin-pharmacists-page .profile-info .name,
+    .admin-pharmacists-page .profile-info .email {
+        font-size: 12px;
+    }
+
+    .admin-pharmacists-page .search-bar input,
+    .admin-pharmacists-page .section-header p,
+    .admin-pharmacists-page .btn.btn-primary,
+    .admin-pharmacists-page .stat-mini-card h3,
+    .admin-pharmacists-page .filter-form input,
+    .admin-pharmacists-page .data-table th,
+    .admin-pharmacists-page .data-table td {
+        font-size: 15px;
+    }
+
+    .admin-pharmacists-page .section-header h1 {
+        font-size: 34px;
+    }
+
+    .admin-pharmacists-page .stat-mini-card h2 {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 980px) {
+    .admin-pharmacists-page .main-content {
+        padding: 90px 16px 20px;
+    }
+
+    .admin-pharmacists-page .topbar {
+        left: 70px;
+        padding: 0 16px;
+    }
+
+    .admin-pharmacists-page .search-bar {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .admin-pharmacists-page .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-pharmacists-page .stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-pharmacists-page .data-table th,
+    .admin-pharmacists-page .data-table td {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+/* ==================================================
+   Settings page visual match (scoped)
+================================================== */
+.admin-settings-page {
+    background: #eef2f6;
+}
+
+.admin-settings-page .sidebar {
+    width: 250px;
+    background: #011a31;
+    box-shadow: none;
+    padding: 6px 0 0;
+    z-index: 1100;
+}
+
+.admin-settings-page .logo {
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 22px 28px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.35);
+}
+
+.admin-settings-page .logo img {
+    width: 26px;
+    height: 26px;
+}
+
+.admin-settings-page .logo span {
+    color: #f8fafc;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.admin-settings-page .nav-links {
+    margin-top: 24px;
+}
+
+.admin-settings-page .nav-links li {
+    margin: 0;
+}
+
+.admin-settings-page .nav-links a {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 22px 28px;
+    gap: 12px;
+}
+
+.admin-settings-page .nav-links i {
+    width: 20px;
+    text-align: center;
+}
+
+.admin-settings-page .nav-links li.active a {
+    background: #9f8d82;
+}
+
+.admin-settings-page .admin-profile {
+    border-top: 1px solid rgba(226, 232, 240, 0.35);
+    padding: 20px 24px;
+    gap: 14px;
+}
+
+.admin-settings-page .profile-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    border-radius: 0;
+    background: #b79f93;
+}
+
+.admin-settings-page .profile-info .name {
+    color: #f8fafc;
+    font-size: 14px;
+}
+
+.admin-settings-page .profile-info .email {
+    color: #b8c5d2;
+    font-size: 12px;
+}
+
+.admin-settings-page .main-content {
+    background: #eef2f6;
+    margin-left: 250px;
+    padding: 106px 36px 30px;
+}
+
+.admin-settings-page .topbar {
+    left: 250px;
+    background: #f7f8fa;
+    border-bottom: 1px solid #d6dee7;
+    height: 80px;
+    padding: 0 36px;
+}
+
+.admin-settings-page .search-bar {
+    width: 430px;
+    border-radius: 14px;
+    background: #e5e9ef;
+    padding: 14px 20px;
+    gap: 12px;
+}
+
+.admin-settings-page .search-bar span {
+    font-size: 20px;
+}
+
+.admin-settings-page .search-bar input {
+    font-size: 14px;
+    color: #334155;
+}
+
+.admin-settings-page .search-bar input::placeholder {
+    color: #64748b;
+}
+
+.admin-settings-page .top-icons i {
+    font-size: 18px;
+}
+
+.admin-settings-page .settings-shell {
+    max-width: 880px;
+}
+
+.admin-settings-page .settings-card-v2 {
+    background: #ffffff;
+    border: 1px solid #dce4ee;
+    border-radius: 14px;
+    padding: 44px 56px 34px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.admin-settings-page .settings-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.admin-settings-page .settings-card-head .head-icon {
+    font-size: 20px;
+    line-height: 1;
+    color: #7c3aed;
+}
+
+.admin-settings-page .settings-card-head h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.admin-settings-page .settings-card-head p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.admin-settings-page .settings-form-v2 .field-group {
+    margin-bottom: 18px;
+}
+
+.admin-settings-page .settings-form-v2 label {
+    display: block;
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.admin-settings-page .settings-form-v2 input {
+    width: 100%;
+    height: 52px;
+    border: 1px solid #c7d3e3;
+    border-radius: 12px;
+    padding: 0 16px;
+    font-size: 15px;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-settings-page .settings-form-v2 input::placeholder {
+    color: #7b8797;
+}
+
+.admin-settings-page .settings-form-v2 input:focus {
+    outline: none;
+    border-color: #5aa0db;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.admin-settings-page .settings-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+.admin-settings-page .btn-cancel,
+.admin-settings-page .btn-save {
+    border: none;
+    border-radius: 12px;
+    height: 50px;
+    padding: 0 26px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-settings-page .btn-cancel {
+    background: #e4e9f0;
+    color: #334155;
+}
+
+.admin-settings-page .btn-save {
+    background: #0784cb;
+    color: #fff;
+}
+
+.admin-settings-page .btn-save:hover {
+    background: #0369a1;
+}
+
+.admin-settings-page .success-msg {
+    color: #047857;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+@media (max-width: 1400px) {
+    .admin-settings-page .logo span {
+        font-size: 20px;
+    }
+
+    .admin-settings-page .nav-links a {
+        font-size: 16px;
+        padding: 16px 24px;
+    }
+
+    .admin-settings-page .settings-card-head h1 {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 980px) {
+    .admin-settings-page .main-content {
+        margin-left: 70px;
+        padding: 90px 16px 20px;
+    }
+
+    .admin-settings-page .topbar {
+        left: 70px;
+        padding: 0 16px;
+    }
+
+    .admin-settings-page .search-bar {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .admin-settings-page .settings-card-v2 {
+        padding: 24px 20px;
+    }
+
+    .admin-settings-page .settings-actions {
+        flex-wrap: wrap;
+    }
+}

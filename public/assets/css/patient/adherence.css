@@ -1,0 +1,3 @@
+/* Patient adherence page styles.
+   Reuse existing history styles for now to avoid missing CSS. */
+@import url('./history.css');
