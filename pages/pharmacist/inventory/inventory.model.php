@@ -74,6 +74,37 @@ class InventoryModel
         return isset($cols[strtolower($column)]);
     }
 
+    private static function getMedicineImageColumn(): string
+    {
+        $candidates = ['image_path', 'image', 'image_url', 'medicine_image', 'photo'];
+        foreach ($candidates as $col) {
+            if (self::hasMedicineColumn($col)) {
+                return $col;
+            }
+        }
+
+        if (self::tableExists('medicines')) {
+            Database::iud("ALTER TABLE medicines ADD COLUMN image_path VARCHAR(255) NULL");
+            self::$medicineColumnsCache = null;
+            if (self::hasMedicineColumn('image_path')) {
+                return 'image_path';
+            }
+        }
+
+        return '';
+    }
+
+    private static function extractImagePath(array $row): string
+    {
+        foreach (['image_path', 'image', 'image_url', 'medicine_image', 'photo'] as $col) {
+            $value = trim((string)($row[$col] ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+        return '';
+    }
+
     private static function saveUploadedImage(?array $file): string
     {
         if (!$file || !isset($file['error']) || (int)$file['error'] !== UPLOAD_ERR_OK || empty($file['tmp_name'])) {
@@ -331,7 +362,7 @@ class InventoryModel
             self::selectExpr('medicines', 'dosage_form'),
             self::selectExpr('medicines', 'quantity_in_stock', '0'),
             self::selectExpr('medicines', 'price', '0'),
-            self::selectExpr('medicines', 'image_path'),
+            ($imgCol = self::getMedicineImageColumn()) !== '' ? "$imgCol AS image_path" : "'' AS image_path",
             self::selectExpr('medicines', 'manufacturer'),
             self::selectExpr('medicines', 'expiry_date'),
         ]);
@@ -441,7 +472,8 @@ class InventoryModel
         if (self::hasMedicineColumn('strength')) $addStr('strength', $strength);
         if (self::hasMedicineColumn('quantity_in_stock')) $addInt('quantity_in_stock', max(0, $qty));
         if (self::hasMedicineColumn('price')) $addNum('price', max(0, $price));
-        if (self::hasMedicineColumn('image_path')) $addStr('image_path', $imagePath);
+        $imageColumn = self::getMedicineImageColumn();
+        if ($imageColumn !== '') $addStr($imageColumn, $imagePath);
         if (self::hasMedicineColumn('manufacturer')) $addStr('manufacturer', $manufacturer);
         if (self::hasMedicineColumn('expiry_date')) {
             $cols[] = 'expiry_date';
@@ -490,7 +522,7 @@ class InventoryModel
         }
 
         $newImagePath = self::saveUploadedImage($file);
-        $imagePath = $newImagePath !== '' ? $newImagePath : (string)($existing['image_path'] ?? '');
+        $imagePath = $newImagePath !== '' ? $newImagePath : self::extractImagePath($existing);
 
         $name = self::resolveSelectableValue(
             $input,
@@ -554,7 +586,8 @@ class InventoryModel
         if (self::hasMedicineColumn('strength')) $setStr('strength', $strength);
         if (self::hasMedicineColumn('quantity_in_stock')) $setInt('quantity_in_stock', max(0, $qty));
         if (self::hasMedicineColumn('price')) $setNum('price', max(0, $price));
-        if (self::hasMedicineColumn('image_path')) $setStr('image_path', $imagePath);
+        $imageColumn = self::getMedicineImageColumn();
+        if ($imageColumn !== '') $setStr($imageColumn, $imagePath);
         if (self::hasMedicineColumn('manufacturer')) $setStr('manufacturer', $manufacturer);
         if (self::hasMedicineColumn('expiry_date')) {
             $sets[] = $expiryDate !== ''
