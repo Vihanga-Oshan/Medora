@@ -1,1 +1,0 @@
-<?php // temporary diagnostic file ?>

@@ -1,2 +1,13 @@
 
 java/
+# Local runtime/generated files
+.tmp_*
+__tmp_*
+temp_*.php
+tmp_*.php
+public/uploads/**
+!public/uploads/.gitkeep
+!public/uploads/medicines/.gitkeep
+!public/uploads/posts/.gitkeep
+!public/uploads/prescriptions/.gitkeep
+!public/uploads/profiles/.gitkeep
