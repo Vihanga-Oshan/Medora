@@ -1,0 +1,6 @@
+# Medora Database Configuration Template
+# Rename this file to db.properties and update with your local credentials
+
+db.url=jdbc:mysql://localhost:3306/medoradb?useSSL=false&serverTimezone=UTC
+db.user=root
+db.pass=YOUR_PASSWORD_HERE
