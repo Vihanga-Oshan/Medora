@@ -124,7 +124,13 @@ class ShopModel
         $hasStrength = self::columnExists('medicines', 'strength');
         $hasQty = self::columnExists('medicines', 'quantity_in_stock');
         $hasPrice = self::columnExists('medicines', 'price');
-        $hasImage = self::columnExists('medicines', 'image_path');
+        $imageExpr = "NULL";
+        foreach (['image_path', 'image', 'image_url', 'medicine_image', 'photo'] as $imageCol) {
+            if (self::columnExists('medicines', $imageCol)) {
+                $imageExpr = "m.$imageCol";
+                break;
+            }
+        }
         $hasDescription = self::columnExists('medicines', 'description');
         $hasManufacturer = self::columnExists('medicines', 'manufacturer');
         $hasSellingUnit = self::columnExists('medicines', 'selling_unit');
@@ -185,7 +191,7 @@ class ShopModel
                 " . ($hasStrength ? "m.strength" : "NULL") . " AS strength,
                 " . ($hasQty ? "m.quantity_in_stock" : "NULL") . " AS quantity_in_stock,
                 " . ($hasPrice ? "m.price" : "0") . " AS price,
-                " . ($hasImage ? "m.image_path" : "NULL") . " AS image_path,
+                $imageExpr AS image_path,
                 " . ($hasDescription ? "m.description" : "NULL") . " AS description,
                 " . ($hasManufacturer ? "m.manufacturer" : "NULL") . " AS manufacturer,
                 " . ($hasSellingUnit ? "m.selling_unit" : "'Item'") . " AS selling_unit,
