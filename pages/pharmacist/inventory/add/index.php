@@ -3,25 +3,13 @@ require_once __DIR__ . '/../../common/pharmacist.head.php';
 require_once __DIR__ . '/../inventory.model.php';
 
 $base = APP_BASE ?: '';
-
-require_once __DIR__ . '/../../common/pharmacist.head.php';
-require_once __DIR__ . '/../inventory.model.php';
-
-$base = APP_BASE ?: '';
-
-require_once __DIR__ . '/../../common/pharmacist.head.php';
-require_once __DIR__ . '/../inventory.model.php';
-
-$base = APP_BASE ?: '';
-
-require_once __DIR__ . '/../../common/pharmacist.head.php';
-require_once __DIR__ . '/../inventory.model.php';
-
-$base = APP_BASE ?: '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim((string)($_POST['name'] ?? ''));
+    $name = trim((string)($_POST['brand_new'] ?? ''));
+    if ($name === '') {
+        $name = trim((string)($_POST['brand_existing'] ?? ''));
+    }
     $strength = trim((string)($_POST['strength'] ?? ''));
     $price = (float)($_POST['price'] ?? 0);
 
@@ -43,6 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $categories = InventoryModel::getCategories();
+$brands = InventoryModel::getBrands();
+$dosageForms = InventoryModel::getDosageForms();
+$sellingUnits = InventoryModel::getSellingUnits();
+$manufacturers = InventoryModel::getManufacturers();
 $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $isDashboard = str_contains($currentPath, '/pharmacist/dashboard');
 $isValidate = str_contains($currentPath, '/pharmacist/validate') || str_contains($currentPath, '/pharmacist/prescriptions');
@@ -106,7 +98,18 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 
             <form action="" method="post" enctype="multipart/form-data" class="styled-form">
                 <div class="form-section-title"><span>&#8505;&#65039;</span> Basic Identification</div>
-                <div class="form-group"><label>Brand Name</label><input type="text" name="name" required value="<?= htmlspecialchars((string)($_POST['name'] ?? '')) ?>"></div>
+                <div class="form-group">
+                    <label>Brand Name</label>
+                    <select name="brand_existing">
+                        <option value="">Select Existing Brand</option>
+                        <?php foreach ($brands as $b): ?>
+                            <?php $selected = ((string)($_POST['brand_existing'] ?? '') === (string)$b) ? 'selected' : ''; ?>
+                            <option value="<?= htmlspecialchars((string)$b) ?>" <?= $selected ?>><?= htmlspecialchars((string)$b) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new brand</small>
+                    <input type="text" name="brand_new" value="<?= htmlspecialchars((string)($_POST['brand_new'] ?? '')) ?>" placeholder="Type new brand name">
+                </div>
                 <div class="form-group"><label>Generic Name</label><input type="text" name="generic_name" value="<?= htmlspecialchars((string)($_POST['generic_name'] ?? '')) ?>"></div>
                 <div class="form-group">
                     <label>Category</label>
@@ -122,15 +125,48 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                         <input type="text" name="category" value="<?= htmlspecialchars((string)($_POST['category'] ?? '')) ?>" placeholder="Category name">
                     <?php endif; ?>
                 </div>
-                <div class="form-group"><label>Manufacturer</label><input type="text" name="manufacturer" value="<?= htmlspecialchars((string)($_POST['manufacturer'] ?? '')) ?>"></div>
+                <div class="form-group">
+                    <label>Manufacturer</label>
+                    <select name="manufacturer_existing">
+                        <option value="">Select Existing Manufacturer</option>
+                        <?php foreach ($manufacturers as $m): ?>
+                            <?php $selected = ((string)($_POST['manufacturer_existing'] ?? '') === (string)$m) ? 'selected' : ''; ?>
+                            <option value="<?= htmlspecialchars((string)$m) ?>" <?= $selected ?>><?= htmlspecialchars((string)$m) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new manufacturer</small>
+                    <input type="text" name="manufacturer_new" value="<?= htmlspecialchars((string)($_POST['manufacturer_new'] ?? '')) ?>" placeholder="Type new manufacturer">
+                </div>
                 <div class="form-group full-width"><label>Description</label><textarea name="description"><?= htmlspecialchars((string)($_POST['description'] ?? '')) ?></textarea></div>
 
                 <div class="form-section-title"><span>&#128138;</span> Dosage &amp; Presentation</div>
-                <div class="form-group"><label>Dosage Form</label><input type="text" name="dosage_form" value="<?= htmlspecialchars((string)($_POST['dosage_form'] ?? '')) ?>" placeholder="Tablet / Syrup / Capsule"></div>
+                <div class="form-group">
+                    <label>Dosage Form</label>
+                    <select name="dosage_form_existing">
+                        <option value="">Select Dosage Form</option>
+                        <?php foreach ($dosageForms as $d): ?>
+                            <?php $selected = ((string)($_POST['dosage_form_existing'] ?? '') === (string)$d) ? 'selected' : ''; ?>
+                            <option value="<?= htmlspecialchars((string)$d) ?>" <?= $selected ?>><?= htmlspecialchars((string)$d) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new dosage form</small>
+                    <input type="text" name="dosage_form_new" value="<?= htmlspecialchars((string)($_POST['dosage_form_new'] ?? '')) ?>" placeholder="Type new dosage form">
+                </div>
                 <div class="form-group"><label>Strength</label><input type="text" name="strength" required value="<?= htmlspecialchars((string)($_POST['strength'] ?? '')) ?>" placeholder="e.g. 500mg"></div>
 
                 <div class="form-section-title"><span>&#128230;</span> Inventory &amp; Measurement</div>
-                <div class="form-group"><label>Selling Unit</label><input type="text" name="selling_unit" value="<?= htmlspecialchars((string)($_POST['selling_unit'] ?? '')) ?>" placeholder="Item / Bottle / Strip"></div>
+                <div class="form-group">
+                    <label>Selling Unit</label>
+                    <select name="selling_unit_existing">
+                        <option value="">Select Selling Unit</option>
+                        <?php foreach ($sellingUnits as $u): ?>
+                            <?php $selected = ((string)($_POST['selling_unit_existing'] ?? '') === (string)$u) ? 'selected' : ''; ?>
+                            <option value="<?= htmlspecialchars((string)$u) ?>" <?= $selected ?>><?= htmlspecialchars((string)$u) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new selling unit</small>
+                    <input type="text" name="selling_unit_new" value="<?= htmlspecialchars((string)($_POST['selling_unit_new'] ?? '')) ?>" placeholder="Type new selling unit">
+                </div>
                 <div class="form-group"><label>Doses per Unit</label><input type="number" name="unit_quantity" min="1" value="<?= htmlspecialchars((string)($_POST['unit_quantity'] ?? '1')) ?>"></div>
                 <div class="form-group"><label>Current Stock (Units)</label><input type="number" name="quantity_in_stock" min="0" value="<?= htmlspecialchars((string)($_POST['quantity_in_stock'] ?? '0')) ?>"></div>
                 <div class="form-group"><label>Price per Unit</label><input type="number" name="price" step="0.01" min="0" value="<?= htmlspecialchars((string)($_POST['price'] ?? '0')) ?>"></div>

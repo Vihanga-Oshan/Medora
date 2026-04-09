@@ -135,6 +135,142 @@ class InventoryModel
         return '';
     }
 
+    private static function ensureLookupTables(): void
+    {
+        Database::setUpConnection();
+
+        Database::iud("CREATE TABLE IF NOT EXISTS dosage_forms (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL UNIQUE,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        Database::iud("CREATE TABLE IF NOT EXISTS selling_units (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL UNIQUE,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        Database::iud("CREATE TABLE IF NOT EXISTS medicine_brands (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(150) NOT NULL UNIQUE,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        Database::iud("CREATE TABLE IF NOT EXISTS medicine_manufacturers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(150) NOT NULL UNIQUE,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        Database::iud("INSERT IGNORE INTO dosage_forms(name) VALUES
+            ('Tablet'), ('Capsule'), ('Syrup'), ('Suspension'), ('Injection'), ('Cream'),
+            ('Ointment'), ('Drops'), ('Inhaler'), ('Powder')");
+        Database::iud("INSERT IGNORE INTO selling_units(name) VALUES
+            ('Item'), ('Strip'), ('Bottle'), ('Box'), ('Tube'), ('Vial'), ('Sachet'), ('Pack')");
+    }
+
+    private static function normalizeOption(string $value): string
+    {
+        return trim(preg_replace('/\s+/', ' ', $value) ?? $value);
+    }
+
+    private static function resolveSelectableValue(array $input, string $existingKey, string $newKey, string $fallback = ''): string
+    {
+        $existing = self::normalizeOption((string)($input[$existingKey] ?? ''));
+        $new = self::normalizeOption((string)($input[$newKey] ?? ''));
+        $fallback = self::normalizeOption($fallback);
+        if ($new !== '') return $new;
+        if ($existing !== '') return $existing;
+        return $fallback;
+    }
+
+    private static function upsertLookupValue(string $table, string $name): void
+    {
+        $name = self::normalizeOption($name);
+        if ($name === '' || !self::tableExists($table)) {
+            return;
+        }
+        $safe = Database::escape($name);
+        Database::iud("INSERT IGNORE INTO `$table` (`name`) VALUES ('$safe')");
+    }
+
+    private static function getLookupValues(string $table): array
+    {
+        Database::setUpConnection();
+        self::ensureLookupTables();
+        if (!self::tableExists($table)) {
+            return [];
+        }
+        $rs = Database::search("SELECT name FROM `$table` WHERE is_active = 1 ORDER BY name ASC");
+        $rows = [];
+        if ($rs instanceof mysqli_result) {
+            while ($row = $rs->fetch_assoc()) {
+                $val = trim((string)($row['name'] ?? ''));
+                if ($val !== '') {
+                    $rows[] = $val;
+                }
+            }
+        }
+        return $rows;
+    }
+
+    public static function getDosageForms(): array
+    {
+        return self::getLookupValues('dosage_forms');
+    }
+
+    public static function getSellingUnits(): array
+    {
+        return self::getLookupValues('selling_units');
+    }
+
+    public static function getBrands(): array
+    {
+        Database::setUpConnection();
+        self::ensureLookupTables();
+
+        $brands = self::getLookupValues('medicine_brands');
+        if (self::tableExists('medicines') && self::hasMedicineColumn('name')) {
+            $rs = Database::search("SELECT DISTINCT name FROM medicines WHERE TRIM(COALESCE(name,'')) <> '' ORDER BY name ASC");
+            if ($rs instanceof mysqli_result) {
+                while ($row = $rs->fetch_assoc()) {
+                    $name = self::normalizeOption((string)($row['name'] ?? ''));
+                    if ($name !== '' && !in_array($name, $brands, true)) {
+                        $brands[] = $name;
+                    }
+                }
+            }
+            sort($brands);
+        }
+        return $brands;
+    }
+
+    public static function getManufacturers(): array
+    {
+        Database::setUpConnection();
+        self::ensureLookupTables();
+
+        $makers = self::getLookupValues('medicine_manufacturers');
+        if (self::tableExists('medicines') && self::hasMedicineColumn('manufacturer')) {
+            $rs = Database::search("SELECT DISTINCT manufacturer FROM medicines WHERE TRIM(COALESCE(manufacturer,'')) <> '' ORDER BY manufacturer ASC");
+            if ($rs instanceof mysqli_result) {
+                while ($row = $rs->fetch_assoc()) {
+                    $name = self::normalizeOption((string)($row['manufacturer'] ?? ''));
+                    if ($name !== '' && !in_array($name, $makers, true)) {
+                        $makers[] = $name;
+                    }
+                }
+            }
+            sort($makers);
+        }
+        return $makers;
+    }
+
     public static function getCategories(): array
     {
         Database::setUpConnection();
@@ -230,11 +366,17 @@ class InventoryModel
     public static function create(array $input, ?array $file = null): bool
     {
         Database::setUpConnection();
+        self::ensureLookupTables();
         if (!self::tableExists('medicines')) {
             return false;
         }
 
-        $name = trim((string)($input['name'] ?? ''));
+        $name = self::resolveSelectableValue(
+            $input,
+            'brand_existing',
+            'brand_new',
+            trim((string)($input['name'] ?? ''))
+        );
         if ($name === '') {
             return false;
         }
@@ -249,13 +391,28 @@ class InventoryModel
         }
 
         $description = trim((string)($input['description'] ?? ''));
-        $dosageForm = trim((string)($input['dosage_form'] ?? ''));
+        $dosageForm = self::resolveSelectableValue(
+            $input,
+            'dosage_form_existing',
+            'dosage_form_new',
+            trim((string)($input['dosage_form'] ?? ''))
+        );
         $strength = trim((string)($input['strength'] ?? ''));
-        $manufacturer = trim((string)($input['manufacturer'] ?? ''));
+        $manufacturer = self::resolveSelectableValue(
+            $input,
+            'manufacturer_existing',
+            'manufacturer_new',
+            trim((string)($input['manufacturer'] ?? ''))
+        );
         $expiryDate = trim((string)($input['expiry_date'] ?? ''));
         $qty = (int)($input['quantity_in_stock'] ?? 0);
         $price = (float)($input['price'] ?? 0);
-        $sellingUnit = trim((string)($input['selling_unit'] ?? ''));
+        $sellingUnit = self::resolveSelectableValue(
+            $input,
+            'selling_unit_existing',
+            'selling_unit_new',
+            trim((string)($input['selling_unit'] ?? ''))
+        );
         $unitQuantity = (int)($input['unit_quantity'] ?? 1);
         $addedBy = (int)($input['added_by'] ?? 0);
 
@@ -304,12 +461,20 @@ class InventoryModel
         }
 
         $sql = "INSERT INTO medicines (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")";
-        return Database::iud($sql);
+        $ok = Database::iud($sql);
+        if ($ok) {
+            self::upsertLookupValue('medicine_brands', $name);
+            self::upsertLookupValue('dosage_forms', $dosageForm);
+            self::upsertLookupValue('selling_units', $sellingUnit);
+            self::upsertLookupValue('medicine_manufacturers', $manufacturer);
+        }
+        return $ok;
     }
 
     public static function update(int $id, array $input, ?array $file = null): bool
     {
         Database::setUpConnection();
+        self::ensureLookupTables();
         if (!self::tableExists('medicines')) {
             return false;
         }
@@ -327,7 +492,12 @@ class InventoryModel
         $newImagePath = self::saveUploadedImage($file);
         $imagePath = $newImagePath !== '' ? $newImagePath : (string)($existing['image_path'] ?? '');
 
-        $name = trim((string)($input['name'] ?? ($existing['name'] ?? '')));
+        $name = self::resolveSelectableValue(
+            $input,
+            'brand_existing',
+            'brand_new',
+            trim((string)($input['name'] ?? ($existing['name'] ?? '')))
+        );
         if ($name === '') {
             return false;
         }
@@ -340,13 +510,28 @@ class InventoryModel
         }
 
         $description = trim((string)($input['description'] ?? ($existing['description'] ?? '')));
-        $dosageForm = trim((string)($input['dosage_form'] ?? ($existing['dosage_form'] ?? '')));
+        $dosageForm = self::resolveSelectableValue(
+            $input,
+            'dosage_form_existing',
+            'dosage_form_new',
+            trim((string)($input['dosage_form'] ?? ($existing['dosage_form'] ?? '')))
+        );
         $strength = trim((string)($input['strength'] ?? ($existing['strength'] ?? '')));
-        $manufacturer = trim((string)($input['manufacturer'] ?? ($existing['manufacturer'] ?? '')));
+        $manufacturer = self::resolveSelectableValue(
+            $input,
+            'manufacturer_existing',
+            'manufacturer_new',
+            trim((string)($input['manufacturer'] ?? ($existing['manufacturer'] ?? '')))
+        );
         $expiryDate = trim((string)($input['expiry_date'] ?? ($existing['expiry_date'] ?? '')));
         $qty = (int)($input['quantity_in_stock'] ?? ($existing['quantity_in_stock'] ?? 0));
         $price = (float)($input['price'] ?? ($existing['price'] ?? 0));
-        $sellingUnit = trim((string)($input['selling_unit'] ?? ($existing['selling_unit'] ?? '')));
+        $sellingUnit = self::resolveSelectableValue(
+            $input,
+            'selling_unit_existing',
+            'selling_unit_new',
+            trim((string)($input['selling_unit'] ?? ($existing['selling_unit'] ?? '')))
+        );
         $unitQuantity = (int)($input['unit_quantity'] ?? ($existing['unit_quantity'] ?? 1));
 
         $sets = [];
@@ -389,7 +574,14 @@ class InventoryModel
             $where .= " AND pharmacy_id = " . self::currentPharmacyId();
         }
         $sql = "UPDATE medicines SET " . implode(', ', $sets) . " WHERE $where";
-        return Database::iud($sql);
+        $ok = Database::iud($sql);
+        if ($ok) {
+            self::upsertLookupValue('medicine_brands', $name);
+            self::upsertLookupValue('dosage_forms', $dosageForm);
+            self::upsertLookupValue('selling_units', $sellingUnit);
+            self::upsertLookupValue('medicine_manufacturers', $manufacturer);
+        }
+        return $ok;
     }
 
     public static function delete(int $id): bool

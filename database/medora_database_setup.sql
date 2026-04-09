@@ -482,3 +482,39 @@ WHERE NOT EXISTS (SELECT 1 FROM pharmacies WHERE name='Medora WellLife - Bambala
 INSERT INTO pharmacies(name,address_line1,city,district,latitude,longitude,is_demo,status)
 SELECT 'Medora Community - Kandy Central','Dalada Veediya','Kandy','Kandy',7.2936,80.6413,1,'active'
 WHERE NOT EXISTS (SELECT 1 FROM pharmacies WHERE name='Medora Community - Kandy Central');
+
+-- Lookup tables for practical dropdown-based medicine entry
+CREATE TABLE IF NOT EXISTS dosage_forms (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS selling_units (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS medicine_brands (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL UNIQUE,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS medicine_manufacturers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL UNIQUE,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO dosage_forms(name) VALUES
+  ('Tablet'), ('Capsule'), ('Syrup'), ('Suspension'), ('Injection'), ('Cream'),
+  ('Ointment'), ('Drops'), ('Inhaler'), ('Powder');
+
+INSERT IGNORE INTO selling_units(name) VALUES
+  ('Item'), ('Strip'), ('Bottle'), ('Box'), ('Tube'), ('Vial'), ('Sachet'), ('Pack');
