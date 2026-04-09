@@ -48,7 +48,11 @@ class LoginModel
 
     private static function tableExists(string $table): bool
     {
-        return Database::fetchOne("SHOW TABLES LIKE ?", 's', [$table]) !== null;
+        return Database::fetchOne(
+            "SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1",
+            's',
+            [$table]
+        ) !== null;
     }
 
     private static function columnExists(string $table, string $column): bool
@@ -57,6 +61,15 @@ class LoginModel
         if ($safeTable === '') {
             return false;
         }
-        return Database::fetchOne("SHOW COLUMNS FROM `$safeTable` LIKE ?", 's', [$column]) !== null;
+        return Database::fetchOne(
+            "SELECT 1
+             FROM information_schema.columns
+             WHERE table_schema = DATABASE()
+               AND table_name = ?
+               AND column_name = ?
+             LIMIT 1",
+            'ss',
+            [$safeTable, $column]
+        ) !== null;
     }
 }

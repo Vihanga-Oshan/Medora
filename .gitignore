@@ -11,3 +11,7 @@ public/uploads/**
 !public/uploads/posts/.gitkeep
 !public/uploads/prescriptions/.gitkeep
 !public/uploads/profiles/.gitkeep
+
+# TLS certs/keys (local secrets)
+storage/certs/*
+!storage/certs/.gitkeep

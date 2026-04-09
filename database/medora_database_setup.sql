@@ -403,14 +403,69 @@ CREATE TABLE IF NOT EXISTS patient_pharmacy_selection (
   INDEX idx_pharmacy (pharmacy_id)
 );
 
-ALTER TABLE medicines ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE medication_schedules ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE medication_schedule ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE schedule_master ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE medication_log ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
-ALTER TABLE notifications ADD COLUMN IF NOT EXISTS pharmacy_id INT NULL;
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE medicines ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'prescriptions')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'prescriptions' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE prescriptions ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medication_schedules')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medication_schedules' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE medication_schedules ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medication_schedule')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medication_schedule' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE medication_schedule ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'schedule_master')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'schedule_master' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE schedule_master ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medication_log')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medication_log' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE medication_log ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'chat_messages')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'chat_messages' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE chat_messages ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'notifications')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'notifications' AND column_name = 'pharmacy_id'),
+  'ALTER TABLE notifications ADD COLUMN pharmacy_id INT NULL',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 INSERT INTO pharmacies(name,address_line1,city,district,latitude,longitude,status)
 SELECT 'Medora Main Pharmacy','Default Address','Colombo','Colombo',6.927079,79.861244,'active'

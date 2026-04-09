@@ -17,6 +17,14 @@ if (Request::isPost()) {
     $chronic = trim(Request::post('chronic') ?? '');
     $guardianNic = trim(Request::post('guardianNic') ?? '');
 
+    $normalizeNic = static function (string $value): string {
+        $value = strtoupper(trim($value));
+        return preg_replace('/[\s\-]+/', '', $value) ?? $value;
+    };
+
+    $nic = $normalizeNic($nic);
+    $guardianNic = $guardianNic !== '' ? $normalizeNic($guardianNic) : '';
+
     if ($name === '' || $gender === '' || $emergencyContact === '' || $email === '' || $nic === '' || $password === '' || $confirmPassword === '') {
         $error = 'Please fill all required fields.';
     } elseif ($password !== $confirmPassword) {
