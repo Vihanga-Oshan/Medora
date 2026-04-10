@@ -121,8 +121,7 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
             <table class="data-table small-table" id="inventoryTable">
                 <thead>
                     <tr>
-                        <th>Brand Name</th>
-                        <th>Generic Name</th>
+                        <th>Medicine</th>
                         <th>Category</th>
                         <th>Strength</th>
                         <th>Stock</th>
@@ -133,18 +132,28 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                 </thead>
                 <tbody>
                     <?php if (empty($medicines)): ?>
-                        <tr><td colspan="8" class="empty-msg">No medicines found.</td></tr>
+                        <tr><td colspan="7" class="empty-msg">No medicines found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($medicines as $m): ?>
+                            <?php
+                            $brandName = trim((string)($m['name'] ?? ''));
+                            $genericName = trim((string)($m['generic_name'] ?? ''));
+                            $medicineName = $genericName !== '' ? $genericName : $brandName;
+                            $smallBrand = ($brandName !== '' && strcasecmp($brandName, $medicineName) !== 0) ? $brandName : '';
+                            ?>
                             <tr>
-                                <td><strong><?= htmlspecialchars((string)($m['name'] ?? '')) ?></strong></td>
-                                <td><?= htmlspecialchars((string)($m['generic_name'] ?? '')) ?></td>
+                                <td>
+                                    <strong><?= htmlspecialchars($medicineName) ?></strong>
+                                    <?php if ($smallBrand !== ''): ?>
+                                        <div style="font-size:12px;color:#64748b;">Brand: <?= htmlspecialchars($smallBrand) ?></div>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= htmlspecialchars((string)($m['category'] ?? '')) ?></td>
                                 <td><?= htmlspecialchars((string)($m['strength'] ?? '')) ?></td>
                                 <td class="<?= ((int)($m['quantity_in_stock'] ?? 0) < 10) ? 'text-danger' : '' ?>">
                                     <?= (int)($m['quantity_in_stock'] ?? 0) ?>
                                 </td>
-                                <td>$<?= number_format((float)($m['price'] ?? 0), 2) ?></td>
+                                <td>Rs. <?= number_format((float)($m['price'] ?? 0), 2) ?></td>
                                 <td><?= htmlspecialchars((string)($m['expiry_date'] ?? '')) ?></td>
                                 <td>
                                     <button class="action-btn" onclick="openActionsMenu(this)" type="button">&#8942;</button>

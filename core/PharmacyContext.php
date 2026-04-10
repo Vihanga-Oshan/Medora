@@ -161,7 +161,12 @@ class PharmacyContext
 
     public static function patientHasSelection(string $patientNic): bool
     {
-        if ($patientNic === '' || !self::tableExists('patient_pharmacy_selection')) {
+        if ($patientNic === '') {
+            self::clearSelectedPharmacy();
+            return false;
+        }
+
+        if (!self::tableExists('patient_pharmacy_selection')) {
             return self::selectedPharmacyId() > 0;
         }
 
@@ -176,7 +181,8 @@ class PharmacyContext
             }
         }
 
-        return self::selectedPharmacyId() > 0;
+        self::clearSelectedPharmacy();
+        return false;
     }
 
     public static function assignPatientSelection(string $patientNic, int $pharmacyId): bool

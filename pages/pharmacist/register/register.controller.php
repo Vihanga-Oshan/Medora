@@ -9,15 +9,18 @@ if (Request::isPost()) {
     $name = trim((string)(Request::post('name') ?? ''));
     $email = trim((string)(Request::post('email') ?? ''));
     $phone = trim((string)(Request::post('phone') ?? ''));
-    $license = trim((string)(Request::post('license_no') ?? ''));
+    $licenseRaw = trim((string)(Request::post('license_no') ?? ''));
+    $license = PharmacistRegisterModel::normalizeLicenseDigits($licenseRaw);
     $password = (string)(Request::post('password') ?? '');
     $confirmPassword = (string)(Request::post('confirm_password') ?? '');
     $requestedPharmacyId = (int)(Request::post('requested_pharmacy_id') ?? 0);
 
     $validPharmacyIds = array_map(static fn($p) => (int)($p['id'] ?? 0), $pharmacies);
 
-    if ($name === '' || $email === '' || $license === '' || $password === '' || $confirmPassword === '') {
+    if ($name === '' || $email === '' || $licenseRaw === '' || $password === '' || $confirmPassword === '') {
         $error = 'Please fill all required fields.';
+    } elseif ($license === '') {
+        $error = 'License number must be exactly 4 digits.';
     } elseif ($requestedPharmacyId <= 0 || !in_array($requestedPharmacyId, $validPharmacyIds, true)) {
         $error = 'Please select a valid pharmacy location.';
     } elseif ($password !== $confirmPassword) {

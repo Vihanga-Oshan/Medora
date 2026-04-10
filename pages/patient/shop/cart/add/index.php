@@ -16,9 +16,9 @@ if ($id <= 0) {
     Response::redirect('/patient/shop');
 }
 
-$medicine = ShopModel::getMedicineById($id);
+$medicine = ShopModel::getSelectedBranchMedicineById($id);
 if (!$medicine) {
-    shopSetFlash('Medicine not found.', 'error');
+    shopSetFlash('This medicine is not available in your selected branch.', 'error');
     Response::redirect('/patient/shop');
 }
 
@@ -39,4 +39,3 @@ if ($returnTo === 'cart') {
     Response::redirect('/patient/shop/cart');
 }
 Response::redirect('/patient/shop');
-

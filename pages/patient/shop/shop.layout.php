@@ -11,18 +11,41 @@ $cartCount = (int)($data['cartCount'] ?? 0);
 $flash = $data['flash'] ?? null;
 
 $toImageUrl = static function (string $rawPath) use ($base): string {
+    $fallback = htmlspecialchars($base) . '/assets/img/logo.png';
     $img = trim($rawPath);
     if ($img === '') {
-        return htmlspecialchars($base) . '/assets/img/logo.png';
+        return $fallback;
     }
     if (preg_match('/^https?:\/\//i', $img)) {
         return $img;
     }
-    $img = ltrim(str_replace('\\', '/', $img), '/');
+
+    $img = str_replace('\\', '/', $img);
+    $img = preg_replace('#^[A-Za-z]:/#', '', $img) ?? $img;
+    if (str_contains($img, '/public/uploads/')) {
+        $img = substr($img, strpos($img, '/public/uploads/') + 8);
+    }
+    $img = ltrim($img, '/');
     if (!str_starts_with($img, 'uploads/')) {
         $img = 'uploads/medicines/' . basename($img);
     }
-    return htmlspecialchars($base) . '/' . $img;
+
+    if (defined('ROOT')) {
+        $abs = ROOT . '/public/' . ltrim($img, '/');
+        if (!is_file($abs)) {
+            return $fallback;
+        }
+    }
+
+    return htmlspecialchars($base) . '/' . ltrim($img, '/');
+};
+
+$resolveMedicineText = static function (array $row): array {
+    $brandName = trim((string)($row['name'] ?? ''));
+    $genericName = trim((string)($row['generic_name'] ?? ''));
+    $medicineName = $genericName !== '' ? $genericName : $brandName;
+    $smallBrand = ($brandName !== '' && strcasecmp($brandName, $medicineName) !== 0) ? $brandName : '';
+    return [$medicineName !== '' ? $medicineName : 'Medicine', $smallBrand];
 };
 ?>
 <!DOCTYPE html>
@@ -55,6 +78,10 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
         .modal-actions input[type="number"] { width: 90px; height: 44px; border: 1px solid #cbd5e1; border-radius: 10px; text-align: center; font-size: 15px; }
         .quick-add-form { width: 100%; }
         .med-clickable { cursor: pointer; }
+        .med-brand { font-size: 12px; color: #64748b; margin-top: 4px; min-height: 16px; }
+        .stock-chip { display:inline-flex; align-items:center; border-radius:999px; font-size:11px; font-weight:700; padding:4px 8px; margin-top:8px; }
+        .stock-chip.in { background:#ecfdf3; color:#047857; border:1px solid #a7f3d0; }
+        .stock-chip.out { background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
         @media (max-width: 1000px) { .medicine-modal-body { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -145,10 +172,22 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
             <?php foreach ($medicines as $med): ?>
                 <?php
                 $id = (int)($med['id'] ?? 0);
-                $name = (string)($med['name'] ?? 'Medicine');
+                $cartId = (int)($med['cart_id'] ?? 0);
+                [$medicineName, $smallBrand] = $resolveMedicineText($med);
+                $selectedStock = max(0, (int)($med['quantity_in_stock'] ?? 0));
+                $availableBranchName = trim((string)($med['available_branch_name'] ?? ''));
+                $selectedBranchName = trim((string)($med['selected_branch_name'] ?? ''));
+                $stockMessage = '';
+                if ($selectedStock <= 0 && $availableBranchName !== '') {
+                    $stockMessage = 'Out of stock' . ($selectedBranchName !== '' ? (' at ' . $selectedBranchName) : '') . '. Available in ' . $availableBranchName . '.';
+                } elseif ($selectedStock <= 0) {
+                    $stockMessage = 'Out of stock in your selected branch.';
+                }
                 $payload = [
                     'id' => $id,
-                    'name' => $name,
+                    'cartId' => $cartId,
+                    'name' => $medicineName,
+                    'brandName' => $smallBrand,
                     'category' => (string)($med['category'] ?? 'General'),
                     'generic' => (string)($med['generic_name'] ?? ''),
                     'dosage' => (string)($med['dosage_form'] ?? ''),
@@ -156,7 +195,8 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
                     'manufacturer' => (string)($med['manufacturer'] ?? ''),
                     'description' => (string)($med['description'] ?? 'No description available.'),
                     'price' => (float)($med['price'] ?? 0),
-                    'stock' => max(0, (int)($med['quantity_in_stock'] ?? 0)),
+                    'stock' => $selectedStock,
+                    'stockMessage' => $stockMessage,
                     'sellingUnit' => (string)($med['selling_unit'] ?? 'Item'),
                     'unitQty' => (int)($med['unit_quantity'] ?? 1),
                     'image' => $toImageUrl((string)($med['image_path'] ?? '')),
@@ -164,18 +204,23 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
                 ?>
                 <div class="medicine-card med-clickable" data-medicine='<?= htmlspecialchars(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'>
                     <div class="card-img-wrapper">
-                        <img src="<?= $toImageUrl((string)($med['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars($name) ?>">
+                        <img src="<?= $toImageUrl((string)($med['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars($medicineName) ?>">
                     </div>
                     <div class="card-body">
                         <div class="med-category"><?= htmlspecialchars((string)($med['category'] ?? 'General')) ?></div>
-                        <h3 class="med-title"><?= htmlspecialchars($name) ?></h3>
+                        <h3 class="med-title"><?= htmlspecialchars($medicineName) ?></h3>
+                        <div class="med-brand"><?= $smallBrand !== '' ? ('Brand: ' . htmlspecialchars($smallBrand)) : '&nbsp;' ?></div>
+                        <div class="stock-chip <?= $selectedStock > 0 ? 'in' : 'out' ?>"><?= $selectedStock > 0 ? 'In Stock' : 'Out of Stock' ?></div>
                         <div class="price-container">
                             <div class="price-tag">Rs. <?= number_format((float)($med['price'] ?? 0), 2) ?></div>
                         </div>
+                        <?php if ($stockMessage !== ''): ?>
+                            <div style="margin-top:8px;font-size:12px;color:#b45309;line-height:1.35;"><?= htmlspecialchars($stockMessage) ?></div>
+                        <?php endif; ?>
                         <form method="post" action="<?= htmlspecialchars($base) ?>/patient/shop/cart/add" class="quick-add-form" onsubmit="event.stopPropagation();">
-                            <input type="hidden" name="id" value="<?= $id ?>">
+                            <input type="hidden" name="id" value="<?= $cartId ?>">
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn-add-cart" style="width:100%; border-radius:8px; gap:8px; margin-top:15px;">
+                            <button type="submit" class="btn-add-cart" style="width:100%; border-radius:8px; gap:8px; margin-top:15px;<?= $selectedStock <= 0 ? 'opacity:.5;cursor:not-allowed;' : '' ?>" <?= $selectedStock <= 0 ? 'disabled' : '' ?>>
                                 <span>&#10010;</span> Add to Cart
                             </button>
                         </form>
@@ -198,9 +243,12 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
             <div class="widget-title">Recently Viewed</div>
             <?php if (!empty($recentlyViewed)): ?>
                 <?php foreach ($recentlyViewed as $item): ?>
+                    <?php [$widgetMedicineName, $widgetBrand] = $resolveMedicineText($item); ?>
                     <div class="widget-item med-clickable" data-medicine='<?= htmlspecialchars(json_encode([
                         'id' => (int)($item['id'] ?? 0),
-                        'name' => (string)($item['name'] ?? 'Medicine'),
+                        'cartId' => (int)($item['cart_id'] ?? 0),
+                        'name' => $widgetMedicineName,
+                        'brandName' => $widgetBrand,
                         'category' => (string)($item['category'] ?? 'General'),
                         'generic' => (string)($item['generic_name'] ?? ''),
                         'dosage' => (string)($item['dosage_form'] ?? ''),
@@ -209,13 +257,16 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
                         'description' => (string)($item['description'] ?? 'No description available.'),
                         'price' => (float)($item['price'] ?? 0),
                         'stock' => max(0, (int)($item['quantity_in_stock'] ?? 0)),
+                        'stockMessage' => (string)($item['available_branch_name'] ?? '') !== '' && max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0
+                            ? ('Out of stock' . ((string)($item['selected_branch_name'] ?? '') !== '' ? (' at ' . (string)$item['selected_branch_name']) : '') . '. Available in ' . (string)$item['available_branch_name'] . '.')
+                            : (max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0 ? 'Out of stock in your selected branch.' : ''),
                         'sellingUnit' => (string)($item['selling_unit'] ?? 'Item'),
                         'unitQty' => (int)($item['unit_quantity'] ?? 1),
                         'image' => $toImageUrl((string)($item['image_path'] ?? '')),
                     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'>
-                        <img src="<?= $toImageUrl((string)($item['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars((string)($item['name'] ?? 'Medicine')) ?>">
+                        <img src="<?= $toImageUrl((string)($item['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars($widgetMedicineName) ?>">
                         <div class="widget-info">
-                            <h4><?= htmlspecialchars((string)($item['name'] ?? 'Medicine')) ?></h4>
+                            <h4><?= htmlspecialchars($widgetMedicineName) ?></h4>
                             <p><?= htmlspecialchars((string)($item['category'] ?? 'General')) ?></p>
                         </div>
                     </div>
@@ -228,9 +279,12 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
         <div class="widget-card">
             <div class="widget-title">Suggestions for You</div>
             <?php foreach ($suggestions as $item): ?>
+                <?php [$suggestMedicineName, $suggestBrand] = $resolveMedicineText($item); ?>
                 <div class="widget-item med-clickable" data-medicine='<?= htmlspecialchars(json_encode([
                     'id' => (int)($item['id'] ?? 0),
-                    'name' => (string)($item['name'] ?? 'Medicine'),
+                    'cartId' => (int)($item['cart_id'] ?? 0),
+                    'name' => $suggestMedicineName,
+                    'brandName' => $suggestBrand,
                     'category' => (string)($item['category'] ?? 'General'),
                     'generic' => (string)($item['generic_name'] ?? ''),
                     'dosage' => (string)($item['dosage_form'] ?? ''),
@@ -239,13 +293,16 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
                     'description' => (string)($item['description'] ?? 'No description available.'),
                     'price' => (float)($item['price'] ?? 0),
                     'stock' => max(0, (int)($item['quantity_in_stock'] ?? 0)),
+                    'stockMessage' => (string)($item['available_branch_name'] ?? '') !== '' && max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0
+                        ? ('Out of stock' . ((string)($item['selected_branch_name'] ?? '') !== '' ? (' at ' . (string)$item['selected_branch_name']) : '') . '. Available in ' . (string)$item['available_branch_name'] . '.')
+                        : (max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0 ? 'Out of stock in your selected branch.' : ''),
                     'sellingUnit' => (string)($item['selling_unit'] ?? 'Item'),
                     'unitQty' => (int)($item['unit_quantity'] ?? 1),
                     'image' => $toImageUrl((string)($item['image_path'] ?? '')),
                 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8') ?>'>
-                    <img src="<?= $toImageUrl((string)($item['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars((string)($item['name'] ?? 'Medicine')) ?>">
+                    <img src="<?= $toImageUrl((string)($item['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars($suggestMedicineName) ?>">
                     <div class="widget-info">
-                        <h4><?= htmlspecialchars((string)($item['name'] ?? 'Medicine')) ?></h4>
+                        <h4><?= htmlspecialchars($suggestMedicineName) ?></h4>
                         <p><?= htmlspecialchars((string)($item['category'] ?? 'General')) ?></p>
                     </div>
                 </div>
@@ -308,7 +365,7 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
         modalImage.src = payload.image || '<?= htmlspecialchars($base) ?>/assets/img/logo.png';
         modalCategory.textContent = payload.category || 'General';
         modalName.textContent = payload.name || 'Medicine';
-        modalGeneric.textContent = payload.generic ? ('Generic: ' + payload.generic) : '';
+        modalGeneric.textContent = payload.brandName ? ('Brand: ' + payload.brandName) : (payload.generic ? ('Generic: ' + payload.generic) : '');
         modalDescription.textContent = payload.description || 'No description available.';
         modalPrice.textContent = Number(payload.price || 0).toFixed(2);
 
@@ -322,9 +379,11 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
 
         const stock = Math.max(0, parseInt(payload.stock || 0, 10));
         modalStock.className = 'modal-stock ' + (stock > 0 ? 'in' : 'out');
-        modalStock.textContent = stock > 0 ? ('In stock: ' + stock) : 'Out of stock';
+        modalStock.textContent = stock > 0
+            ? ('In stock: ' + stock)
+            : (payload.stockMessage || 'Out of stock');
 
-        modalMedicineId.value = String(payload.id);
+        modalMedicineId.value = String(payload.cartId || 0);
         modalQty.value = '1';
         modalQty.max = stock > 0 ? String(stock) : '1';
         modalQty.disabled = stock <= 0;

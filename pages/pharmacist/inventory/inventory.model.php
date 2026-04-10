@@ -7,6 +7,34 @@ class InventoryModel
     private static ?array $medicineColumnsCache = null;
     private static ?int $pharmacyIdCache = null;
 
+    private static function ensureMedicineColumns(): void
+    {
+        if (!self::tableExists('medicines')) {
+            return;
+        }
+
+        if (!self::columnExists('medicines', 'pricing')) {
+            Database::iud("ALTER TABLE medicines ADD COLUMN pricing DECIMAL(10,2) NOT NULL DEFAULT 0");
+            self::$medicineColumnsCache = null;
+        }
+
+        if (self::columnExists('medicines', 'price') && self::columnExists('medicines', 'pricing')) {
+            Database::iud("UPDATE medicines SET pricing = price WHERE (pricing IS NULL OR pricing = 0) AND price IS NOT NULL");
+            self::$medicineColumnsCache = null;
+        }
+    }
+
+    private static function medicinePriceColumn(): string
+    {
+        if (self::hasMedicineColumn('pricing')) {
+            return 'pricing';
+        }
+        if (self::hasMedicineColumn('price')) {
+            return 'price';
+        }
+        return '';
+    }
+
     private static function currentPharmacyId(): int
     {
         if (self::$pharmacyIdCache !== null) {
@@ -267,7 +295,15 @@ class InventoryModel
 
         $brands = self::getLookupValues('medicine_brands');
         if (self::tableExists('medicines') && self::hasMedicineColumn('name')) {
-            $rs = Database::search("SELECT DISTINCT name FROM medicines WHERE TRIM(COALESCE(name,'')) <> '' ORDER BY name ASC");
+            $where = "TRIM(COALESCE(name,'')) <> ''";
+            if (self::hasMedicineColumn('pharmacy_id')) {
+                $pid = self::currentPharmacyId();
+                if ($pid <= 0) {
+                    return [];
+                }
+                $where .= " AND pharmacy_id = $pid";
+            }
+            $rs = Database::search("SELECT DISTINCT name FROM medicines WHERE $where ORDER BY name ASC");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
                     $name = self::normalizeOption((string)($row['name'] ?? ''));
@@ -288,7 +324,15 @@ class InventoryModel
 
         $makers = self::getLookupValues('medicine_manufacturers');
         if (self::tableExists('medicines') && self::hasMedicineColumn('manufacturer')) {
-            $rs = Database::search("SELECT DISTINCT manufacturer FROM medicines WHERE TRIM(COALESCE(manufacturer,'')) <> '' ORDER BY manufacturer ASC");
+            $where = "TRIM(COALESCE(manufacturer,'')) <> ''";
+            if (self::hasMedicineColumn('pharmacy_id')) {
+                $pid = self::currentPharmacyId();
+                if ($pid <= 0) {
+                    return [];
+                }
+                $where .= " AND pharmacy_id = $pid";
+            }
+            $rs = Database::search("SELECT DISTINCT manufacturer FROM medicines WHERE $where ORDER BY manufacturer ASC");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
                     $name = self::normalizeOption((string)($row['manufacturer'] ?? ''));
@@ -334,8 +378,15 @@ class InventoryModel
     public static function getAll(string $search = ''): array
     {
         Database::setUpConnection();
+        self::ensureMedicineColumns();
 
         if (!self::tableExists('medicines')) {
+            return [];
+        }
+
+        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
+        $currentPharmacyId = self::currentPharmacyId();
+        if ($hasPharmacyId && $currentPharmacyId <= 0) {
             return [];
         }
 
@@ -347,10 +398,10 @@ class InventoryModel
                 ? "WHERE name LIKE '%$safeSearch%' OR generic_name LIKE '%$safeSearch%'"
                 : "WHERE name LIKE '%$safeSearch%'";
         }
-        if (self::hasMedicineColumn('pharmacy_id') && self::currentPharmacyId() > 0) {
+        if ($hasPharmacyId) {
             $where = $where === ''
-                ? ("WHERE pharmacy_id = " . self::currentPharmacyId())
-                : ($where . " AND pharmacy_id = " . self::currentPharmacyId());
+                ? ("WHERE pharmacy_id = " . $currentPharmacyId)
+                : ($where . " AND pharmacy_id = " . $currentPharmacyId);
         }
 
         $select = implode(",\n                   ", [
@@ -361,7 +412,7 @@ class InventoryModel
             self::selectExpr('medicines', 'strength'),
             self::selectExpr('medicines', 'dosage_form'),
             self::selectExpr('medicines', 'quantity_in_stock', '0'),
-            self::selectExpr('medicines', 'price', '0'),
+            ($priceCol = self::medicinePriceColumn()) !== '' ? "$priceCol AS price" : "0 AS price",
             ($imgCol = self::getMedicineImageColumn()) !== '' ? "$imgCol AS image_path" : "'' AS image_path",
             self::selectExpr('medicines', 'manufacturer'),
             self::selectExpr('medicines', 'expiry_date'),
@@ -381,24 +432,49 @@ class InventoryModel
     public static function getById(int $id): ?array
     {
         Database::setUpConnection();
+        self::ensureMedicineColumns();
         if (!self::tableExists('medicines')) {
+            return null;
+        }
+
+        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
+        $currentPharmacyId = self::currentPharmacyId();
+        if ($hasPharmacyId && $currentPharmacyId <= 0) {
             return null;
         }
 
         $id = (int)$id;
         $where = "id = $id";
-        if (self::hasMedicineColumn('pharmacy_id') && self::currentPharmacyId() > 0) {
-            $where .= " AND pharmacy_id = " . self::currentPharmacyId();
+        if ($hasPharmacyId) {
+            $where .= " AND pharmacy_id = " . $currentPharmacyId;
         }
         $rs = Database::search("SELECT * FROM medicines WHERE $where LIMIT 1");
-        return ($rs instanceof mysqli_result) ? $rs->fetch_assoc() : null;
+        if (!($rs instanceof mysqli_result)) {
+            return null;
+        }
+        $row = $rs->fetch_assoc();
+        if (!is_array($row)) {
+            return null;
+        }
+        if (!isset($row['price'])) {
+            $priceCol = self::medicinePriceColumn();
+            $row['price'] = $priceCol !== '' ? (float)($row[$priceCol] ?? 0) : 0;
+        }
+        return $row;
     }
 
     public static function create(array $input, ?array $file = null): bool
     {
         Database::setUpConnection();
         self::ensureLookupTables();
+        self::ensureMedicineColumns();
         if (!self::tableExists('medicines')) {
+            return false;
+        }
+
+        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
+        $currentPharmacyId = self::currentPharmacyId();
+        if ($hasPharmacyId && $currentPharmacyId <= 0) {
             return false;
         }
 
@@ -471,7 +547,8 @@ class InventoryModel
         if (self::hasMedicineColumn('dosage_form')) $addStr('dosage_form', $dosageForm);
         if (self::hasMedicineColumn('strength')) $addStr('strength', $strength);
         if (self::hasMedicineColumn('quantity_in_stock')) $addInt('quantity_in_stock', max(0, $qty));
-        if (self::hasMedicineColumn('price')) $addNum('price', max(0, $price));
+        $priceCol = self::medicinePriceColumn();
+        if ($priceCol !== '') $addNum($priceCol, max(0, $price));
         $imageColumn = self::getMedicineImageColumn();
         if ($imageColumn !== '') $addStr($imageColumn, $imagePath);
         if (self::hasMedicineColumn('manufacturer')) $addStr('manufacturer', $manufacturer);
@@ -482,7 +559,7 @@ class InventoryModel
         if (self::hasMedicineColumn('selling_unit')) $addStr('selling_unit', $sellingUnit);
         if (self::hasMedicineColumn('unit_quantity')) $addInt('unit_quantity', max(1, $unitQuantity));
         if (self::hasMedicineColumn('added_by')) $addInt('added_by', max(0, $addedBy));
-        if (self::hasMedicineColumn('pharmacy_id') && self::currentPharmacyId() > 0) $addInt('pharmacy_id', self::currentPharmacyId());
+        if ($hasPharmacyId) $addInt('pharmacy_id', $currentPharmacyId);
         if (self::hasMedicineColumn('created_at')) {
             $cols[] = 'created_at';
             $vals[] = 'NOW()';
@@ -507,7 +584,14 @@ class InventoryModel
     {
         Database::setUpConnection();
         self::ensureLookupTables();
+        self::ensureMedicineColumns();
         if (!self::tableExists('medicines')) {
+            return false;
+        }
+
+        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
+        $currentPharmacyId = self::currentPharmacyId();
+        if ($hasPharmacyId && $currentPharmacyId <= 0) {
             return false;
         }
 
@@ -557,7 +641,8 @@ class InventoryModel
         );
         $expiryDate = trim((string)($input['expiry_date'] ?? ($existing['expiry_date'] ?? '')));
         $qty = (int)($input['quantity_in_stock'] ?? ($existing['quantity_in_stock'] ?? 0));
-        $price = (float)($input['price'] ?? ($existing['price'] ?? 0));
+        $existingPrice = (float)($existing['price'] ?? ($existing['pricing'] ?? 0));
+        $price = (float)($input['price'] ?? $existingPrice);
         $sellingUnit = self::resolveSelectableValue(
             $input,
             'selling_unit_existing',
@@ -585,7 +670,8 @@ class InventoryModel
         if (self::hasMedicineColumn('dosage_form')) $setStr('dosage_form', $dosageForm);
         if (self::hasMedicineColumn('strength')) $setStr('strength', $strength);
         if (self::hasMedicineColumn('quantity_in_stock')) $setInt('quantity_in_stock', max(0, $qty));
-        if (self::hasMedicineColumn('price')) $setNum('price', max(0, $price));
+        $priceCol = self::medicinePriceColumn();
+        if ($priceCol !== '') $setNum($priceCol, max(0, $price));
         $imageColumn = self::getMedicineImageColumn();
         if ($imageColumn !== '') $setStr($imageColumn, $imagePath);
         if (self::hasMedicineColumn('manufacturer')) $setStr('manufacturer', $manufacturer);
@@ -603,8 +689,8 @@ class InventoryModel
         }
 
         $where = "id = $id";
-        if (self::hasMedicineColumn('pharmacy_id') && self::currentPharmacyId() > 0) {
-            $where .= " AND pharmacy_id = " . self::currentPharmacyId();
+        if ($hasPharmacyId) {
+            $where .= " AND pharmacy_id = " . $currentPharmacyId;
         }
         $sql = "UPDATE medicines SET " . implode(', ', $sets) . " WHERE $where";
         $ok = Database::iud($sql);
@@ -624,10 +710,16 @@ class InventoryModel
             return false;
         }
 
+        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
+        $currentPharmacyId = self::currentPharmacyId();
+        if ($hasPharmacyId && $currentPharmacyId <= 0) {
+            return false;
+        }
+
         $id = (int)$id;
         $where = "id = $id";
-        if (self::hasMedicineColumn('pharmacy_id') && self::currentPharmacyId() > 0) {
-            $where .= " AND pharmacy_id = " . self::currentPharmacyId();
+        if ($hasPharmacyId) {
+            $where .= " AND pharmacy_id = " . $currentPharmacyId;
         }
         return Database::iud("DELETE FROM medicines WHERE $where");
     }
