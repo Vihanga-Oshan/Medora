@@ -1,0 +1,5 @@
+[2026-04-11 08:37:45] [DEBUG] Guardian lookup result. {"table":"guardian","nic_suffix":"0444","normalized_nic_suffix":"0444","found":1,"has_password":1,"has_password_hash":0}
+[2026-04-11 08:41:31] [DEBUG] Guardian login request received. {"nic_suffix":"0444","password_length":12,"method":"POST"}
+[2026-04-11 08:41:32] [DEBUG] Guardian lookup result. {"table":"guardian","nic_suffix":"0444","normalized_nic_suffix":"0444","found":1,"has_password":1,"has_password_hash":0}
+[2026-04-11 08:41:32] [DEBUG] Password candidate checked. {"nic_suffix":"0444","strategy":"bcrypt","candidate_length":60,"matched":1}
+[2026-04-11 08:41:32] [DEBUG] Guardian login successful. {"nic_suffix":"0444","display_name":"guardian"}

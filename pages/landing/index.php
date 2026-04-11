@@ -7,6 +7,8 @@ $base = APP_BASE ?: '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medora - Never Miss a Dose Again</title>
+    <link rel="icon" type="image/png" href="<?= htmlspecialchars($base) ?>/assets/img/c-a-icon.png">
+    <link rel="shortcut icon" href="<?= htmlspecialchars($base) ?>/assets/img/c-a-icon.png">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/index.css">
 </head>
 <body>

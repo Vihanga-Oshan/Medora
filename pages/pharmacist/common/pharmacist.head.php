@@ -59,7 +59,7 @@ $rs = Database::search(
 $pharmacist = $rs ? $rs->fetch_assoc() : null;
 if (!$pharmacist) {
     Auth::clearTokenCookie('pharmacist');
-    Response::redirect('/auth/login/pharmacist');
+    Response::redirect('/pharmacist/login');
 }
 
 $displayName = $pharmacist['name']
@@ -83,7 +83,7 @@ if ($currentPharmacyId <= 0) {
 }
 if ($currentPharmacyId <= 0 && PharmacyContext::pharmaciesEnabled()) {
     Auth::clearTokenCookie('pharmacist');
-    Response::redirect('/auth/login/pharmacist');
+    Response::redirect('/pharmacist/login');
 }
 $currentPharmacy = PharmacyContext::pharmacyById($currentPharmacyId);
 

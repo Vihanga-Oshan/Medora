@@ -26,8 +26,9 @@ $navItems = [
                 <?= htmlspecialchars($item['label']) ?>
             </a>
         <?php endforeach; ?>
-        <form method="post" action="<?= htmlspecialchars($base) ?>/auth/logout" style="display:inline;">
+        <form method="post" action="<?= htmlspecialchars($base) ?>/patient/logout" style="display:inline;">
             <button type="submit" style="border:none;background:none;cursor:pointer;color:inherit;font:inherit;padding:0 8px;">Logout</button>
         </form>
     </nav>
 </header>
+

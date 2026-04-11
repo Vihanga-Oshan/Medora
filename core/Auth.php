@@ -104,7 +104,7 @@ class Auth
                 return $payload;
             }
         }
-        self::denyAccess();
+        self::denyAccess($role);
     }
 
     // -------------------------------------------------------------------------
@@ -199,9 +199,17 @@ class Auth
         return base64_decode(strtr($data, '-_', '+/'));
     }
 
-    private static function denyAccess(): never
+    private static function denyAccess(string $role = ''): never
     {
-        Response::redirect('/auth/login');
+        $loginByRole = [
+            'patient' => '/patient/login',
+            'guardian' => '/guardian/login',
+            'pharmacist' => '/pharmacist/login',
+            'admin' => '/admin/login',
+            'counselor' => '/pharmacist/login',
+        ];
+
+        Response::redirect($loginByRole[strtolower($role)] ?? '/patient/login');
     }
 
     private static function isHttps(): bool

@@ -9,9 +9,9 @@ $base = APP_BASE ?: '';
         </div>
 
         <div class="footer-links-row">
-            <a href="<?= htmlspecialchars($base) ?>/landing">Help Center</a>
-            <a href="<?= htmlspecialchars($base) ?>/landing">Contact Us</a>
-            <a href="<?= htmlspecialchars($base) ?>/landing">Privacy Policy</a>
+            <a href="<?= htmlspecialchars($base) ?>/">Help Center</a>
+            <a href="<?= htmlspecialchars($base) ?>/">Contact Us</a>
+            <a href="<?= htmlspecialchars($base) ?>/">Privacy Policy</a>
         </div>
     </div>
 

@@ -1,7 +1,6 @@
 <?php
-
 /**
- * /auth/login/admin â€” entry point
+ * /admin/login — entry point
  */
 require_once __DIR__ . '/login.controller.php';
 require_once __DIR__ . '/login.layout.php';

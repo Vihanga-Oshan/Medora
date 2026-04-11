@@ -38,8 +38,14 @@ if (str_contains($path, '..')) {
     Response::abort(400, 'Bad Request');
 }
 
+if ($path === '/landing') {
+    // Canonicalize old landing URL to root.
+    Response::redirect('/');
+}
+
 if ($path === '/') {
-    Response::redirect('/landing');
+    // Serve landing content at root URL.
+    $path = '/landing';
 }
 
 $pagePath = ROOT . '/pages' . $path . '/index.php';

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Prescription Validation Layout (Java-style)
  */
@@ -58,7 +58,7 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
         </nav>
 
         <div class="footer-section">
-            <form method="post" action="<?= htmlspecialchars($base) ?>/auth/logout" style="margin-top:10px;">
+            <form method="post" action="<?= htmlspecialchars($base) ?>/pharmacist/logout" style="margin-top:10px;">
                 <button type="submit" class="nav-item logout-link" style="display:block; width:100%; text-align:left; border:none; background:none; cursor:pointer;">Logout</button>
             </form>
             <div class="copyright">Medora &copy; 2022</div>
@@ -143,3 +143,4 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 </div>
 </body>
 </html>
+
