@@ -47,6 +47,7 @@ class RegisterModel
 
         $columns = [];
         $values = [];
+        $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
         self::addColumn($table, $columns, $values, 'nic', $data['nic']);
         self::addColumn($table, $columns, $values, 'name', $data['name']);
@@ -54,7 +55,8 @@ class RegisterModel
         self::addColumn($table, $columns, $values, 'phone', $data['contactNumber']);
         self::addColumn($table, $columns, $values, 'contact_number', $data['contactNumber']);
         self::addColumn($table, $columns, $values, 'email', $data['email'] ?: null);
-        self::addColumn($table, $columns, $values, 'password', password_hash($data['password'], PASSWORD_BCRYPT));
+        self::addColumn($table, $columns, $values, 'password', $hashedPassword);
+        self::addColumn($table, $columns, $values, 'password_hash', $hashedPassword);
 
         if (empty($columns)) {
             self::$lastError = 'No compatible columns were found for guardian registration.';

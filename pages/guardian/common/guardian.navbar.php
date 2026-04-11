@@ -1,47 +1,30 @@
 <?php
 /**
- * Guardian navbar partial.
- * $user is injected from guardian.head.php
+ * Guardian navbar partial - patient-style header pattern.
  */
-$currentPath = $_SERVER['REQUEST_URI'];
+$currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $base = APP_BASE ?: '';
+$navItems = [
+    ['label' => 'Dashboard', 'href' => $base . '/guardian/dashboard', 'match' => '/guardian/dashboard'],
+    ['label' => 'Patients', 'href' => $base . '/guardian/patients', 'match' => '/guardian/patients'],
+    ['label' => 'Alerts', 'href' => $base . '/guardian/alerts', 'match' => '/guardian/alerts'],
+    ['label' => 'Profile', 'href' => $base . '/guardian/profile', 'match' => '/guardian/profile'],
+];
 ?>
-<nav class="guardian-navbar">
-    <div class="nav-brand">
-        <a href="<?= htmlspecialchars($base) ?>/guardian/dashboard">
-            <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora" onerror="this.style.display='none'">
-            <span>Medora Guardian</span>
-        </a>
-    </div>
+<header class="header">
+    <a class="logo" href="<?= htmlspecialchars($base) ?>/guardian/dashboard">
+        <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora Logo" onerror="this.style.display='none'">
+        <span>Medora</span>
+    </a>
 
-    <ul class="nav-links">
-        <li class="<?= str_contains($currentPath, '/guardian/dashboard') ? 'active' : '' ?>">
-            <a href="<?= htmlspecialchars($base) ?>/guardian/dashboard">
-                <i>&#127968;</i> Dashboard
+    <nav class="nav-links">
+        <?php foreach ($navItems as $item): ?>
+            <?php $isActive = str_contains($currentPath, $item['match']); ?>
+            <a href="<?= htmlspecialchars($item['href']) ?>" class="<?= $isActive ? 'active' : '' ?>">
+                <?= htmlspecialchars($item['label']) ?>
             </a>
-        </li>
-        <li class="<?= str_contains($currentPath, '/guardian/patients') ? 'active' : '' ?>">
-            <a href="<?= htmlspecialchars($base) ?>/guardian/patients">
-                <i>&#128101;</i> Patients
-            </a>
-        </li>
-        <li class="<?= str_contains($currentPath, '/guardian/alerts') ? 'active' : '' ?>">
-            <a href="<?= htmlspecialchars($base) ?>/guardian/alerts">
-                <i>&#128276;</i> Alerts
-            </a>
-        </li>
-        <li class="<?= str_contains($currentPath, '/guardian/reports') ? 'active' : '' ?>">
-            <a href="<?= htmlspecialchars($base) ?>/guardian/reports">
-                <i>&#128200;</i> Reports
-            </a>
-        </li>
-    </ul>
+        <?php endforeach; ?>
+        <a href="<?= htmlspecialchars($base) ?>/guardian/logout">Logout</a>
+    </nav>
+</header>
 
-    <div class="nav-user">
-        <span class="nav-user-name"><?= htmlspecialchars($user['name'] ?? 'Guardian') ?></span>
-        <a href="<?= htmlspecialchars($base) ?>/guardian/profile" class="nav-avatar" title="My Profile">
-            <?= strtoupper(substr($user['name'] ?? 'G', 0, 1)) ?>
-        </a>
-        <a href="<?= htmlspecialchars($base) ?>/auth/logout" class="nav-logout" title="Logout">&#128682;</a>
-    </div>
-</nav>
