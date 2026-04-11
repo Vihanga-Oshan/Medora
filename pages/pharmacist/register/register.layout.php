@@ -61,7 +61,7 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
                 <input type="password" name="confirm_password" required>
 
                 <button type="submit" class="btn-submit">Submit Request</button>
-                <p class="bottom-text"><a href="<?= htmlspecialchars($base) ?>/auth/login/pharmacist">Back to Pharmacist Login</a></p>
+                <p class="bottom-text"><a href="<?= htmlspecialchars($base) ?>/pharmacist/login">Back to Pharmacist Login</a></p>
             </form>
         </div>
     </section>

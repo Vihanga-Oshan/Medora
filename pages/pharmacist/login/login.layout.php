@@ -1,8 +1,8 @@
 <?php
-$pageTitle = 'Medora - Login';
-$authCss = 'login/login-patient.css';
+$pageTitle = 'Medora - Pharmacist Login';
+$authCss = 'login/login-guardian.css';
 $base = APP_BASE ?: '';
-require_once __DIR__ . '/../../common/auth.head.php';
+require_once __DIR__ . '/../../auth/common/auth.head.php';
 ?>
 
 <body class="login-page">
@@ -13,27 +13,22 @@ require_once __DIR__ . '/../../common/auth.head.php';
                     <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora Logo">
                 </div>
 
-                <h1>Log in to your Account</h1>
-                <p class="subtitle">Welcome back! Select method to log in.</p>
-
-                <div class="form-toggle">
-                    <button class="active" type="button" onclick="location.href='<?= htmlspecialchars($base) ?>/login'">Patient</button>
-                    <button type="button" onclick="location.href='<?= htmlspecialchars($base) ?>/guardian/login'">Guardian</button>
-                </div>
+                <h1>Pharmacist Portal</h1>
+                <p class="subtitle">Access prescription reviews, schedules, and patient monitoring tools.</p>
 
                 <?php if ($error !== null): ?>
                     <p class="error-text"><?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
 
-                <form id="loginForm" method="POST" action="">
-                    <label for="nic">NIC Number</label>
+                <form class="login-form" id="counselorLoginForm" method="POST" action="">
+                    <label for="id">Pharmacist ID</label>
                     <input
                         type="text"
-                        id="nic"
-                        name="nic"
-                        placeholder="Enter your NIC"
+                        id="id"
+                        name="id"
+                        placeholder="Enter your pharmacist ID"
                         required
-                        value="<?= htmlspecialchars(Request::post('nic') ?? '') ?>">
+                        value="<?= htmlspecialchars(Request::post('id') ?? '') ?>">
 
                     <label for="password">Password</label>
                     <div class="password-input-container">
@@ -51,14 +46,16 @@ require_once __DIR__ . '/../../common/auth.head.php';
                             <input type="checkbox" id="keepSignedIn" name="rememberMe">
                             Keep me signed in on this device
                         </label>
-                        <a href="#" class="forgot-password">Forgot password?</a>
                     </div>
 
-                    <button type="submit" class="btn-submit form-submit-btn">Log in</button>
+                    <button type="submit" class="btn-submit form-submit-btn">Access Dashboard</button>
 
                     <p class="bottom-text">
-                        New here?
-                        <a href="<?= htmlspecialchars($base) ?>/patient/register">Create account</a>
+                        <a href="<?= htmlspecialchars($base) ?>/patient/login">Back to patient login</a>
+                    </p>
+                    <p class="bottom-text">
+                        Need access?
+                        <a href="<?= htmlspecialchars($base) ?>/pharmacist/register">Create request</a>
                     </p>
                 </form>
             </div>
@@ -66,9 +63,9 @@ require_once __DIR__ . '/../../common/auth.head.php';
 
         <aside class="auth-visual-panel">
             <div class="visual-card">
-                <img src="<?= htmlspecialchars($base) ?>/assets/img/login-illustration.png" alt="Login illustration">
-                <h2>Connect with every application.</h2>
-                <p>Everything you need in one medication dashboard.</p>
+                <img src="<?= htmlspecialchars($base) ?>/assets/img/counselor-login.png" alt="Pharmacist login illustration">
+                <h2>Review and schedule with confidence.</h2>
+                <p>Manage prescriptions and patient plans from one place.</p>
             </div>
         </aside>
     </div>
@@ -77,3 +74,4 @@ require_once __DIR__ . '/../../common/auth.head.php';
 </body>
 
 </html>
+

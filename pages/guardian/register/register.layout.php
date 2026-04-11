@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
     <div class="auth-shell register-shell">
         <section class="auth-form-panel">
             <div class="register-box">
-                <a class="back-link" href="<?= htmlspecialchars($base) ?>/landing">Back to Home</a>
+                <a class="back-link" href="<?= htmlspecialchars($base) ?>/">Back to Home</a>
 
                 <div class="logo">
                     <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora Logo">

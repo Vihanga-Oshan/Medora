@@ -29,7 +29,7 @@
 </head>
 <body>
 <div class="application-container">
-    <a href="<?= htmlspecialchars($base) ?>/landing" class="back-link">&larr; Back to Home</a>
+    <a href="<?= htmlspecialchars($base) ?>/" class="back-link">&larr; Back to Home</a>
     <div class="application-header">
         <h1>Apply as a Counselor</h1>
         <p>Join our team of professional counselors and make a difference in people's lives</p>

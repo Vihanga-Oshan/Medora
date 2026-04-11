@@ -49,7 +49,7 @@ $navItems = [
             <img src="/assets/icons/user.svg" alt="">
             <span><?= htmlspecialchars($user['name']) ?></span>
         </div>
-        <form method="POST" action="/auth/logout">
+        <form method="POST" action="/admin/logout">
             <button type="submit" class="sidebar__item btn--full" style="border:none;background:none;width:100%;text-align:left;">
                 <img src="/assets/icons/logout.svg" alt="">
                 Logout

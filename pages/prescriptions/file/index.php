@@ -6,7 +6,7 @@
 
 $auth = Auth::getUser();
 if (!$auth) {
-    Response::redirect('/auth/login');
+    Response::redirect('/patient/login');
 }
 
 $id = (int)($_GET['id'] ?? 0);
@@ -82,4 +82,3 @@ header('Content-Disposition: ' . ($download ? 'attachment' : 'inline') . '; file
 
 readfile($fullPath);
 exit;
-
