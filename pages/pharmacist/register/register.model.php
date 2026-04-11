@@ -1,6 +1,15 @@
 <?php
 class PharmacistRegisterModel
 {
+    public static function normalizeLicenseDigits(string $license): string
+    {
+        $digits = preg_replace('/\D+/', '', $license) ?? '';
+        if (strlen($digits) !== 4) {
+            return '';
+        }
+        return $digits;
+    }
+
     private static function pharmacistTable(): ?string
     {
         if (PharmacyContext::tableExists('pharmacists')) return 'pharmacists';
@@ -10,8 +19,13 @@ class PharmacistRegisterModel
 
     public static function existsInSystem(string $email, string $license): bool
     {
+        $normalizedLicense = self::normalizeLicenseDigits($license);
+        if ($normalizedLicense === '') {
+            return false;
+        }
+
         $safeEmail = Database::escape($email);
-        $safeLicense = Database::escape($license);
+        $safeLicense = Database::escape($normalizedLicense);
 
         if (PharmacyContext::tableExists('pharmacist_requests')) {
             $rs = Database::search("SELECT 1 FROM pharmacist_requests WHERE (email='$safeEmail' OR license_no='$safeLicense') AND status IN ('pending','approved') LIMIT 1");
@@ -35,7 +49,8 @@ class PharmacistRegisterModel
         $name = Database::escape(trim((string)($input['name'] ?? '')));
         $email = Database::escape(trim((string)($input['email'] ?? '')));
         $phone = Database::escape(trim((string)($input['phone'] ?? '')));
-        $license = Database::escape(trim((string)($input['license_no'] ?? '')));
+        $normalizedLicense = self::normalizeLicenseDigits((string)($input['license_no'] ?? ''));
+        $license = Database::escape($normalizedLicense);
         $pass = (string)($input['password'] ?? '');
         $pharmacyId = (int)($input['requested_pharmacy_id'] ?? 0);
 

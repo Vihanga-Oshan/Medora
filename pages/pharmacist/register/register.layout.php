@@ -26,7 +26,23 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
                 <input type="text" name="phone" value="<?= htmlspecialchars(Request::post('phone') ?? '') ?>">
 
                 <label>License Number</label>
-                <input type="text" name="license_no" required value="<?= htmlspecialchars(Request::post('license_no') ?? '') ?>">
+                <div style="display:flex;align-items:center;height:42px;border:1px solid #cfd7e5;border-radius:9px;margin-bottom:11px;padding:0 10px;background:#fff;">
+                    <span style="color:#4b5563;font-weight:600;margin-right:8px;">P-</span>
+                    <input
+                        type="text"
+                        name="license_no"
+                        required
+                        inputmode="numeric"
+                        pattern="[0-9]{4}"
+                        maxlength="4"
+                        minlength="4"
+                        placeholder="1234"
+                        title="Enter exactly 4 digits"
+                        value="<?= htmlspecialchars(substr(preg_replace('/\D+/', '', (string)(Request::post('license_no') ?? '')) ?? '', 0, 4)) ?>"
+                        style="border:0;outline:0;box-shadow:none;padding:0;height:100%;width:100%;margin:0;"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);"
+                    >
+                </div>
 
                 <label>Pharmacy Location</label>
                 <select name="requested_pharmacy_id" required style="height:42px;width:100%;border:1px solid #cfd7e5;border-radius:9px;padding:0 10px;margin-bottom:11px;">

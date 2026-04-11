@@ -201,6 +201,7 @@ CREATE TABLE `medicines` (
   `dosage_form` varchar(50) DEFAULT NULL,
   `strength` varchar(50) DEFAULT NULL,
   `quantity_in_stock` int DEFAULT '0',
+  `pricing` decimal(10,2) NOT NULL DEFAULT '0.00',
   `manufacturer` varchar(100) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `added_by` int DEFAULT NULL,
