@@ -14,7 +14,7 @@ $status = strtolower((string)($request['status'] ?? 'pending'));
             <?php if ($error): ?>
                 <h1>Request Status</h1>
                 <p class="subtitle" style="color:#c62828;"><?= htmlspecialchars($error) ?></p>
-                <p class="bottom-text"><a href="<?= htmlspecialchars($base) ?>/auth/login/pharmacist">Go to pharmacist login</a></p>
+                <p class="bottom-text"><a href="<?= htmlspecialchars($base) ?>/pharmacist/login">Go to pharmacist login</a></p>
             <?php elseif ($status === 'rejected'): ?>
                 <h1>Request Rejected</h1>
                 <p class="subtitle">Your request was rejected by admin.</p>

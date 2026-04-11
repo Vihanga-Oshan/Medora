@@ -2,7 +2,7 @@
 $pageTitle = 'Medora - Admin Login';
 $authCss = 'login/login-guardian.css';
 $base = APP_BASE ?: '';
-require_once __DIR__ . '/../../common/auth.head.php';
+require_once __DIR__ . '/../../auth/common/auth.head.php';
 ?>
 
 <body class="login-page">
@@ -51,7 +51,7 @@ require_once __DIR__ . '/../../common/auth.head.php';
                     <button type="submit" class="btn-submit form-submit-btn">Access Admin Panel</button>
 
                     <p class="bottom-text">
-                        <a href="<?= htmlspecialchars($base) ?>/auth/login">Back to main login</a>
+                        <a href="<?= htmlspecialchars($base) ?>/patient/login">Back to patient login</a>
                     </p>
                     <p class="bottom-text">Restricted access only.</p>
                 </form>
@@ -71,3 +71,4 @@ require_once __DIR__ . '/../../common/auth.head.php';
 </body>
 
 </html>
+

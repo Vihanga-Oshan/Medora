@@ -29,7 +29,7 @@
             <li><strong>Account Setup:</strong> Upon approval, we'll create your counselor account with temporary login credentials</li>
         </ul>
     </div>
-    <a href="<?= htmlspecialchars($base) ?>/landing" class="home-btn">Return to Home</a>
+    <a href="<?= htmlspecialchars($base) ?>/" class="home-btn">Return to Home</a>
 </div>
 </body>
 </html>

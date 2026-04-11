@@ -1,6 +1,6 @@
 <?php
 /**
- * Alias route: /pharmacist/login -> /auth/login/pharmacist
+ * /pharmacist/login — entry point
  */
-Response::redirect('/auth/login/pharmacist');
-
+require_once __DIR__ . '/login.controller.php';
+require_once __DIR__ . '/login.layout.php';

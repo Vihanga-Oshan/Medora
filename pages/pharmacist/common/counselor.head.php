@@ -24,7 +24,7 @@ $rs = Database::search(
 
 $counselor = $rs ? $rs->fetch_assoc() : null;
 if (!$counselor) {
-    Response::redirect('/auth/login/counselor');
+    Response::redirect('/pharmacist/login');
 }
 
 $displayName = $counselor['display_name']

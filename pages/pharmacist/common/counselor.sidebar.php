@@ -46,7 +46,7 @@ $navItems = [
     </div>
 </section>
 
-<form id="counselorLogoutForm" method="POST" action="<?= htmlspecialchars($base) ?>/auth/logout" style="display: none;"></form>
+<form id="counselorLogoutForm" method="POST" action="<?= htmlspecialchars($base) ?>/pharmacist/logout" style="display: none;"></form>
 
 <?php require_once __DIR__ . '/counselor-profile-modal.php'; ?>
 

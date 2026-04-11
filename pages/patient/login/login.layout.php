@@ -1,8 +1,8 @@
 <?php
-$pageTitle = 'Medora - Guardian Login';
-$authCss = 'login/login-guardian.css';
+$pageTitle = 'Medora - Login';
+$authCss = 'login/login-patient.css';
 $base = APP_BASE ?: '';
-require_once __DIR__ . '/../../common/auth.head.php';
+require_once __DIR__ . '/../../auth/common/auth.head.php';
 ?>
 
 <body class="login-page">
@@ -13,19 +13,19 @@ require_once __DIR__ . '/../../common/auth.head.php';
                     <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora Logo">
                 </div>
 
-                <h1>Guardian Login</h1>
-                <p class="subtitle">Securely manage your linked patient medication updates.</p>
+                <h1>Log in to your Account</h1>
+                <p class="subtitle">Welcome back! Select method to log in.</p>
 
                 <div class="form-toggle">
-                    <button type="button" onclick="location.href='<?= htmlspecialchars($base) ?>/login'">Patient</button>
-                    <button class="active" type="button" onclick="location.href='<?= htmlspecialchars($base) ?>/guardian/login'">Guardian</button>
+                    <button class="active" type="button" onclick="location.href='<?= htmlspecialchars($base) ?>/patient/login'">Patient</button>
+                    <button type="button" onclick="location.href='<?= htmlspecialchars($base) ?>/guardian/login'">Guardian</button>
                 </div>
 
                 <?php if ($error !== null): ?>
                     <p class="error-text"><?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
 
-                <form method="POST" action="" id="guardianLoginForm">
+                <form id="loginForm" method="POST" action="">
                     <label for="nic">NIC Number</label>
                     <input
                         type="text"
@@ -58,7 +58,7 @@ require_once __DIR__ . '/../../common/auth.head.php';
 
                     <p class="bottom-text">
                         New here?
-                        <a href="<?= htmlspecialchars($base) ?>/guardian/register">Create account</a>
+                        <a href="<?= htmlspecialchars($base) ?>/patient/register">Create account</a>
                     </p>
                 </form>
             </div>
@@ -66,9 +66,9 @@ require_once __DIR__ . '/../../common/auth.head.php';
 
         <aside class="auth-visual-panel">
             <div class="visual-card">
-                <img src="<?= htmlspecialchars($base) ?>/assets/img/login-guardian.jpg" alt="Guardian login illustration">
-                <h2>Care starts with connection.</h2>
-                <p>Follow schedules and support loved ones in real time.</p>
+                <img src="<?= htmlspecialchars($base) ?>/assets/img/login-illustration.png" alt="Login illustration">
+                <h2>Connect with every application.</h2>
+                <p>Everything you need in one medication dashboard.</p>
             </div>
         </aside>
     </div>
@@ -77,3 +77,4 @@ require_once __DIR__ . '/../../common/auth.head.php';
 </body>
 
 </html>
+

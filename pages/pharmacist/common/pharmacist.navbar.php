@@ -38,6 +38,6 @@ $base = APP_BASE ?: '';
         <a href="<?= htmlspecialchars($base) ?>/pharmacist/dashboard" class="nav-avatar" title="Dashboard">
             <?= strtoupper(substr($user['name'] ?? 'P', 0, 1)) ?>
         </a>
-        <a href="<?= htmlspecialchars($base) ?>/auth/logout" class="nav-logout" title="Logout">&#128682;</a>
+        <a href="<?= htmlspecialchars($base) ?>/pharmacist/logout" class="nav-logout" title="Logout">&#128682;</a>
     </div>
 </nav>
