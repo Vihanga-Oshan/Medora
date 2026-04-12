@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/requests.model.php';
+require_once __DIR__ . '/../common/admin.activity.php';
 
 $error = null;
 $statusFilter = Request::get('status') ?? '';
@@ -19,6 +20,13 @@ if (Request::isPost()) {
         if (!PharmacistRequestsModel::approve($requestId, $adminId)) {
             $error = 'Unable to approve request.';
         } else {
+            $req = Database::search("SELECT full_name FROM pharmacist_requests WHERE id = $requestId LIMIT 1");
+            $fullName = 'Pharmacist request';
+            if ($req instanceof mysqli_result && $req->num_rows > 0) {
+                $row = $req->fetch_assoc();
+                $fullName = trim((string)($row['full_name'] ?? 'Pharmacist request'));
+            }
+            AdminActivityLog::log($user, "Approved pharmacist request for {$fullName}", 'green', $user['name'] ?? 'Admin', 'pharmacist_request', $requestId);
             Response::redirect('/admin/pharmacist-requests?status=pending');
         }
     }
@@ -28,6 +36,13 @@ if (Request::isPost()) {
         if (!PharmacistRequestsModel::reject($requestId, $adminId, $note)) {
             $error = 'Unable to reject request.';
         } else {
+            $req = Database::search("SELECT full_name FROM pharmacist_requests WHERE id = $requestId LIMIT 1");
+            $fullName = 'Pharmacist request';
+            if ($req instanceof mysqli_result && $req->num_rows > 0) {
+                $row = $req->fetch_assoc();
+                $fullName = trim((string)($row['full_name'] ?? 'Pharmacist request'));
+            }
+            AdminActivityLog::log($user, "Rejected pharmacist request for {$fullName}", 'red', $user['name'] ?? 'Admin', 'pharmacist_request', $requestId);
             Response::redirect('/admin/pharmacist-requests?status=pending');
         }
     }

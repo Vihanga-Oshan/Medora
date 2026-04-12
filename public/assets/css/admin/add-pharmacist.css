@@ -122,3 +122,85 @@
         flex-direction: column;
     }
 }
+/* Add and edit pharmacist page refinements */
+.admin-add-pharmacist-page .form-card {
+  max-width: 760px;
+}
+
+.admin-add-pharmacist-page .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border: 1px solid #d5dae4;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: all 0.2s ease;
+}
+
+.admin-add-pharmacist-page .back-link:visited {
+    color: #111827;
+    text-decoration: none !important;
+}
+
+.admin-add-pharmacist-page .back-link:hover {
+    background: #f8fafc;
+    border-color: #c4cddc;
+    color: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.admin-add-pharmacist-page .back-link:active {
+    transform: translateY(0);
+}
+
+.admin-add-pharmacist-page .field input,
+.admin-add-pharmacist-page .field select {
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #d5dae4;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+}
+
+.admin-add-pharmacist-page .field input:focus,
+.admin-add-pharmacist-page .field select:focus {
+  outline: none;
+  border-color: #bcc7db;
+  box-shadow: none;
+}
+
+.admin-add-pharmacist-page .form-actions {
+  margin-top: 10px;
+}
+
+.admin-add-pharmacist-page .btn {
+  height: 40px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-add-pharmacist-page .btn.btn-muted {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.admin-add-pharmacist-page .btn.btn-primary {
+  background: #111827;
+  color: #fff;
+}
+
+.admin-add-pharmacist-page .btn.btn-primary:hover {
+  background: #000;
+}

@@ -41,6 +41,7 @@ if (Request::isPost()) {
             $token = Auth::sign([
                 'id'   => $user['user_id'],
                 'name' => $displayName,
+                'email' => (string)($user['email'] ?? ''),
                 'role' => $user['role'],
             ]);
 

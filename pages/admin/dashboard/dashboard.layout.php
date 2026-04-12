@@ -5,15 +5,6 @@
 $s = $data['summary'];
 $base = APP_BASE ?: '';
 $recentLogs = $data['recentLogs'] ?? [];
-
-if (empty($recentLogs)) {
-    $recentLogs = [
-        ['name' => 'Dr. Sarah Johnson', 'action' => 'Created new pharmacist account', 'time' => '2 minutes ago', 'tone' => 'green'],
-        ['name' => 'John Doe', 'action' => 'Updated patient profile', 'time' => '15 minutes ago', 'tone' => 'blue'],
-        ['name' => 'Admin User', 'action' => 'Deleted inactive pharmacist', 'time' => '1 hour ago', 'tone' => 'red'],
-        ['name' => 'Jane Smith', 'action' => 'Added new guardian link', 'time' => '2 hours ago', 'tone' => 'green'],
-    ];
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +12,7 @@ if (empty($recentLogs)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Medora</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/dashboard.css">
 </head>
 <body class="admin-body">
@@ -40,11 +31,18 @@ if (empty($recentLogs)) {
         <li><a href="<?= htmlspecialchars($base) ?>/admin/settings"><i>&#9881;</i> Settings</a></li>
         <li><a href="<?= htmlspecialchars($base) ?>/admin/logout"><i>&#128682;</i> Logout</a></li>
     </ul>
-    <div class="admin-profile">
-        <div class="profile-icon">AD</div>
-        <div class="profile-info">
-            <div class="name"><?= htmlspecialchars($data['adminName']) ?></div>
-            <div class="email">admin@medora.com</div>
+        <div class="admin-profile js-admin-profile">
+        <button type="button" class="admin-profile-trigger" aria-haspopup="true" aria-expanded="false">
+            <div class="profile-icon">AD</div>
+            <div class="profile-info">
+                <div class="name"><?= htmlspecialchars($adminEmail ?? ($user['email'] ?? 'admin@medora.com')) ?></div>
+            </div>
+        </button>
+        <div class="admin-profile-menu" role="menu" hidden>
+            <div class="admin-profile-menu-email"><?= htmlspecialchars($adminEmail ?? 'admin@medora.com') ?></div>
+            <form method="post" action="<?= htmlspecialchars($base) ?>/admin/logout">
+                <button type="submit" class="admin-profile-menu-logout">Logout</button>
+            </form>
         </div>
     </div>
 </aside>
@@ -53,10 +51,7 @@ if (empty($recentLogs)) {
     <header class="topbar">
         <div class="search-bar">
             <span>&#128269;</span>
-            <input type="text" placeholder="Search users, pharmacists..." />
-        </div>
-        <div class="top-icons">
-            <i title="Notifications">&#128276;</i>
+            <input id="admin-global-search" type="text" placeholder="Search this page..." autocomplete="off" />
         </div>
     </header>
 
@@ -70,7 +65,7 @@ if (empty($recentLogs)) {
                 <div>
                     <h2><?= (int)$s['totalPatients'] + (int)$s['totalGuardians'] ?></h2>
                     <p>Total Active Users</p>
-                    <span class="trend">+12.5% from last month</span>
+                    <span class="trend">Patients + guardians</span>
                 </div>
             </div>
             <div class="card">
@@ -78,23 +73,23 @@ if (empty($recentLogs)) {
                 <div>
                     <h2><?= $s['activePharmacists'] ?></h2>
                     <p>Active Pharmacists</p>
-                    <span class="trend">+4.2% from last month</span>
+                    <span class="trend">Currently active in system</span>
                 </div>
             </div>
             <div class="card">
                 <div class="card-icon purple"><i>&#128200;</i></div>
                 <div>
-                    <h2><?= $s['totalPatients'] ?></h2>
+                    <h2><?= (int)($s['patientsToday'] ?? 0) ?></h2>
                     <p>Patients Today</p>
-                    <span class="trend">+8.1% from last month</span>
+                    <span class="trend">Registered today</span>
                 </div>
             </div>
             <div class="card">
                 <div class="card-icon pink"><i>&#128105;</i></div>
                 <div>
                     <h2><?= $s['totalGuardians'] ?></h2>
-                    <p>Active Guardians</p>
-                    <span class="trend">+6.3% from last month</span>
+                    <p>Total Guardians</p>
+                    <span class="trend">Total guardian accounts</span>
                 </div>
             </div>
         </div>
@@ -111,14 +106,27 @@ if (empty($recentLogs)) {
             </div>
 
             <ul class="activity-list">
-                <?php foreach ($recentLogs as $log): ?>
+                <?php if (empty($recentLogs)): ?>
+                    <li>
+                        <div class="activity-left">
+                            <span class="activity-badge blue">&#10003;</span>
+                            <div>
+                                <strong>System</strong>
+                                <p>No recent activity found yet.</p>
+                            </div>
+                        </div>
+                        <span class="time">just now</span>
+                    </li>
+                <?php endif; ?>
+                <?php foreach ($recentLogs as $i => $log): ?>
                     <?php
                     $tone = $log['tone'] ?? 'blue';
                     $name = $log['name'] ?? 'System';
                     $action = $log['action'] ?? 'Updated record';
                     $time = $log['time'] ?? 'just now';
+                    $isHiddenInitially = $i >= 5;
                     ?>
-                    <li>
+                    <li class="<?= $isHiddenInitially ? 'activity-item is-hidden' : 'activity-item' ?>" <?= $isHiddenInitially ? 'style="display:none;"' : '' ?>>
                         <div class="activity-left">
                             <span class="activity-badge <?= htmlspecialchars($tone) ?>">
                                 <?= $tone === 'red' ? '&#10007;' : '&#10003;' ?>
@@ -132,10 +140,39 @@ if (empty($recentLogs)) {
                     </li>
                 <?php endforeach; ?>
             </ul>
+            <?php if (count($recentLogs) > 5): ?>
+                <div class="activity-actions">
+                    <button id="load-more-activity" type="button" class="btn btn-muted btn-small">See More</button>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 </main>
 
+<script src="<?= htmlspecialchars($base) ?>/assets/js/admin/admin-search.js"></script>
+<script src="<?= htmlspecialchars($base) ?>/assets/js/admin/admin-profile-menu.js?v=6"></script>
+<script>
+    (function () {
+        const btn = document.getElementById('load-more-activity');
+        if (!btn) return;
+
+        const hiddenItems = Array.from(document.querySelectorAll('.activity-item.is-hidden'));
+        let revealed = 0;
+        const step = 5;
+
+        btn.addEventListener('click', function () {
+            const next = hiddenItems.slice(revealed, revealed + step);
+            next.forEach(function (item) {
+                item.style.display = '';
+            });
+            revealed += next.length;
+
+            if (revealed >= hiddenItems.length) {
+                btn.style.display = 'none';
+            }
+        });
+    })();
+</script>
 </body>
 </html>
 

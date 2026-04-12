@@ -14,7 +14,7 @@ $base = APP_BASE ?: '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacist Management | Medora Admin</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/user-mgt.css">
 </head>
 <body class="admin-body admin-pharmacists-page">
@@ -32,11 +32,18 @@ $base = APP_BASE ?: '';
         <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacist-requests"><i>&#128221;</i> Requests</a></li>
         <li><a href="<?= htmlspecialchars($base) ?>/admin/settings"><i>&#9881;</i> Settings</a></li>
     </ul>
-    <div class="admin-profile">
-        <div class="profile-icon">AD</div>
-        <div class="profile-info">
-            <div class="name"><?= htmlspecialchars($user['name'] ?? 'Admin User') ?></div>
-            <div class="email">admin@medora.com</div>
+        <div class="admin-profile js-admin-profile">
+        <button type="button" class="admin-profile-trigger" aria-haspopup="true" aria-expanded="false">
+            <div class="profile-icon">AD</div>
+            <div class="profile-info">
+                <div class="name"><?= htmlspecialchars($adminEmail ?? ($user['email'] ?? 'admin@medora.com')) ?></div>
+            </div>
+        </button>
+        <div class="admin-profile-menu" role="menu" hidden>
+            <div class="admin-profile-menu-email"><?= htmlspecialchars($adminEmail ?? 'admin@medora.com') ?></div>
+            <form method="post" action="<?= htmlspecialchars($base) ?>/admin/logout">
+                <button type="submit" class="admin-profile-menu-logout">Logout</button>
+            </form>
         </div>
     </div>
 </aside>
@@ -45,10 +52,7 @@ $base = APP_BASE ?: '';
     <header class="topbar">
         <div class="search-bar">
             <span>&#128269;</span>
-            <input type="text" placeholder="Search users, pharmacists..." />
-        </div>
-        <div class="top-icons">
-            <i title="Notifications">&#128276;</i>
+            <input id="admin-global-search" type="text" placeholder="Search this page..." autocomplete="off" />
         </div>
     </header>
 
@@ -139,5 +143,12 @@ $base = APP_BASE ?: '';
     };
 </script>
 
+<script src="<?= htmlspecialchars($base) ?>/assets/js/admin/admin-search.js"></script>
+<script src="<?= htmlspecialchars($base) ?>/assets/js/admin/admin-profile-menu.js?v=6"></script>
 </body>
 </html>
+
+
+
+
+
