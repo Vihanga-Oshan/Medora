@@ -6,6 +6,7 @@
 $medicines = $data['medicines'];
 $search = $data['search'];
 $base = APP_BASE ?: '';
+$cssVer = time();
 
 /**
  * Medicine Inventory Layout
@@ -45,8 +46,15 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medicine Inventory | Medora</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/dashboard-style.css">
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/medicine-inventory.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/dashboard-style.css?v=<?= $cssVer ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/medicine-inventory.css?v=<?= $cssVer ?>">
+    <style>
+        #inventoryTable thead th {
+            background: #1d4ed8 !important;
+            color: #ffffff !important;
+            border-color: #1e40af !important;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -137,15 +145,15 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                         <?php foreach ($medicines as $m): ?>
                             <?php
                             $brandName = trim((string)($m['name'] ?? ''));
+                            $commercialName = trim((string)($m['med_name'] ?? ''));
                             $genericName = trim((string)($m['generic_name'] ?? ''));
-                            $medicineName = $genericName !== '' ? $genericName : $brandName;
-                            $smallBrand = ($brandName !== '' && strcasecmp($brandName, $medicineName) !== 0) ? $brandName : '';
+                            $medicineName = $commercialName !== '' ? $commercialName : ($brandName !== '' ? $brandName : $genericName);
                             ?>
                             <tr>
-                                <td>
-                                    <strong><?= htmlspecialchars($medicineName) ?></strong>
-                                    <?php if ($smallBrand !== ''): ?>
-                                        <div style="font-size:12px;color:#64748b;">Brand: <?= htmlspecialchars($smallBrand) ?></div>
+                                <td class="med-name-cell">
+                                    <strong class="med-title"><?= htmlspecialchars($medicineName) ?></strong>
+                                    <?php if ($genericName !== ''): ?>
+                                        <div class="med-subtext">Generic: <?= htmlspecialchars($genericName) ?></div>
                                     <?php endif; ?>
                                 </td>
                                 <td><?= htmlspecialchars((string)($m['category'] ?? '')) ?></td>

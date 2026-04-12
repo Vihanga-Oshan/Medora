@@ -111,7 +111,12 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                         <?php endforeach; ?>
                     </select>
                     <small style="color:#64748b;display:block;margin-top:4px;">or add a new brand</small>
-                    <input type="text" name="brand_new" value="<?= htmlspecialchars((string)($_POST['brand_new'] ?? '')) ?>" placeholder="Type new brand name">
+                    <input type="text" name="brand_new" list="brand-options" value="<?= htmlspecialchars((string)($_POST['brand_new'] ?? '')) ?>" placeholder="Type new brand name">
+                    <datalist id="brand-options">
+                        <?php foreach ($brands as $b): ?>
+                            <option value="<?= htmlspecialchars((string)$b) ?>"></option>
+                        <?php endforeach; ?>
+                    </datalist>
                 </div>
                 <div class="form-group"><label>Generic Name</label><input type="text" name="generic_name" value="<?= htmlspecialchars((string)($_POST['generic_name'] ?? '')) ?>"></div>
                 <div class="form-group"><label>MEDICINE NAME</label><input type="text" name="med_name" value="<?= htmlspecialchars((string)($_POST['med_name'] ?? '')) ?>" placeholder="e.g. Lipitor"></div>
@@ -125,7 +130,12 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                         <?php endforeach; ?>
                     </select>
                     <small style="color:#64748b;display:block;margin-top:4px;">or add a new manufacturer</small>
-                    <input type="text" name="manufacturer_new" value="<?= htmlspecialchars((string)($_POST['manufacturer_new'] ?? '')) ?>" placeholder="Type new manufacturer">
+                    <input type="text" name="manufacturer_new" list="manufacturer-options" value="<?= htmlspecialchars((string)($_POST['manufacturer_new'] ?? '')) ?>" placeholder="Type new manufacturer">
+                    <datalist id="manufacturer-options">
+                        <?php foreach ($manufacturers as $m): ?>
+                            <option value="<?= htmlspecialchars((string)$m) ?>"></option>
+                        <?php endforeach; ?>
+                    </datalist>
                 </div>
                 <div class="form-group">
                     <label>Category</label>
