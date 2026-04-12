@@ -54,6 +54,11 @@ class DashboardModel
      */
     public static function getMedicationsByDate(string $nic, string $date): array
     {
+        $eventRows = MedicationReminderService::getDoseRowsByDate($nic, $date);
+        if (!empty($eventRows)) {
+            return $eventRows;
+        }
+
         $nic  = Database::escape($nic);
         $date = Database::escape($date);
         $rows = [];

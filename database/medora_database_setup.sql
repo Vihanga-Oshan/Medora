@@ -405,6 +405,19 @@ CREATE TABLE IF NOT EXISTS patient_pharmacy_selection (
   INDEX idx_pharmacy (pharmacy_id)
 );
 
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  patient_nic VARCHAR(50) NOT NULL,
+  message TEXT NOT NULL,
+  type VARCHAR(50) NOT NULL DEFAULT 'APP',
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  pharmacy_id INT NULL,
+  INDEX idx_patient_created (patient_nic, created_at),
+  INDEX idx_is_read (is_read),
+  INDEX idx_pharmacy (pharmacy_id)
+);
+
 CREATE TABLE IF NOT EXISTS medication_reminder_events (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_nic VARCHAR(50) NOT NULL,

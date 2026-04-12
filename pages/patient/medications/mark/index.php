@@ -19,6 +19,7 @@ if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_medication_mark')) {
 }
 
 $scheduleId = (int)($_POST['schedule_id'] ?? 0);
+$reminderEventId = (int)($_POST['reminder_event_id'] ?? 0);
 $status     = strtoupper(trim($_POST['status'] ?? ''));
 $timeSlot   = trim((string)($_POST['time_slot'] ?? $_POST['timeSlot'] ?? ''));
 $base       = APP_BASE ?: '';
@@ -28,8 +29,16 @@ if ($redirect === '' || !str_starts_with($redirect, '/')) {
     $redirect = $base . '/patient/dashboard';
 }
 
-if ($scheduleId > 0 && in_array($status, ['TAKEN', 'MISSED'])) {
-    MedicationsModel::markStatus($scheduleId, $user['nic'], $status, $timeSlot);
+if (in_array($status, ['TAKEN', 'MISSED'], true)) {
+    if ($reminderEventId > 0) {
+        if ($status === 'TAKEN') {
+            MedicationReminderService::markTakenFromEvent($reminderEventId, $user['nic']);
+        } else {
+            MedicationReminderService::markMissedFromEvent($reminderEventId, $user['nic']);
+        }
+    } elseif ($scheduleId > 0) {
+        MedicationsModel::markStatus($scheduleId, $user['nic'], $status, $timeSlot);
+    }
 }
 
 header('Location: ' . $redirect);

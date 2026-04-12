@@ -210,18 +210,20 @@ $cssVer             = time();
                                     <form action="<?= htmlspecialchars($base) ?>/patient/medications/mark" method="post">
                                         <input type="hidden" name="csrf_token"  value="<?= htmlspecialchars(Csrf::token('patient_medication_mark')) ?>">
                                         <input type="hidden" name="schedule_id"  value="<?= (int)$m['id'] ?>">
+                                        <input type="hidden" name="reminder_event_id" value="<?= (int)($m['reminder_event_id'] ?? 0) ?>">
                                         <input type="hidden" name="patient_nic"  value="<?= htmlspecialchars($user['nic']) ?>">
                                         <input type="hidden" name="status"       value="TAKEN">
-                                        <input type="hidden" name="time_slot"    value="<?= htmlspecialchars($m['frequency']) ?>">
+                                        <input type="hidden" name="time_slot"    value="<?= htmlspecialchars((string)($m['frequency_slot'] ?? $m['frequency'])) ?>">
                                         <input type="hidden" name="redirect"     value="<?= htmlspecialchars($base) ?>/patient/dashboard">
                                         <button type="submit" class="action-btn btn-check" title="Mark as Taken">&#10003;</button>
                                     </form>
                                     <form action="<?= htmlspecialchars($base) ?>/patient/medications/mark" method="post">
                                         <input type="hidden" name="csrf_token"  value="<?= htmlspecialchars(Csrf::token('patient_medication_mark')) ?>">
                                         <input type="hidden" name="schedule_id"  value="<?= (int)$m['id'] ?>">
+                                        <input type="hidden" name="reminder_event_id" value="<?= (int)($m['reminder_event_id'] ?? 0) ?>">
                                         <input type="hidden" name="patient_nic"  value="<?= htmlspecialchars($user['nic']) ?>">
                                         <input type="hidden" name="status"       value="MISSED">
-                                        <input type="hidden" name="time_slot"    value="<?= htmlspecialchars($m['frequency']) ?>">
+                                        <input type="hidden" name="time_slot"    value="<?= htmlspecialchars((string)($m['frequency_slot'] ?? $m['frequency'])) ?>">
                                         <input type="hidden" name="redirect"     value="<?= htmlspecialchars($base) ?>/patient/dashboard">
                                         <button type="submit" class="action-btn btn-cross" title="Mark as Missed">&#10007;</button>
                                     </form>

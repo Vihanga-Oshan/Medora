@@ -61,6 +61,18 @@ $resolveMedicineText = static function (array $row): array {
     $brandLabel = ($brandName !== '' && strcasecmp($brandName, $medicineName) !== 0) ? $brandName : '';
     return [$medicineName, $brandLabel, $genericLine];
 };
+
+$buildStockMessage = static function (int $selectedStock, string $selectedBranchName, string $availableBranchName): string {
+    if ($selectedStock > 0) {
+        return '';
+    }
+
+    if ($availableBranchName !== '') {
+        return 'Available at ' . $availableBranchName . '.';
+    }
+
+    return 'Currently unavailable in your selected branch. Please check again later or choose another pharmacy.';
+};
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -194,12 +206,7 @@ $resolveMedicineText = static function (array $row): array {
                 if (strlen($descriptionText) > 95) {
                     $descriptionText = rtrim(substr($descriptionText, 0, 92)) . '...';
                 }
-                $stockMessage = '';
-                if ($selectedStock <= 0 && $availableBranchName !== '') {
-                    $stockMessage = 'Out of stock' . ($selectedBranchName !== '' ? (' at ' . $selectedBranchName) : '') . '. Available in ' . $availableBranchName . '.';
-                } elseif ($selectedStock <= 0) {
-                    $stockMessage = 'Out of stock in your selected branch.';
-                }
+                $stockMessage = $buildStockMessage($selectedStock, $selectedBranchName, $availableBranchName);
                 $payload = [
                     'id' => $id,
                     'cartId' => $cartId,
@@ -275,9 +282,11 @@ $resolveMedicineText = static function (array $row): array {
                         'description' => (string)($item['description'] ?? 'No description available.'),
                         'price' => (float)($item['price'] ?? 0),
                         'stock' => max(0, (int)($item['quantity_in_stock'] ?? 0)),
-                        'stockMessage' => (string)($item['available_branch_name'] ?? '') !== '' && max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0
-                            ? ('Out of stock' . ((string)($item['selected_branch_name'] ?? '') !== '' ? (' at ' . (string)$item['selected_branch_name']) : '') . '. Available in ' . (string)$item['available_branch_name'] . '.')
-                            : (max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0 ? 'Out of stock in your selected branch.' : ''),
+                        'stockMessage' => $buildStockMessage(
+                            max(0, (int)($item['quantity_in_stock'] ?? 0)),
+                            (string)($item['selected_branch_name'] ?? ''),
+                            (string)($item['available_branch_name'] ?? '')
+                        ),
                         'sellingUnit' => (string)($item['selling_unit'] ?? 'Item'),
                         'unitQty' => (int)($item['unit_quantity'] ?? 1),
                         'image' => $toImageUrl((string)($item['image_path'] ?? '')),
@@ -311,9 +320,11 @@ $resolveMedicineText = static function (array $row): array {
                     'description' => (string)($item['description'] ?? 'No description available.'),
                     'price' => (float)($item['price'] ?? 0),
                     'stock' => max(0, (int)($item['quantity_in_stock'] ?? 0)),
-                    'stockMessage' => (string)($item['available_branch_name'] ?? '') !== '' && max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0
-                        ? ('Out of stock' . ((string)($item['selected_branch_name'] ?? '') !== '' ? (' at ' . (string)$item['selected_branch_name']) : '') . '. Available in ' . (string)$item['available_branch_name'] . '.')
-                        : (max(0, (int)($item['quantity_in_stock'] ?? 0)) <= 0 ? 'Out of stock in your selected branch.' : ''),
+                    'stockMessage' => $buildStockMessage(
+                        max(0, (int)($item['quantity_in_stock'] ?? 0)),
+                        (string)($item['selected_branch_name'] ?? ''),
+                        (string)($item['available_branch_name'] ?? '')
+                    ),
                     'sellingUnit' => (string)($item['selling_unit'] ?? 'Item'),
                     'unitQty' => (int)($item['unit_quantity'] ?? 1),
                     'image' => $toImageUrl((string)($item['image_path'] ?? '')),
@@ -399,7 +410,7 @@ $resolveMedicineText = static function (array $row): array {
         modalStock.className = 'modal-stock ' + (stock > 0 ? 'in' : 'out');
         modalStock.textContent = stock > 0
             ? ('In stock: ' + stock)
-            : (payload.stockMessage || 'Out of stock');
+            : (payload.stockMessage || 'Currently unavailable in your selected branch.');
 
         modalMedicineId.value = String(payload.cartId || 0);
         modalQty.value = '1';

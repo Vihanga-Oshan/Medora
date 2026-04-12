@@ -26,6 +26,11 @@ class MedicationsModel
 
     public static function getByDate(string $nic, string $date): array
     {
+        $eventRows = MedicationReminderService::getDoseRowsByDate($nic, $date);
+        if (!empty($eventRows)) {
+            return $eventRows;
+        }
+
         $rows = [];
 
         if (self::tableExists('medication_schedules')) {
