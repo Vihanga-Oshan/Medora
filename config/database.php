@@ -12,15 +12,25 @@ class Database
     {
         if (!isset(self::$connection)) {
             self::$connection = mysqli_init();
-            self::$connection->ssl_set(null, null, null, null, null);
+
+            $sslMode = strtolower(env('DB_SSL_MODE', ''));
+            $useSsl = in_array($sslMode, ['required', 'verify_ca', 'verify_identity'], true);
+            if ($useSsl) {
+                $sslKey = env('DB_SSL_KEY', '') !== '' ? env('DB_SSL_KEY', '') : null;
+                $sslCert = env('DB_SSL_CERT', '') !== '' ? env('DB_SSL_CERT', '') : null;
+                $sslCa = env('DB_SSL_CA', '') !== '' ? env('DB_SSL_CA', '') : null;
+                self::$connection->ssl_set($sslKey, $sslCert, $sslCa, null, null);
+            }
+
+            $flags = $useSsl ? MYSQLI_CLIENT_SSL : 0;
             self::$connection->real_connect(
                 env('DB_HOST', 'localhost'),
                 env('DB_USER', 'root'),
-                env('DB_PASS', 'Pasidu2003@'),
-                env('DB_NAME', 'new_path_2'),
-                (int) env('DB_PORT', '3308'),
+                env('DB_PASS', ''),
+                env('DB_NAME', 'medoradb'),
+                (int) env('DB_PORT', '3306'),
                 null,
-                MYSQLI_CLIENT_SSL
+                $flags
             );
 
             if (self::$connection->connect_error) {

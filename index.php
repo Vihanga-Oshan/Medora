@@ -26,6 +26,7 @@ require_once ROOT . '/config/database.php';
 require_once ROOT . '/core/Auth.php';
 require_once ROOT . '/core/Csrf.php';
 require_once ROOT . '/core/PharmacyContext.php';
+require_once ROOT . '/core/MedicationReminderService.php';
 require_once ROOT . '/core/Response.php';
 require_once ROOT . '/core/Request.php';
 

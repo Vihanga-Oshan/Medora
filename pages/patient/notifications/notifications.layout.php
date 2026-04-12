@@ -38,6 +38,17 @@ $cssVer        = time();
                         <button class="close-btn" onclick="deleteNotification(<?= (int)$n['id'] ?>)">&#10005;</button>
                         <span class="date"><?= htmlspecialchars($n['formatted_date']) ?></span>
                         <span class="message"><?= htmlspecialchars($n['message']) ?></span>
+                        <?php
+                            $isReminder = !empty($n['reminder_event_id']);
+                            $isPendingReminder = $isReminder && strtoupper((string)($n['reminder_status'] ?? '')) === 'PENDING';
+                        ?>
+                        <?php if ($isPendingReminder): ?>
+                            <button class="btn btn-primary" style="margin-top:8px;" onclick="markTaken(<?= (int)$n['id'] ?>, this)">
+                                Mark as Taken
+                            </button>
+                        <?php elseif ($isReminder): ?>
+                            <span class="date" style="margin-top:8px;">Dose status: <?= htmlspecialchars((string)($n['reminder_status'] ?? '')) ?></span>
+                        <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -69,6 +80,21 @@ function clearAllNotifications() {
                 document.getElementById('notificationList').innerHTML =
                     '<div class="empty-state"><p>No notifications yet</p></div>';
             }
+        });
+}
+function markTaken(id, btn) {
+    fetch('<?= htmlspecialchars($base) ?>/patient/notifications?action=markTaken&id=' + id, { method: 'POST' })
+        .then(res => {
+            if (!res.ok) throw new Error('mark failed');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Taken';
+            }
+            const row = document.getElementById('notification-' + id);
+            if (row) row.classList.remove('unread');
+        })
+        .catch(() => {
+            alert('Could not mark this dose as taken. Please try again.');
         });
 }
 function checkEmpty() {

@@ -22,23 +22,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=csrf');
     }
 
-    $action = $_POST['action'] ?? '';
-    Database::beginTransaction();
-    $ok = ReviewModel::updateStatus($id, $action);
-    if ($ok) {
-        $msg = ($action === 'APPROVED') 
-            ? "Good news! Your prescription ({$prescription['file_name']}) has been approved."
-            : "Update: Your prescription ({$prescription['file_name']}) was rejected. Please contact the pharmacy.";
-        
-        $ok = ReviewModel::createNotification($prescription['patient_nic'], $msg);
+    $action = strtoupper(trim((string)($_POST['action'] ?? '')));
+    if (!in_array($action, ['APPROVED', 'REJECTED'], true)) {
+        Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=action');
     }
 
-    if ($ok) {
-        if (Database::commit()) {
-            Response::redirect('/pharmacist/validate');
+    $txStarted = Database::beginTransaction();
+    $statusUpdated = $txStarted && ReviewModel::updateStatus($id, $action);
+    if (!$statusUpdated) {
+        if ($txStarted) {
+            Database::rollback();
         }
+        Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=update');
     }
-    Database::rollback();
+
+    if (!Database::commit()) {
+        Database::rollback();
+        Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=commit');
+    }
+
+    // Notification is best-effort; prescription status should still update even if this fails.
+    $msg = ($action === 'APPROVED')
+        ? "Good news! Your prescription ({$prescription['file_name']}) has been approved."
+        : "Update: Your prescription ({$prescription['file_name']}) was rejected. Please contact the pharmacy.";
+    $notified = ReviewModel::createNotification($prescription['patient_nic'], $msg);
+
+    $redirect = '/pharmacist/validate?status=' . strtolower($action);
+    if (!$notified) {
+        $redirect .= '&notify=failed';
+    }
+    Response::redirect($redirect);
 }
 
 $data = [

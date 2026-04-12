@@ -56,17 +56,25 @@ class ReviewModel
 
     public static function createNotification(string $nic, string $message, string $type = 'PRESCRIPTION'): bool
     {
-        Database::setUpConnection();
-        $nic     = Database::$connection->real_escape_string($nic);
-        $message = Database::$connection->real_escape_string($message);
-        $type    = Database::$connection->real_escape_string($type);
-        
-        $cols = ['patient_nic', 'message', 'type', 'is_read', 'created_at'];
-        $vals = ["'$nic'", "'$message'", "'$type'", '0', 'NOW()'];
-        if (PharmacyContext::tableHasPharmacyId('notifications') && self::currentPharmacyId() > 0) {
-            $cols[] = 'pharmacy_id';
-            $vals[] = (string)self::currentPharmacyId();
+        if (!self::tableExists('notifications')) {
+            return true;
         }
-        return Database::iud("INSERT INTO notifications (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")");
+
+        $pharmacyId = self::currentPharmacyId();
+        if (PharmacyContext::tableHasPharmacyId('notifications') && $pharmacyId > 0) {
+            return Database::execute(
+                "INSERT INTO notifications (patient_nic, message, type, is_read, created_at, pharmacy_id)
+                 VALUES (?, ?, ?, 0, NOW(), ?)",
+                'sssi',
+                [$nic, $message, $type, $pharmacyId]
+            );
+        }
+
+        return Database::execute(
+            "INSERT INTO notifications (patient_nic, message, type, is_read, created_at)
+             VALUES (?, ?, ?, 0, NOW())",
+            'sss',
+            [$nic, $message, $type]
+        );
     }
 }

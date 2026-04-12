@@ -46,6 +46,15 @@ $base = APP_BASE ?: '';
 $fileName = (string)($p['file_name'] ?? '');
 $filePath = trim((string)($p['file_path'] ?? ''));
 $isPdf = str_ends_with(strtolower($fileName), '.pdf');
+$errorCode = (string)($_GET['error'] ?? '');
+$errorMessage = '';
+if ($errorCode === 'csrf') {
+    $errorMessage = 'Session token expired. Please refresh and submit again.';
+} elseif ($errorCode === 'empty') {
+    $errorMessage = 'Please add at least one complete medication row before submitting.';
+} elseif ($errorCode === 'save' || $errorCode === 'commit') {
+    $errorMessage = 'Unable to save this schedule right now. Please try again.';
+}
 
 $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $isDashboard = str_contains($currentPath, '/pharmacist/dashboard');
@@ -111,6 +120,11 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 
         <div style="padding: 28px 34px;">
             <h1 class="page-title" style="margin: 0 0 18px 0;">Medication Scheduling</h1>
+            <?php if ($errorMessage !== ''): ?>
+                <div style="margin:0 0 14px 0; padding:10px 12px; border:1px solid #fecaca; background:#fef2f2; color:#991b1b; border-radius:8px;">
+                    <?= htmlspecialchars($errorMessage) ?>
+                </div>
+            <?php endif; ?>
 
             <div class="scheduling-grid">
                 <form action="<?= htmlspecialchars($base) ?>/pharmacist/scheduling" method="post" id="schedulingForm" class="schedule-form">

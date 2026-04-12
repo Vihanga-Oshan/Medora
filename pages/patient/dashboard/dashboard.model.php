@@ -122,6 +122,8 @@ class DashboardModel
      */
     public static function getRecentNotifications(string $nic): array
     {
+        MedicationReminderService::deliverDueReminders($nic);
+
         $nic = Database::escape($nic);
         $rs = Database::search("
             SELECT id, message, is_read, created_at

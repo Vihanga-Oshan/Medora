@@ -405,6 +405,27 @@ CREATE TABLE IF NOT EXISTS patient_pharmacy_selection (
   INDEX idx_pharmacy (pharmacy_id)
 );
 
+CREATE TABLE IF NOT EXISTS medication_reminder_events (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  patient_nic VARCHAR(50) NOT NULL,
+  source_type VARCHAR(20) NOT NULL,
+  source_schedule_id INT NOT NULL,
+  dose_date DATE NOT NULL,
+  time_slot VARCHAR(20) NOT NULL,
+  scheduled_at DATETIME NOT NULL,
+  message TEXT NOT NULL,
+  status ENUM('PENDING','TAKEN','MISSED') NOT NULL DEFAULT 'PENDING',
+  delivered_at DATETIME NULL,
+  delivered_notification_id INT NULL,
+  pharmacy_id INT NULL,
+  taken_at DATETIME NULL,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_patient_due (patient_nic, scheduled_at, status),
+  INDEX idx_source (source_type, source_schedule_id, dose_date),
+  INDEX idx_notification (delivered_notification_id)
+);
+
 SET @sql = IF(
   EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'pharmacy_id'),

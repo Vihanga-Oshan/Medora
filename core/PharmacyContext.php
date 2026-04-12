@@ -293,6 +293,27 @@ class PharmacyContext
             INDEX idx_pharmacy (pharmacy_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+        Database::iud("CREATE TABLE IF NOT EXISTS medication_reminder_events (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            patient_nic VARCHAR(50) NOT NULL,
+            source_type VARCHAR(20) NOT NULL,
+            source_schedule_id INT NOT NULL,
+            dose_date DATE NOT NULL,
+            time_slot VARCHAR(20) NOT NULL,
+            scheduled_at DATETIME NOT NULL,
+            message TEXT NOT NULL,
+            status ENUM('PENDING','TAKEN','MISSED') NOT NULL DEFAULT 'PENDING',
+            delivered_at DATETIME NULL,
+            delivered_notification_id INT NULL,
+            pharmacy_id INT NULL,
+            taken_at DATETIME NULL,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_patient_due (patient_nic, scheduled_at, status),
+            INDEX idx_source (source_type, source_schedule_id, dose_date),
+            INDEX idx_notification (delivered_notification_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
         $pharmacyDataTables = [
             'medicines',
             'prescriptions',

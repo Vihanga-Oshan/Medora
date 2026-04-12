@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['medicineId']) && is_a
     // We fetch labels from lookup tables first to avoid multiple queries in loop
     $dosagesMap = array_column(ScheduleModel::getDosages(), 'label', 'id');
     $freqsMap = array_column(ScheduleModel::getFrequencies(), 'label', 'id');
+    $freqTimesMap = array_column(ScheduleModel::getFrequencies(), 'times_of_day', 'id');
     $mealsMap = array_column(ScheduleModel::getMealTimings(), 'label', 'id');
 
     for ($i = 0; $i < $rows; $i++) {
@@ -45,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['medicineId']) && is_a
             'meal_timing_id'  => $_POST['mealTimingId'][$i] ?? null,
             'dosage'          => $dosagesMap[$_POST['dosageId'][$i]] ?? '',
             'frequency'       => $freqsMap[$_POST['frequencyId'][$i]] ?? '',
+            'times_of_day'    => $freqTimesMap[$_POST['frequencyId'][$i]] ?? '',
             'meal_timing'     => $mealsMap[$_POST['mealTimingId'][$i]] ?? '',
             'start_date'      => $_POST['startDate'][$i],
             'duration_days'   => $_POST['durationDays'][$i],
@@ -52,22 +54,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['medicineId']) && is_a
         ];
     }
 
-    if (!empty($schedules)) {
-        Database::beginTransaction();
-        $ok = ScheduleModel::bulkInsert($schedules);
-        if ($ok) {
-            ScheduleModel::syncPatientPharmacySelection($patientNic);
-            ScheduleModel::createNotification($patientNic, "Your medication schedule has been created for prescription: " . $prescription['file_name']);
-            $ok = Database::commit();
-        }
-        if (!$ok) {
+    if (empty($schedules)) {
+        Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=empty');
+    }
+
+    $txStarted = Database::beginTransaction();
+    $ok = $txStarted && ScheduleModel::bulkInsert($schedules);
+    if (!$ok) {
+        if ($txStarted) {
             Database::rollback();
         }
-
-        if ($ok) {
-            Response::redirect('/pharmacist/dashboard?msg=schedule_created');
-        }
+        Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=save');
     }
+
+    if (!Database::commit()) {
+        Database::rollback();
+        Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=commit');
+    }
+
+    ScheduleModel::syncPatientPharmacySelection($patientNic);
+    // Best-effort notification; scheduling should not fail because of a notification insert issue.
+    ScheduleModel::createNotification($patientNic, "Your medication schedule has been created for prescription: " . $prescription['file_name']);
+    Response::redirect('/pharmacist/dashboard?msg=schedule_created');
 }
 
 $data = [

@@ -24,6 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         http_response_code(200);
         exit;
     }
+    if ($action === 'markTaken') {
+        $id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+        $ok = NotificationsModel::markTaken($id, $nic);
+        http_response_code($ok ? 200 : 400);
+        exit;
+    }
 }
 
 $notifications = NotificationsModel::getAll($nic);
