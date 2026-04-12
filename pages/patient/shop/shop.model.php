@@ -207,6 +207,7 @@ class ShopModel
 
         $hasCategoryText = self::columnExists('medicines', 'category');
         $hasCategoryId = self::columnExists('medicines', 'category_id');
+        $hasMedName = self::columnExists('medicines', 'med_name');
         $hasGeneric = self::columnExists('medicines', 'generic_name');
         $hasDosage = self::columnExists('medicines', 'dosage_form');
         $hasStrength = self::columnExists('medicines', 'strength');
@@ -257,6 +258,7 @@ class ShopModel
             $safeQ = Database::escape($q);
             $parts = [];
             $parts[] = "m.name LIKE '%$safeQ%'";
+            if ($hasMedName) $parts[] = "m.med_name LIKE '%$safeQ%'";
             if ($hasGeneric) $parts[] = "m.generic_name LIKE '%$safeQ%'";
             if ($hasCategoryText) $parts[] = "m.category LIKE '%$safeQ%'";
             if ($joinCategory !== '') $parts[] = "c.`{$catTable['name']}` LIKE '%$safeQ%'";
@@ -276,6 +278,7 @@ class ShopModel
                 " . ($hasId ? "m.id" : "0") . " AS id,
                 " . (self::columnExists('medicines', 'pharmacy_id') ? "m.pharmacy_id" : "0") . " AS pharmacy_id,
                 m.name,
+                " . ($hasMedName ? "m.med_name" : "NULL") . " AS med_name,
                 " . ($hasGeneric ? "m.generic_name" : "NULL") . " AS generic_name,
                 $categoryLabelExpr AS category,
                 " . ($hasDosage ? "m.dosage_form" : "NULL") . " AS dosage_form,
@@ -300,14 +303,15 @@ class ShopModel
         $groups = [];
         while ($row = $rs->fetch_assoc()) {
             $name = trim((string)($row['name'] ?? ''));
-            if ($name === '') {
+            $medName = trim((string)($row['med_name'] ?? ''));
+            if ($name === '' && $medName === '') {
                 continue;
             }
 
             $generic = trim((string)($row['generic_name'] ?? ''));
             $dosage = trim((string)($row['dosage_form'] ?? ''));
             $strength = trim((string)($row['strength'] ?? ''));
-            $key = strtolower($name . '|' . $generic . '|' . $dosage . '|' . $strength);
+            $key = strtolower($medName . '|' . $name . '|' . $generic . '|' . $dosage . '|' . $strength);
 
             if (!isset($groups[$key])) {
                 $groups[$key] = [

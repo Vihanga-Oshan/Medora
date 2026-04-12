@@ -392,11 +392,17 @@ class InventoryModel
 
         $safeSearch = Database::escape($search);
         $hasGenericName = self::columnExists('medicines', 'generic_name');
+        $hasMedicineName = self::columnExists('medicines', 'med_name');
         $where = '';
         if ($safeSearch !== '') {
-            $where = $hasGenericName
-                ? "WHERE name LIKE '%$safeSearch%' OR generic_name LIKE '%$safeSearch%'"
-                : "WHERE name LIKE '%$safeSearch%'";
+            $parts = ["name LIKE '%$safeSearch%'"];
+            if ($hasMedicineName) {
+                $parts[] = "med_name LIKE '%$safeSearch%'";
+            }
+            if ($hasGenericName) {
+                $parts[] = "generic_name LIKE '%$safeSearch%'";
+            }
+            $where = 'WHERE ' . implode(' OR ', $parts);
         }
         if ($hasPharmacyId) {
             $where = $where === ''
@@ -407,6 +413,7 @@ class InventoryModel
         $select = implode(",\n                   ", [
             self::selectExpr('medicines', 'id', '0'),
             self::selectExpr('medicines', 'name'),
+            self::selectExpr('medicines', 'med_name'),
             self::selectExpr('medicines', 'generic_name'),
             self::selectExpr('medicines', 'category'),
             self::selectExpr('medicines', 'strength'),
@@ -487,6 +494,7 @@ class InventoryModel
         if ($name === '') {
             return false;
         }
+        $medName = trim((string)($input['med_name'] ?? ''));
 
         $imagePath = self::saveUploadedImage($file);
 
@@ -540,6 +548,7 @@ class InventoryModel
         };
 
         if (self::hasMedicineColumn('name')) $addStr('name', $name);
+        if (self::hasMedicineColumn('med_name')) $addStr('med_name', $medName);
         if (self::hasMedicineColumn('generic_name')) $addStr('generic_name', $generic);
         if (self::hasMedicineColumn('category')) $addStr('category', $category);
         if (self::hasMedicineColumn('category_id')) $addInt('category_id', max(0, $categoryId));
@@ -617,6 +626,7 @@ class InventoryModel
         if ($name === '') {
             return false;
         }
+        $medName = trim((string)($input['med_name'] ?? ($existing['med_name'] ?? '')));
 
         $generic = trim((string)($input['generic_name'] ?? ($existing['generic_name'] ?? '')));
         $categoryId = (int)($input['category_id'] ?? ($existing['category_id'] ?? 0));
@@ -663,6 +673,7 @@ class InventoryModel
         };
 
         if (self::hasMedicineColumn('name')) $setStr('name', $name);
+        if (self::hasMedicineColumn('med_name')) $setStr('med_name', $medName);
         if (self::hasMedicineColumn('generic_name')) $setStr('generic_name', $generic);
         if (self::hasMedicineColumn('category')) $setStr('category', $category);
         if (self::hasMedicineColumn('category_id')) $setInt('category_id', max(0, $categoryId));

@@ -42,10 +42,24 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
 
 $resolveMedicineText = static function (array $row): array {
     $brandName = trim((string)($row['name'] ?? ''));
+    $medName = trim((string)($row['med_name'] ?? ''));
     $genericName = trim((string)($row['generic_name'] ?? ''));
-    $medicineName = $genericName !== '' ? $genericName : $brandName;
-    $smallBrand = ($brandName !== '' && strcasecmp($brandName, $medicineName) !== 0) ? $brandName : '';
-    return [$medicineName !== '' ? $medicineName : 'Medicine', $smallBrand];
+    $strength = trim((string)($row['strength'] ?? ''));
+    $dosageForm = trim((string)($row['dosage_form'] ?? ''));
+
+    $medicineName = $medName !== '' ? $medName : ($brandName !== '' ? $brandName : $genericName);
+    if ($medicineName === '') {
+        $medicineName = 'Medicine';
+    }
+
+    $genericAndStrength = trim(trim($genericName . ' ' . $strength));
+    $genericLine = $genericAndStrength;
+    if ($dosageForm !== '') {
+        $genericLine = $genericLine !== '' ? ($genericLine . ' · ' . $dosageForm) : $dosageForm;
+    }
+
+    $brandLabel = ($brandName !== '' && strcasecmp($brandName, $medicineName) !== 0) ? $brandName : '';
+    return [$medicineName, $brandLabel, $genericLine];
 };
 ?>
 <!DOCTYPE html>
@@ -78,10 +92,6 @@ $resolveMedicineText = static function (array $row): array {
         .modal-actions input[type="number"] { width: 90px; height: 44px; border: 1px solid #cbd5e1; border-radius: 10px; text-align: center; font-size: 15px; }
         .quick-add-form { width: 100%; }
         .med-clickable { cursor: pointer; }
-        .med-brand { font-size: 12px; color: #64748b; margin-top: 4px; min-height: 16px; }
-        .stock-chip { display:inline-flex; align-items:center; border-radius:999px; font-size:11px; font-weight:700; padding:4px 8px; margin-top:8px; }
-        .stock-chip.in { background:#ecfdf3; color:#047857; border:1px solid #a7f3d0; }
-        .stock-chip.out { background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
         @media (max-width: 1000px) { .medicine-modal-body { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -173,10 +183,17 @@ $resolveMedicineText = static function (array $row): array {
                 <?php
                 $id = (int)($med['id'] ?? 0);
                 $cartId = (int)($med['cart_id'] ?? 0);
-                [$medicineName, $smallBrand] = $resolveMedicineText($med);
+                [$medicineName, $brandLabel, $genericLine] = $resolveMedicineText($med);
                 $selectedStock = max(0, (int)($med['quantity_in_stock'] ?? 0));
                 $availableBranchName = trim((string)($med['available_branch_name'] ?? ''));
                 $selectedBranchName = trim((string)($med['selected_branch_name'] ?? ''));
+                $descriptionText = trim((string)($med['description'] ?? ''));
+                if ($descriptionText === '') {
+                    $descriptionText = 'No description available.';
+                }
+                if (strlen($descriptionText) > 95) {
+                    $descriptionText = rtrim(substr($descriptionText, 0, 92)) . '...';
+                }
                 $stockMessage = '';
                 if ($selectedStock <= 0 && $availableBranchName !== '') {
                     $stockMessage = 'Out of stock' . ($selectedBranchName !== '' ? (' at ' . $selectedBranchName) : '') . '. Available in ' . $availableBranchName . '.';
@@ -187,7 +204,7 @@ $resolveMedicineText = static function (array $row): array {
                     'id' => $id,
                     'cartId' => $cartId,
                     'name' => $medicineName,
-                    'brandName' => $smallBrand,
+                    'brandName' => $brandLabel,
                     'category' => (string)($med['category'] ?? 'General'),
                     'generic' => (string)($med['generic_name'] ?? ''),
                     'dosage' => (string)($med['dosage_form'] ?? ''),
@@ -207,15 +224,16 @@ $resolveMedicineText = static function (array $row): array {
                         <img src="<?= $toImageUrl((string)($med['image_path'] ?? '')) ?>" alt="<?= htmlspecialchars($medicineName) ?>">
                     </div>
                     <div class="card-body">
-                        <div class="med-category"><?= htmlspecialchars((string)($med['category'] ?? 'General')) ?></div>
-                        <h3 class="med-title"><?= htmlspecialchars($medicineName) ?></h3>
-                        <div class="med-brand"><?= $smallBrand !== '' ? ('Brand: ' . htmlspecialchars($smallBrand)) : '&nbsp;' ?></div>
-                        <div class="stock-chip <?= $selectedStock > 0 ? 'in' : 'out' ?>"><?= $selectedStock > 0 ? 'In Stock' : 'Out of Stock' ?></div>
-                        <div class="price-container">
+                        <h3 class="med-title med-title-main"><?= htmlspecialchars($medicineName) ?></h3>
+                        <p class="med-subtitle med-generic-line"><?= htmlspecialchars($genericLine !== '' ? $genericLine : '-') ?></p>
+                        <p class="med-subtitle med-category-line"><?= htmlspecialchars((string)($med['category'] ?? 'General')) ?></p>
+                        <p class="med-subtitle med-description-line"><?= htmlspecialchars($descriptionText) ?></p>
+                        <div class="price-container med-price-row">
                             <div class="price-tag">Rs. <?= number_format((float)($med['price'] ?? 0), 2) ?></div>
+                            <div class="med-stock-inline <?= $selectedStock > 0 ? 'in' : 'out' ?>"><?= $selectedStock > 0 ? 'In Stock' : 'Out of Stock' ?></div>
                         </div>
                         <?php if ($stockMessage !== ''): ?>
-                            <div style="margin-top:8px;font-size:12px;color:#b45309;line-height:1.35;"><?= htmlspecialchars($stockMessage) ?></div>
+                            <div class="med-stock-message"><?= htmlspecialchars($stockMessage) ?></div>
                         <?php endif; ?>
                         <form method="post" action="<?= htmlspecialchars($base) ?>/patient/shop/cart/add" class="quick-add-form" onsubmit="event.stopPropagation();">
                             <input type="hidden" name="id" value="<?= $cartId ?>">

@@ -195,6 +195,7 @@ DROP TABLE IF EXISTS `medicines`;
 CREATE TABLE `medicines` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
+  `med_name` varchar(150) NOT NULL,
   `generic_name` varchar(100) DEFAULT NULL,
   `category` varchar(50) DEFAULT NULL,
   `description` text,
@@ -413,6 +414,14 @@ SET @sql = IF(
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'med_name'),
+  'ALTER TABLE medicines ADD COLUMN med_name VARCHAR(150) NOT NULL AFTER name',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
   EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'prescriptions')
   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'prescriptions' AND column_name = 'pharmacy_id'),
   'ALTER TABLE prescriptions ADD COLUMN pharmacy_id INT NULL',
@@ -519,3 +528,9 @@ INSERT IGNORE INTO dosage_forms(name) VALUES
 
 INSERT IGNORE INTO selling_units(name) VALUES
   ('Item'), ('Strip'), ('Bottle'), ('Box'), ('Tube'), ('Vial'), ('Sachet'), ('Pack');
+
+-- Seed alignment for commercial medicine names
+UPDATE medicines
+SET med_name = 'Lipitor'
+WHERE LOWER(TRIM(COALESCE(name, ''))) = 'atorvastatin'
+   OR LOWER(TRIM(COALESCE(generic_name, ''))) = 'atorvastatin';

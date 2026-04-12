@@ -10,11 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($name === '') {
         $name = trim((string)($_POST['brand_existing'] ?? ''));
     }
+    $medName = trim((string)($_POST['med_name'] ?? ''));
     $strength = trim((string)($_POST['strength'] ?? ''));
     $price = (float)($_POST['price'] ?? 0);
 
     if ($name === '') {
         $error = 'Brand name is required.';
+    } elseif ($medName === '') {
+        $error = 'Medicine name is required.';
     } elseif ($strength === '') {
         $error = 'Strength is required.';
     } elseif ($price < 0) {
@@ -111,6 +114,19 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                     <input type="text" name="brand_new" value="<?= htmlspecialchars((string)($_POST['brand_new'] ?? '')) ?>" placeholder="Type new brand name">
                 </div>
                 <div class="form-group"><label>Generic Name</label><input type="text" name="generic_name" value="<?= htmlspecialchars((string)($_POST['generic_name'] ?? '')) ?>"></div>
+                <div class="form-group"><label>MEDICINE NAME</label><input type="text" name="med_name" value="<?= htmlspecialchars((string)($_POST['med_name'] ?? '')) ?>" placeholder="e.g. Lipitor"></div>
+                <div class="form-group">
+                    <label>Manufacturer</label>
+                    <select name="manufacturer_existing">
+                        <option value="">Select Existing Manufacturer</option>
+                        <?php foreach ($manufacturers as $m): ?>
+                            <?php $selected = ((string)($_POST['manufacturer_existing'] ?? '') === (string)$m) ? 'selected' : ''; ?>
+                            <option value="<?= htmlspecialchars((string)$m) ?>" <?= $selected ?>><?= htmlspecialchars((string)$m) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new manufacturer</small>
+                    <input type="text" name="manufacturer_new" value="<?= htmlspecialchars((string)($_POST['manufacturer_new'] ?? '')) ?>" placeholder="Type new manufacturer">
+                </div>
                 <div class="form-group">
                     <label>Category</label>
                     <?php if (!empty($categories)): ?>
@@ -124,18 +140,6 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                     <?php else: ?>
                         <input type="text" name="category" value="<?= htmlspecialchars((string)($_POST['category'] ?? '')) ?>" placeholder="Category name">
                     <?php endif; ?>
-                </div>
-                <div class="form-group">
-                    <label>Manufacturer</label>
-                    <select name="manufacturer_existing">
-                        <option value="">Select Existing Manufacturer</option>
-                        <?php foreach ($manufacturers as $m): ?>
-                            <?php $selected = ((string)($_POST['manufacturer_existing'] ?? '') === (string)$m) ? 'selected' : ''; ?>
-                            <option value="<?= htmlspecialchars((string)$m) ?>" <?= $selected ?>><?= htmlspecialchars((string)$m) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new manufacturer</small>
-                    <input type="text" name="manufacturer_new" value="<?= htmlspecialchars((string)($_POST['manufacturer_new'] ?? '')) ?>" placeholder="Type new manufacturer">
                 </div>
                 <div class="form-group full-width"><label>Description</label><textarea name="description"><?= htmlspecialchars((string)($_POST['description'] ?? '')) ?></textarea></div>
 
