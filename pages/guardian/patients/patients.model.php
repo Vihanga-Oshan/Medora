@@ -4,58 +4,16 @@
  */
 class PatientsModel
 {
-    private static function tableExists(string $table): bool
-    {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        $safeTable = Database::escape($table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function resolvePatientTable(): ?string
-    {
-        if (self::tableExists('patients')) return 'patients';
-        if (self::tableExists('patient')) return 'patient';
-        return null;
-    }
+    private const PATIENT_TABLE = 'patient';
 
     public static function getLinkedPatients(string $guardianNic): array
     {
-        Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if ($patientTable === null) {
-            return [];
-        }
-
-        $guardianNic = Database::$connection->real_escape_string($guardianNic);
-        $rs = Database::search("SELECT * FROM `$patientTable` WHERE guardian_nic = '$guardianNic'");
-        if (!($rs instanceof mysqli_result)) {
-            return [];
-        }
-
-        $rows = [];
-        while ($row = $rs->fetch_assoc()) $rows[] = $row;
-        return $rows;
+        return Database::fetchAll("SELECT * FROM `" . self::PATIENT_TABLE . "` WHERE guardian_nic = ?", 's', [$guardianNic]);
     }
 
     public static function getPatientProfile(string $nic): ?array
     {
-        Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if ($patientTable === null) {
-            return null;
-        }
-
-        $nic = Database::$connection->real_escape_string($nic);
-        $rs = Database::search("SELECT * FROM `$patientTable` WHERE nic = '$nic' LIMIT 1");
-        return $rs instanceof mysqli_result ? $rs->fetch_assoc() : null;
+        return Database::fetchOne("SELECT * FROM `" . self::PATIENT_TABLE . "` WHERE nic = ? LIMIT 1", 's', [$nic]);
     }
 
     public static function getScheduleByDate(string $nic, string $date): array
@@ -64,7 +22,7 @@ class PatientsModel
         $nic = Database::$connection->real_escape_string($nic);
         $date = Database::$connection->real_escape_string($date);
 
-        if (self::tableExists('medication_schedules')) {
+        if (PharmacyContext::tableExists('medication_schedules')) {
             $rs = Database::search("
                 SELECT
                     s.id,
@@ -81,17 +39,18 @@ class PatientsModel
 
             if ($rs instanceof mysqli_result) {
                 $rows = [];
-                while ($row = $rs->fetch_assoc()) $rows[] = $row;
+                while ($row = $rs->fetch_assoc())
+                    $rows[] = $row;
                 return $rows;
             }
         }
 
-        if (self::tableExists('medication_schedule') && self::tableExists('schedule_master')) {
-            $statusExpr = self::tableExists('medication_log')
+        if (PharmacyContext::tableExists('medication_schedule') && PharmacyContext::tableExists('schedule_master')) {
+            $statusExpr = PharmacyContext::tableExists('medication_log')
                 ? "COALESCE(UPPER(ml.status), 'PENDING')"
                 : "'PENDING'";
 
-            $joinLog = self::tableExists('medication_log')
+            $joinLog = PharmacyContext::tableExists('medication_log')
                 ? "LEFT JOIN medication_log ml
                     ON ml.medication_schedule_id = ms.id
                    AND ml.patient_nic = sm.patient_nic
@@ -122,7 +81,8 @@ class PatientsModel
 
             if ($rs instanceof mysqli_result) {
                 $rows = [];
-                while ($row = $rs->fetch_assoc()) $rows[] = $row;
+                while ($row = $rs->fetch_assoc())
+                    $rows[] = $row;
                 return $rows;
             }
         }
@@ -133,36 +93,18 @@ class PatientsModel
     public static function linkPatient(string $patientNic, string $guardianNic): bool
     {
         Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if ($patientTable === null || !self::columnExists($patientTable, 'guardian_nic')) {
-            return false;
-        }
-
         $patientNic = Database::$connection->real_escape_string($patientNic);
         $guardianNic = Database::$connection->real_escape_string($guardianNic);
 
-        $sql = "UPDATE `$patientTable` SET guardian_nic = '$guardianNic'";
-        if (self::columnExists($patientTable, 'link_status')) {
-            $sql .= ", link_status = 'LINKED'";
-        }
-        $sql .= " WHERE nic = '$patientNic'";
+        $sql = "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = '$guardianNic', link_status = 'LINKED' WHERE nic = '$patientNic'";
         return Database::iud($sql);
     }
 
     public static function unlinkPatient(string $patientNic): bool
     {
         Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if ($patientTable === null || !self::columnExists($patientTable, 'guardian_nic')) {
-            return false;
-        }
-
         $patientNic = Database::$connection->real_escape_string($patientNic);
-        $sql = "UPDATE `$patientTable` SET guardian_nic = NULL";
-        if (self::columnExists($patientTable, 'link_status')) {
-            $sql .= ", link_status = NULL";
-        }
-        $sql .= " WHERE nic = '$patientNic'";
+        $sql = "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = NULL, link_status = NULL WHERE nic = '$patientNic'";
         return Database::iud($sql);
     }
 }

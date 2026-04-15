@@ -1,4 +1,5 @@
 <?php
 
-$search = trim(Request::get('nic') ?? '');
-$patientList = CounselorClientsModel::getAll($search);
+$search = trim((string) (Request::get('nic') ?? ''));
+$pharmacyId = (int) ($currentPharmacyId ?? 0);
+$patientList = PatientsClientsModel::getAll($search, $pharmacyId);

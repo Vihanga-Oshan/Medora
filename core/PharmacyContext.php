@@ -6,6 +6,20 @@
  */
 class PharmacyContext
 {
+    private const PHARMACY_SCOPED_TABLES = [
+        'medicines',
+        'prescriptions',
+        'medication_schedule',
+        'schedule_master',
+        'medication_log',
+        'chat_messages',
+        'notifications',
+        'medication_reminder_events',
+        'patient_pharmacy_selection',
+        'pharmacy_users',
+        'pharmacies',
+    ];
+
     public static function boot(): void
     {
         self::ensureSession();
@@ -21,30 +35,18 @@ class PharmacyContext
 
     public static function tableExists(string $table): bool
     {
-        Database::setUpConnection();
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    public static function columnExists(string $table, string $column): bool
-    {
-        Database::setUpConnection();
-        $safeTable = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return true;
     }
 
     public static function pharmaciesEnabled(): bool
     {
-        return self::tableExists('pharmacies');
+        return true;
     }
 
     public static function selectedPharmacyId(): int
     {
         self::ensureSession();
-        return (int)($_SESSION['selected_pharmacy_id'] ?? 0);
+        return (int) ($_SESSION['selected_pharmacy_id'] ?? 0);
     }
 
     public static function setSelectedPharmacyId(int $pharmacyId): void
@@ -81,79 +83,61 @@ class PharmacyContext
             return null;
         }
 
-        $id = (int)$id;
-        $rs = Database::search("SELECT * FROM pharmacies WHERE id = $id LIMIT 1");
-        if (!($rs instanceof mysqli_result)) {
-            return null;
-        }
-        $row = $rs->fetch_assoc();
-        return $row ?: null;
+        return Database::fetchOne("SELECT * FROM pharmacies WHERE id = ? LIMIT 1", 'i', [$id]);
     }
 
     public static function resolvePharmacistPharmacyId(int $pharmacistId): int
     {
-        if ($pharmacistId <= 0 || !self::tableExists('pharmacy_users')) {
+        if ($pharmacistId <= 0) {
             return 0;
         }
 
-        $safeId = (int)$pharmacistId;
-
-        $whereUser = [];
-        if (self::columnExists('pharmacy_users', 'pharmacist_id')) {
-            $whereUser[] = "pharmacist_id = $safeId";
-        }
-        if (self::columnExists('pharmacy_users', 'user_id')) {
-            $whereUser[] = "user_id = $safeId";
-        }
-
-        if (empty($whereUser)) {
-            return 0;
-        }
-
-        $statusFilter = self::columnExists('pharmacy_users', 'status') ? "AND status = 'active'" : '';
-        $rs = Database::search(
+        $row = Database::fetchOne(
             "SELECT pharmacy_id
              FROM pharmacy_users
-             WHERE (" . implode(' OR ', $whereUser) . ")
-             $statusFilter
+             WHERE (pharmacist_id = ? OR user_id = ?)
+             AND status = 'active'
              ORDER BY is_primary DESC, id ASC
-             LIMIT 1"
+             LIMIT 1",
+            'ii',
+            [$pharmacistId, $pharmacistId]
         );
-
-        if (!($rs instanceof mysqli_result)) {
-            return self::assignDefaultPharmacyToPharmacist($safeId);
-        }
-
-        $row = $rs->fetch_assoc();
-        $resolved = (int)($row['pharmacy_id'] ?? 0);
+        $resolved = (int) ($row['pharmacy_id'] ?? 0);
         if ($resolved > 0) {
             return $resolved;
         }
-        return self::assignDefaultPharmacyToPharmacist($safeId);
+        return self::assignDefaultPharmacyToPharmacist($pharmacistId);
     }
 
     private static function assignDefaultPharmacyToPharmacist(int $pharmacistId): int
     {
-        if ($pharmacistId <= 0 || !self::tableExists('pharmacy_users') || !self::tableExists('pharmacies')) {
+        if ($pharmacistId <= 0) {
             return 0;
         }
 
-        $rs = Database::search("SELECT id FROM pharmacies WHERE status = 'active' ORDER BY id ASC LIMIT 1");
-        if (!($rs instanceof mysqli_result)) {
+        $row = Database::fetchOne("SELECT id FROM pharmacies WHERE status = 'active' ORDER BY id ASC LIMIT 1");
+        if (!$row) {
             return 0;
         }
-        $row = $rs->fetch_assoc();
-        $pharmacyId = (int)($row['id'] ?? 0);
+        $pharmacyId = (int) ($row['id'] ?? 0);
         if ($pharmacyId <= 0) {
             return 0;
         }
 
-        $exists = Database::search("SELECT id FROM pharmacy_users WHERE pharmacy_id = $pharmacyId AND pharmacist_id = $pharmacistId LIMIT 1");
-        if (!($exists instanceof mysqli_result) || $exists->num_rows === 0) {
-            Database::iud("INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status, created_at)
-                           VALUES ($pharmacyId, $pharmacistId, $pharmacistId, 'pharmacist', 1, 'active', NOW())");
+        $exists = Database::fetchOne("SELECT id FROM pharmacy_users WHERE pharmacy_id = ? AND pharmacist_id = ? LIMIT 1", 'ii', [$pharmacyId, $pharmacistId]);
+        if (!$exists) {
+            Database::execute(
+                "INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status, created_at)
+                 VALUES (?, ?, ?, 'pharmacist', 1, 'active', NOW())",
+                'iii',
+                [$pharmacyId, $pharmacistId, $pharmacistId]
+            );
         } else {
-            Database::iud("UPDATE pharmacy_users SET status='active', is_primary=1 WHERE pharmacy_id = $pharmacyId AND pharmacist_id = $pharmacistId");
+            Database::execute(
+                "UPDATE pharmacy_users SET status='active', is_primary=1 WHERE pharmacy_id = ? AND pharmacist_id = ?",
+                'ii',
+                [$pharmacyId, $pharmacistId]
+            );
         }
 
         return $pharmacyId;
@@ -166,15 +150,13 @@ class PharmacyContext
             return false;
         }
 
-        if (!self::tableExists('patient_pharmacy_selection')) {
-            return self::selectedPharmacyId() > 0;
-        }
-
-        $safeNic = Database::escape($patientNic);
-        $rs = Database::search("SELECT pharmacy_id FROM patient_pharmacy_selection WHERE patient_nic = '$safeNic' AND is_active = 1 ORDER BY id DESC LIMIT 1");
-        if ($rs instanceof mysqli_result && $rs->num_rows > 0) {
-            $row = $rs->fetch_assoc();
-            $id = (int)($row['pharmacy_id'] ?? 0);
+        $row = Database::fetchOne(
+            "SELECT pharmacy_id FROM patient_pharmacy_selection WHERE patient_nic = ? AND is_active = 1 ORDER BY id DESC LIMIT 1",
+            's',
+            [$patientNic]
+        );
+        if ($row) {
+            $id = (int) ($row['pharmacy_id'] ?? 0);
             if ($id > 0) {
                 self::setSelectedPharmacyId($id);
                 return true;
@@ -191,15 +173,16 @@ class PharmacyContext
             return false;
         }
 
-        $safeNic = Database::escape($patientNic);
-        $pharmacyId = (int)$pharmacyId;
+        $pharmacyId = (int) $pharmacyId;
 
-        if (self::tableExists('patient_pharmacy_selection')) {
-            Database::iud("UPDATE patient_pharmacy_selection SET is_active = 0 WHERE patient_nic = '$safeNic'");
-            $ok = Database::iud("INSERT INTO patient_pharmacy_selection (patient_nic, pharmacy_id, selected_at, is_active) VALUES ('$safeNic', $pharmacyId, NOW(), 1)");
-            if (!$ok) {
-                return false;
-            }
+        Database::execute("UPDATE patient_pharmacy_selection SET is_active = 0 WHERE patient_nic = ?", 's', [$patientNic]);
+        $ok = Database::execute(
+            "INSERT INTO patient_pharmacy_selection (patient_nic, pharmacy_id, selected_at, is_active) VALUES (?, ?, NOW(), 1)",
+            'si',
+            [$patientNic, $pharmacyId]
+        );
+        if (!$ok) {
+            return false;
         }
 
         self::setSelectedPharmacyId($pharmacyId);
@@ -211,12 +194,12 @@ class PharmacyContext
         if ($pharmacyId <= 0) {
             return '1=1';
         }
-        return "$tableOrAlias.pharmacy_id = " . (int)$pharmacyId;
+        return "$tableOrAlias.pharmacy_id = " . (int) $pharmacyId;
     }
 
     public static function tableHasPharmacyId(string $table): bool
     {
-        return self::tableExists($table) && self::columnExists($table, 'pharmacy_id');
+        return in_array($table, self::PHARMACY_SCOPED_TABLES, true);
     }
 
     public static function ensureSchema(): void
@@ -246,10 +229,6 @@ class PharmacyContext
             created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-        if (self::tableExists('pharmacies') && !self::columnExists('pharmacies', 'is_demo')) {
-            Database::iud("ALTER TABLE pharmacies ADD COLUMN is_demo TINYINT(1) NOT NULL DEFAULT 0");
-        }
 
         Database::iud("CREATE TABLE IF NOT EXISTS pharmacy_users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -306,6 +285,24 @@ class PharmacyContext
             INDEX idx_pharmacy (pharmacy_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+        Database::iud("CREATE TABLE IF NOT EXISTS chat_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            sender_type VARCHAR(32) NOT NULL,
+            sender_id VARCHAR(64) NOT NULL,
+            receiver_id VARCHAR(64) NOT NULL,
+            message_text TEXT NOT NULL,
+            sent_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            is_read TINYINT(1) NOT NULL DEFAULT 0,
+            typing VARCHAR(32) NULL,
+            type VARCHAR(32) NULL,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            pharmacy_id INT NULL,
+            INDEX idx_sender_receiver (sender_id, receiver_id),
+            INDEX idx_receiver_sent (receiver_id, sent_at),
+            INDEX idx_is_read (is_read),
+            INDEX idx_pharmacy (pharmacy_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
         Database::iud("CREATE TABLE IF NOT EXISTS medication_reminder_events (
             id INT AUTO_INCREMENT PRIMARY KEY,
             patient_nic VARCHAR(50) NOT NULL,
@@ -338,13 +335,6 @@ class PharmacyContext
             'notifications'
         ];
 
-        foreach ($pharmacyDataTables as $table) {
-            if (self::tableExists($table) && !self::columnExists($table, 'pharmacy_id')) {
-                Database::iud("ALTER TABLE `$table` ADD COLUMN pharmacy_id INT NULL");
-                Database::iud("UPDATE `$table` SET pharmacy_id = 1 WHERE pharmacy_id IS NULL");
-            }
-        }
-
         $seed = Database::search("SELECT id FROM pharmacies ORDER BY id ASC LIMIT 1");
         if (!($seed instanceof mysqli_result) || $seed->num_rows === 0) {
             Database::iud("INSERT INTO pharmacies (name, address_line1, city, district, latitude, longitude, status)
@@ -357,7 +347,7 @@ class PharmacyContext
         $firstPharmacyId = 1;
         if ($firstPharmacyRs instanceof mysqli_result) {
             $f = $firstPharmacyRs->fetch_assoc();
-            $firstPharmacyId = (int)($f['id'] ?? 1);
+            $firstPharmacyId = (int) ($f['id'] ?? 1);
         }
 
         foreach ($pharmacyDataTables as $table) {
@@ -370,11 +360,15 @@ class PharmacyContext
             $pr = Database::search("SELECT id FROM pharmacists ORDER BY id ASC LIMIT 1");
             if ($pr instanceof mysqli_result && $pr->num_rows > 0) {
                 $p = $pr->fetch_assoc();
-                $pid = (int)($p['id'] ?? 0);
+                $pid = (int) ($p['id'] ?? 0);
                 if ($pid > 0) {
-                    $exists = Database::search("SELECT id FROM pharmacy_users WHERE pharmacy_id = $firstPharmacyId AND pharmacist_id = $pid LIMIT 1");
-                    if (!($exists instanceof mysqli_result) || $exists->num_rows === 0) {
-                        Database::iud("INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status) VALUES ($firstPharmacyId, $pid, $pid, 'pharmacist', 1, 'active')");
+                    $exists = Database::fetchOne("SELECT id FROM pharmacy_users WHERE pharmacy_id = ? AND pharmacist_id = ? LIMIT 1", 'ii', [$firstPharmacyId, $pid]);
+                    if (!$exists) {
+                        Database::execute(
+                            "INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status) VALUES (?, ?, ?, 'pharmacist', 1, 'active')",
+                            'iii',
+                            [$firstPharmacyId, $pid, $pid]
+                        );
                     }
                 }
             }
@@ -391,7 +385,7 @@ class PharmacyContext
         $demoCount = 0;
         if ($demoCountRs instanceof mysqli_result) {
             $row = $demoCountRs->fetch_assoc();
-            $demoCount = (int)($row['cnt'] ?? 0);
+            $demoCount = (int) ($row['cnt'] ?? 0);
         }
         if ($demoCount > 0) {
             return;
@@ -408,20 +402,19 @@ class PharmacyContext
 
         foreach ($demoRows as $r) {
             [$name, $address, $city, $district, $lat, $lng] = $r;
-            $safeName = Database::escape($name);
-            $safeAddress = Database::escape($address);
-            $safeCity = Database::escape($city);
-            $safeDistrict = Database::escape($district);
-
-            $exists = Database::search("SELECT id FROM pharmacies WHERE name = '$safeName' LIMIT 1");
-            if ($exists instanceof mysqli_result && $exists->num_rows > 0) {
+            $exists = Database::fetchOne("SELECT id FROM pharmacies WHERE name = ? LIMIT 1", 's', [$name]);
+            if ($exists) {
                 continue;
             }
 
-            Database::iud("INSERT INTO pharmacies
+            Database::execute(
+                "INSERT INTO pharmacies
                 (name, address_line1, city, district, latitude, longitude, is_demo, status, created_at, updated_at)
                 VALUES
-                ('$safeName', '$safeAddress', '$safeCity', '$safeDistrict', $lat, $lng, 1, 'active', NOW(), NOW())");
+                (?, ?, ?, ?, ?, ?, 1, 'active', NOW(), NOW())",
+                'ssssdd',
+                [$name, $address, $city, $district, $lat, $lng]
+            );
         }
     }
 }

@@ -7,51 +7,50 @@ class ReviewModel
     private static function currentPharmacyId(): int
     {
         $auth = Auth::getUser();
-        $fromToken = (int)($auth['pharmacy_id'] ?? 0);
-        if ($fromToken > 0) return $fromToken;
-        return PharmacyContext::resolvePharmacistPharmacyId((int)($auth['id'] ?? 0));
+        $fromToken = (int) ($auth['pharmacy_id'] ?? 0);
+        if ($fromToken > 0)
+            return $fromToken;
+        return PharmacyContext::resolvePharmacistPharmacyId((int) ($auth['id'] ?? 0));
     }
 
     private static function tableExists(string $name): bool
     {
-        $safe = Database::escape($name);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return in_array($name, ['patient', 'notifications', 'prescriptions'], true);
     }
 
     public static function getPrescriptionById(int $id): ?array
     {
-        $where = ["id = $id"];
+        $sql = "SELECT * FROM prescriptions WHERE id = ?";
+        $types = 'i';
+        $params = [$id];
         if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
-            $where[] = "pharmacy_id = " . self::currentPharmacyId();
+            $sql .= " AND pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = self::currentPharmacyId();
         }
-        $rs = Database::search("SELECT * FROM prescriptions WHERE " . implode(' AND ', $where) . " LIMIT 1");
-        return $rs ? $rs->fetch_assoc() : null;
+        return Database::fetchOne($sql . " LIMIT 1", $types, $params);
     }
 
     public static function getPatientByNic(string $nic): ?array
     {
-        Database::setUpConnection();
-        $nic = Database::$connection->real_escape_string($nic);
-        $table = self::tableExists('patient') ? 'patient' : (self::tableExists('patients') ? 'patients' : '');
-        if ($table === '') {
-            return null;
-        }
-
-        $rs = Database::search("SELECT * FROM `$table` WHERE nic = '$nic' LIMIT 1");
-        return $rs ? $rs->fetch_assoc() : null;
+        return Database::fetchOne("SELECT * FROM patient WHERE nic = ? LIMIT 1", 's', [$nic]);
     }
 
     public static function updateStatus(int $id, string $status): bool
     {
         $status = strtoupper($status);
-        if (!in_array($status, ['APPROVED', 'REJECTED'])) return false;
-        
-        $where = ["id = $id"];
+        if (!in_array($status, ['APPROVED', 'REJECTED']))
+            return false;
+
+        $sql = "UPDATE prescriptions SET status = ? WHERE id = ?";
+        $types = 'si';
+        $params = [$status, $id];
         if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
-            $where[] = "pharmacy_id = " . self::currentPharmacyId();
+            $sql .= " AND pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = self::currentPharmacyId();
         }
-        return Database::iud("UPDATE prescriptions SET status = '$status' WHERE " . implode(' AND ', $where));
+        return Database::execute($sql, $types, $params);
     }
 
     public static function createNotification(string $nic, string $message, string $type = 'PRESCRIPTION'): bool

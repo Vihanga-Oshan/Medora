@@ -92,7 +92,113 @@ $cssVer = time();
 <script>
     (function () {
         const container = document.getElementById('message-container');
-        if (container) container.scrollTop = container.scrollHeight;
+        const form = document.querySelector('.chat-input-area');
+        const input = form ? form.querySelector('input[name="message"]') : null;
+        let pollInFlight = false;
+        let sendInFlight = false;
+        if (!container) return;
+
+        const esc = (value) => {
+            const d = document.createElement('div');
+            d.textContent = String(value ?? '');
+            return d.innerHTML;
+        };
+
+        const formatTime = (sentAt) => {
+            if (!sentAt) return '';
+            const date = new Date(String(sentAt).replace(' ', 'T'));
+            if (Number.isNaN(date.getTime())) return String(sentAt);
+            return date.toLocaleString(undefined, {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        };
+
+        const renderMessages = (items) => {
+            if (!Array.isArray(items) || items.length === 0) {
+                container.innerHTML = '<div class="pm-empty-chat">No messages yet. Start chatting with the pharmacy team.</div>';
+                return;
+            }
+
+            container.innerHTML = items.map((msg) => {
+                const sender = String(msg.senderType || '').toLowerCase();
+                const isSent = sender === 'patient';
+                return (
+                    '<div class="message ' + (isSent ? 'sent' : 'received') + '">' +
+                        '<span>' + esc(msg.text || '') + '</span>' +
+                        '<span class="message-time">' + esc(formatTime(msg.sentAt || '')) + '</span>' +
+                    '</div>'
+                );
+            }).join('');
+        };
+
+        const scrollToBottom = () => {
+            container.scrollTop = container.scrollHeight;
+        };
+
+        const fetchMessages = () => {
+            if (pollInFlight) return;
+            pollInFlight = true;
+            fetch('<?= htmlspecialchars($base) ?>/patient/messages?action=fetch', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            })
+            .then((res) => res.ok ? res.json() : null)
+            .then((payload) => {
+                if (!payload || payload.ok !== true) return;
+                const prevHeight = container.scrollHeight;
+                const nearBottom = (container.scrollTop + container.clientHeight + 80) >= prevHeight;
+                renderMessages(payload.messages || []);
+                if (nearBottom) scrollToBottom();
+            })
+            .catch(() => {})
+            .finally(() => {
+                pollInFlight = false;
+            });
+        };
+
+        if (form) {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const message = (input ? input.value : '').trim();
+                if (!message || sendInFlight) return;
+                sendInFlight = true;
+
+                const body = new URLSearchParams();
+                body.set('message', message);
+                body.set('ajax', '1');
+
+                fetch('<?= htmlspecialchars($base) ?>/patient/messages', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body.toString()
+                })
+                .then((res) => res.ok ? res.json() : null)
+                .then((payload) => {
+                    if (!payload || payload.ok !== true) return;
+                    if (input) input.value = '';
+                    renderMessages(payload.messages || []);
+                    scrollToBottom();
+                })
+                .catch(() => {})
+                .finally(() => {
+                    sendInFlight = false;
+                });
+            });
+        }
+
+        scrollToBottom();
+        setInterval(fetchMessages, 4000);
     })();
 </script>
 

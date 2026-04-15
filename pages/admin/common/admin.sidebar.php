@@ -9,18 +9,17 @@ $currentPath = Request::path();
 
 // Nav items: [label, href, icon filename]
 $navItems = [
-    ['Dashboard',            '/admin/dashboard',            'dashboard.svg'],
-    ['User Management',      '/admin/user-management',      'users.svg'],
-    ['Counselor Management', '/admin/counselor-management', 'counselors.svg'],
-    ['Analytics',            '/admin/analytics',            'analytics.svg'],
-    ['Recovery Plans',       '/admin/recovery-plans',       'recovery.svg'],
-    ['Resources',            '/admin/resources',            'resources.svg'],
-    ['Support Groups',       '/admin/support-groups',       'groups.svg'],
-    ['Finances',             '/admin/finances',             'dollar.svg'],
-    ['Content Management',   '/admin/content-management',   'content.svg'],
-    ['Job Posts',            '/admin/job-posts',            'jobs.svg'],
-    ['Help Center',          '/admin/help-center',          'help.svg'],
-    ['Settings',             '/admin/settings',             'settings.svg'],
+    ['Dashboard', '/admin/dashboard', 'dashboard.svg'],
+    ['User Management', '/admin/user-management', 'users.svg'],
+    ['Analytics', '/admin/analytics', 'analytics.svg'],
+    ['Recovery Plans', '/admin/recovery-plans', 'recovery.svg'],
+    ['Resources', '/admin/resources', 'resources.svg'],
+    ['Support Groups', '/admin/support-groups', 'groups.svg'],
+    ['Finances', '/admin/finances', 'dollar.svg'],
+    ['Content Management', '/admin/content-management', 'content.svg'],
+    ['Job Posts', '/admin/job-posts', 'jobs.svg'],
+    ['Help Center', '/admin/help-center', 'help.svg'],
+    ['Settings', '/admin/settings', 'settings.svg'],
 ];
 ?>
 <nav class="sidebar">
@@ -34,9 +33,7 @@ $navItems = [
 
     <div class="sidebar__nav">
         <?php foreach ($navItems as [$label, $href, $icon]): ?>
-            <a
-                href="<?= $href ?>"
-                class="sidebar__item<?= $currentPath === $href ? ' sidebar__item--active' : '' ?>">
+            <a href="<?= $href ?>" class="sidebar__item<?= $currentPath === $href ? ' sidebar__item--active' : '' ?>">
                 <img src="/assets/icons/<?= $icon ?>" alt="">
                 <?= htmlspecialchars($label) ?>
             </a>
@@ -50,7 +47,8 @@ $navItems = [
             <span><?= htmlspecialchars($user['name']) ?></span>
         </div>
         <form method="POST" action="/admin/logout">
-            <button type="submit" class="sidebar__item btn--full" style="border:none;background:none;width:100%;text-align:left;">
+            <button type="submit" class="sidebar__item btn--full"
+                style="border:none;background:none;width:100%;text-align:left;">
                 <img src="/assets/icons/logout.svg" alt="">
                 Logout
             </button>

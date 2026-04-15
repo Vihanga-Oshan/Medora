@@ -23,19 +23,12 @@ class AdminActivityLog
         ");
     }
 
-    private static function tableExists(): bool
-    {
-        Database::setUpConnection();
-        $rs = Database::search("SHOW TABLES LIKE 'admin_activity_log'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
     public static function log(array $user, string $actionText, string $tone = 'blue', ?string $actorName = null, ?string $entityType = null, ?int $entityId = null): bool
     {
         self::ensureTable();
 
-        $adminId = (int)($user['id'] ?? 0);
-        $name = trim((string)($actorName ?? ($user['name'] ?? 'Admin')));
+        $adminId = (int) ($user['id'] ?? 0);
+        $name = trim((string) ($actorName ?? ($user['name'] ?? 'Admin')));
         if ($name === '') {
             $name = 'Admin';
         }
@@ -53,10 +46,10 @@ class AdminActivityLog
         $safeName = Database::escape($name);
         $safeAction = Database::escape($action);
         $safeTone = Database::escape($tone);
-        $safeType = Database::escape((string)($entityType ?? 'system'));
-        $safeEntityId = $entityId !== null ? (int)$entityId : null;
-        $adminIdValue = $adminId > 0 ? (string)$adminId : 'NULL';
-        $entityIdValue = $safeEntityId !== null && $safeEntityId > 0 ? (string)$safeEntityId : 'NULL';
+        $safeType = Database::escape((string) ($entityType ?? 'system'));
+        $safeEntityId = $entityId !== null ? (int) $entityId : null;
+        $adminIdValue = $adminId > 0 ? (string) $adminId : 'NULL';
+        $entityIdValue = $safeEntityId !== null && $safeEntityId > 0 ? (string) $safeEntityId : 'NULL';
 
         return Database::iud("
             INSERT INTO admin_activity_log (admin_id, actor_name, action_text, tone, entity_type, entity_id, created_at)
@@ -66,10 +59,6 @@ class AdminActivityLog
 
     public static function getRecent(int $limit = 50): array
     {
-        if (!self::tableExists()) {
-            return [];
-        }
-
         $limit = max(1, min(200, $limit));
         $rows = [];
         $rs = Database::search("
@@ -81,10 +70,10 @@ class AdminActivityLog
         if ($rs instanceof mysqli_result) {
             while ($r = $rs->fetch_assoc()) {
                 $rows[] = [
-                    'name'       => (string)($r['actor_name'] ?? 'Admin'),
-                    'action'     => (string)($r['action_text'] ?? ''),
-                    'tone'       => (string)($r['tone'] ?? 'blue'),
-                    'created_at' => (string)($r['created_at'] ?? ''),
+                    'name' => (string) ($r['actor_name'] ?? 'Admin'),
+                    'action' => (string) ($r['action_text'] ?? ''),
+                    'tone' => (string) ($r['tone'] ?? 'blue'),
+                    'created_at' => (string) ($r['created_at'] ?? ''),
                 ];
             }
         }

@@ -20,25 +20,16 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
                     <p class="error-text"><?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
 
-                <form class="login-form" id="counselorLoginForm" method="POST" action="">
+                <form class="login-form" id="pharmacistLoginForm" method="POST" action="">
                     <label for="id">Pharmacist ID</label>
-                    <input
-                        type="text"
-                        id="id"
-                        name="id"
-                        placeholder="Enter your pharmacist ID"
-                        required
+                    <input type="text" id="id" name="id" placeholder="Enter your pharmacist ID" required
                         value="<?= htmlspecialchars(Request::post('id') ?? '') ?>">
 
                     <label for="password">Password</label>
                     <div class="password-input-container">
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Enter your password"
-                            required>
-                        <button type="button" id="passwordToggle" class="password-toggle" aria-label="Toggle password">&#128065;</button>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <button type="button" id="passwordToggle" class="password-toggle"
+                            aria-label="Toggle password">&#128065;</button>
                     </div>
 
                     <div class="form-options">
@@ -63,7 +54,7 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
 
         <aside class="auth-visual-panel">
             <div class="visual-card">
-                <img src="<?= htmlspecialchars($base) ?>/assets/img/counselor-login.png" alt="Pharmacist login illustration">
+                <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Pharmacist login illustration">
                 <h2>Review and schedule with confidence.</h2>
                 <p>Manage prescriptions and patient plans from one place.</p>
             </div>
@@ -74,4 +65,3 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
 </body>
 
 </html>
-

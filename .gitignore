@@ -15,3 +15,6 @@ public/uploads/**
 # TLS certs/keys (local secrets)
 storage/certs/*
 !storage/certs/.gitkeep
+
+# Local environment secrets
+.env

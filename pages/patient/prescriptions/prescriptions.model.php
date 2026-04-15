@@ -18,20 +18,9 @@ class PrescriptionsModel
         return PharmacyContext::sqlFilter($alias, $pid);
     }
 
-    private static function columnExists(string $table, string $column): bool
-    {
-        $safeTable = Database::escape($table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
     private static function dateColumn(): string
     {
-        if (self::columnExists('prescriptions', 'uploaded_at')) return 'uploaded_at';
-        if (self::columnExists('prescriptions', 'upload_date')) return 'upload_date';
-        if (self::columnExists('prescriptions', 'created_at')) return 'created_at';
-        return 'uploaded_at';
+        return 'upload_date';
     }
 
     public static function getByPatient(string $nic): array
@@ -97,49 +86,15 @@ class PrescriptionsModel
             ? self::currentPharmacyId()
             : 0;
 
-        if (self::columnExists('prescriptions', 'uploaded_at')) {
-            if ($pid > 0) {
-                Database::execute(
-                    "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, uploaded_at, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
-                    'sssi',
-                    [$nic, $fileName, $filePath, $pid]
-                );
-            } else {
-                Database::execute(
-                    "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, uploaded_at) VALUES (?, ?, ?, 'PENDING', NOW())",
-                    'sss',
-                    [$nic, $fileName, $filePath]
-                );
-            }
-            return;
-        }
-
-        if (self::columnExists('prescriptions', 'upload_date')) {
-            if ($pid > 0) {
-                Database::execute(
-                    "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
-                    'sssi',
-                    [$nic, $fileName, $filePath, $pid]
-                );
-            } else {
-                Database::execute(
-                    "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date) VALUES (?, ?, ?, 'PENDING', NOW())",
-                    'sss',
-                    [$nic, $fileName, $filePath]
-                );
-            }
-            return;
-        }
-
         if ($pid > 0) {
             Database::execute(
-                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, pharmacy_id) VALUES (?, ?, ?, 'PENDING', ?)",
+                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
                 'sssi',
                 [$nic, $fileName, $filePath, $pid]
             );
         } else {
             Database::execute(
-                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status) VALUES (?, ?, ?, 'PENDING')",
+                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date) VALUES (?, ?, ?, 'PENDING', NOW())",
                 'sss',
                 [$nic, $fileName, $filePath]
             );

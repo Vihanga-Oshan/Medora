@@ -4,43 +4,15 @@
  */
 class DashboardModel
 {
-    private static function tableExists(string $table): bool
-    {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        $safeTable = Database::escape($table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function resolvePatientTable(): ?string
-    {
-        if (self::tableExists('patients')) return 'patients';
-        if (self::tableExists('patient')) return 'patient';
-        return null;
-    }
+    private const PATIENT_TABLE = 'patient';
 
     public static function getPatientsByGuardian(string $guardianNic): array
     {
         Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if ($patientTable === null) {
-            return [];
-        }
-
         $guardianNic = Database::$connection->real_escape_string($guardianNic);
-        $chronicCol = self::columnExists($patientTable, 'chronic_issues') ? 'chronic_issues' : "''";
-        $genderCol = self::columnExists($patientTable, 'gender') ? 'gender' : "''";
-
         $rs = Database::search("
-            SELECT nic, name, $genderCol AS gender, $chronicCol AS chronic_issues
-            FROM `$patientTable`
+            SELECT nic, name, gender, chronic_issues
+            FROM `" . self::PATIENT_TABLE . "`
             WHERE guardian_nic = '$guardianNic'
         ");
         if (!($rs instanceof mysqli_result)) {
@@ -55,17 +27,12 @@ class DashboardModel
     public static function getRecentAlertsByGuardian(string $guardianNic, int $limit = 5): array
     {
         Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if (!self::tableExists('notifications') || $patientTable === null) {
-            return [];
-        }
-
         $guardianNic = Database::$connection->real_escape_string($guardianNic);
         $limit = max(1, (int)$limit);
         $rs = Database::search("
             SELECT n.id, n.message, n.type, n.created_at, n.is_read, p.name AS patient_name
             FROM notifications n
-            JOIN `$patientTable` p ON n.patient_nic = p.nic
+            JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic
             WHERE p.guardian_nic = '$guardianNic'
             ORDER BY n.created_at DESC
             LIMIT $limit
@@ -82,16 +49,11 @@ class DashboardModel
     public static function getUnreadAlertsCount(string $guardianNic): int
     {
         Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if (!self::tableExists('notifications') || $patientTable === null) {
-            return 0;
-        }
-
         $guardianNic = Database::$connection->real_escape_string($guardianNic);
         $rs = Database::search("
             SELECT COUNT(*) AS cnt 
             FROM notifications n
-            JOIN `$patientTable` p ON n.patient_nic = p.nic
+            JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic
             WHERE p.guardian_nic = '$guardianNic' AND n.is_read = 0
         ");
         if (!($rs instanceof mysqli_result)) {
@@ -105,20 +67,15 @@ class DashboardModel
     public static function getAverageAdherence(string $guardianNic): int
     {
         Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if ($patientTable === null) {
-            return 100;
-        }
-
         $guardianNic = Database::$connection->real_escape_string($guardianNic);
 
-        if (self::tableExists('medication_schedules')) {
+        if (PharmacyContext::tableExists('medication_schedules')) {
             $rs = Database::search("
                 SELECT 
                     COUNT(CASE WHEN s.status = 'TAKEN' THEN 1 END) AS taken_count,
                     COUNT(*) AS total_count
                 FROM medication_schedules s
-                JOIN `$patientTable` p ON s.patient_nic = p.nic
+                JOIN `" . self::PATIENT_TABLE . "` p ON s.patient_nic = p.nic
                 WHERE p.guardian_nic = '$guardianNic'
             ");
 
@@ -131,13 +88,13 @@ class DashboardModel
             }
         }
 
-        if (self::tableExists('medication_log')) {
+        if (PharmacyContext::tableExists('medication_log')) {
             $rs = Database::search("
                 SELECT
                     COUNT(CASE WHEN ml.status = 'TAKEN' THEN 1 END) AS taken_count,
                     COUNT(*) AS total_count
                 FROM medication_log ml
-                JOIN `$patientTable` p ON ml.patient_nic = p.nic
+                JOIN `" . self::PATIENT_TABLE . "` p ON ml.patient_nic = p.nic
                 WHERE p.guardian_nic = '$guardianNic'
             ");
 

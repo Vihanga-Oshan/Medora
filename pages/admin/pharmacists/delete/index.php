@@ -15,10 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $id = (int)$_POST['id'];
     if ($id) {
-        $table = PharmacyContext::tableExists('pharmacists') ? 'pharmacists' : 'pharmacist';
-        $safeTable = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
         $name = 'Pharmacist';
-        $rs = Database::search("SELECT name FROM `$safeTable` WHERE id = $id LIMIT 1");
+        $rs = Database::search("SELECT name FROM pharmacist WHERE id = $id LIMIT 1");
         if ($rs instanceof mysqli_result && $rs->num_rows > 0) {
             $row = $rs->fetch_assoc();
             $name = trim((string)($row['name'] ?? 'Pharmacist'));

@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   bindClick('.request-feedback-btn', function () {
-    showNotification('Feedback request sent to counselor', 'success');
+    showNotification('Feedback request sent to support team', 'success');
   });
 
   // Fallback: if buttons/forms are wired to the current page as placeholders,

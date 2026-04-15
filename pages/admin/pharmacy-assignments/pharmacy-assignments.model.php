@@ -3,7 +3,6 @@ class PharmacyAssignmentsModel
 {
     private static function pharmacistTable(): string
     {
-        if (PharmacyContext::tableExists('pharmacists')) return 'pharmacists';
         return 'pharmacist';
     }
 
@@ -13,7 +12,8 @@ class PharmacyAssignmentsModel
         $rows = [];
         $rs = Database::search("SELECT id, name, email FROM `$t` ORDER BY name ASC");
         if ($rs instanceof mysqli_result) {
-            while ($r = $rs->fetch_assoc()) $rows[] = $r;
+            while ($r = $rs->fetch_assoc())
+                $rows[] = $r;
         }
         return $rows;
     }
@@ -34,36 +34,46 @@ class PharmacyAssignmentsModel
                                LEFT JOIN `$t` p ON p.id = pu.pharmacist_id
                                ORDER BY pu.id DESC");
         if ($rs instanceof mysqli_result) {
-            while ($r = $rs->fetch_assoc()) $rows[] = $r;
+            while ($r = $rs->fetch_assoc())
+                $rows[] = $r;
         }
         return $rows;
     }
 
     public static function assign(int $pharmacyId, int $pharmacistId, bool $primary): bool
     {
-        if ($pharmacyId <= 0 || $pharmacistId <= 0) return false;
+        if ($pharmacyId <= 0 || $pharmacistId <= 0)
+            return false;
 
         if ($primary) {
-            Database::iud("UPDATE pharmacy_users SET is_primary = 0 WHERE pharmacist_id = $pharmacistId");
+            Database::execute("UPDATE pharmacy_users SET is_primary = 0 WHERE pharmacist_id = ?", 'i', [$pharmacistId]);
         }
 
-        $exists = Database::search("SELECT id FROM pharmacy_users WHERE pharmacy_id = $pharmacyId AND pharmacist_id = $pharmacistId LIMIT 1");
-        if ($exists instanceof mysqli_result && $exists->num_rows > 0) {
-            $row = $exists->fetch_assoc();
-            $id = (int)($row['id'] ?? 0);
+        $row = Database::fetchOne("SELECT id FROM pharmacy_users WHERE pharmacy_id = ? AND pharmacist_id = ? LIMIT 1", 'ii', [$pharmacyId, $pharmacistId]);
+        if ($row) {
+            $id = (int) ($row['id'] ?? 0);
             if ($id > 0) {
-                return Database::iud("UPDATE pharmacy_users SET is_primary = " . ($primary ? '1' : '0') . ", status='active' WHERE id = $id");
+                return Database::execute(
+                    "UPDATE pharmacy_users SET is_primary = ?, status='active' WHERE id = ?",
+                    'ii',
+                    [$primary ? 1 : 0, $id]
+                );
             }
         }
 
-        return Database::iud("INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status, created_at)
-                              VALUES ($pharmacyId, $pharmacistId, $pharmacistId, 'pharmacist', " . ($primary ? '1' : '0') . ", 'active', NOW())");
+        return Database::execute(
+            "INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status, created_at)
+             VALUES (?, ?, ?, 'pharmacist', ?, 'active', NOW())",
+            'iiii',
+            [$pharmacyId, $pharmacistId, $pharmacistId, $primary ? 1 : 0]
+        );
     }
 
     public static function deactivate(int $id): bool
     {
-        $id = (int)$id;
-        if ($id <= 0) return false;
-        return Database::iud("UPDATE pharmacy_users SET status='inactive' WHERE id = $id");
+        $id = (int) $id;
+        if ($id <= 0)
+            return false;
+        return Database::execute("UPDATE pharmacy_users SET status='inactive' WHERE id = ?", 'i', [$id]);
     }
 }

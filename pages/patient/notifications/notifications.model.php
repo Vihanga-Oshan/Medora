@@ -18,8 +18,7 @@ class NotificationsModel
     {
         MedicationReminderService::deliverDueReminders($nic);
 
-        $nic = Database::escape($nic);
-        $rs  = Database::search("
+        $rs = Database::fetchAll("
             SELECT
                 n.id,
                 n.message,
@@ -32,15 +31,12 @@ class NotificationsModel
             FROM notifications n
             LEFT JOIN medication_reminder_events e
               ON e.delivered_notification_id = n.id
-            WHERE n.patient_nic = '$nic'
+                        WHERE n.patient_nic = ?
               AND " . self::pharmacyWhere('n') . "
             ORDER BY n.created_at DESC
-        ");
-        if (!$rs) {
-            return [];
-        }
+                ", 's', [$nic]);
         $rows = [];
-        while ($row = $rs->fetch_assoc()) {
+        foreach ($rs as $row) {
             $row['formatted_date'] = date('M d, Y H:i', strtotime($row['created_at']));
             $rows[] = $row;
         }
@@ -65,7 +61,7 @@ class NotificationsModel
             LIMIT 1
         ", 'is', [$notificationId, $nic]);
 
-        $eventId = (int)($row['reminder_event_id'] ?? 0);
+        $eventId = (int) ($row['reminder_event_id'] ?? 0);
         if ($eventId <= 0) {
             return false;
         }
@@ -78,13 +74,11 @@ class NotificationsModel
 
     public static function delete(int $id, string $nic): void
     {
-        $nic = Database::escape($nic);
-        Database::iud("DELETE FROM notifications WHERE id = $id AND patient_nic = '$nic' AND " . self::pharmacyWhere('notifications'));
+        Database::execute("DELETE FROM notifications WHERE id = ? AND patient_nic = ? AND " . self::pharmacyWhere('notifications'), 'is', [$id, $nic]);
     }
 
     public static function clearAll(string $nic): void
     {
-        $nic = Database::escape($nic);
-        Database::iud("DELETE FROM notifications WHERE patient_nic = '$nic' AND " . self::pharmacyWhere('notifications'));
+        Database::execute("DELETE FROM notifications WHERE patient_nic = ? AND " . self::pharmacyWhere('notifications'), 's', [$nic]);
     }
 }

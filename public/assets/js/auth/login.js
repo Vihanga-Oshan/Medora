@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const loginForm =
     document.getElementById('loginForm') ||
     document.getElementById('guardianLoginForm') ||
-    document.getElementById('counselorLoginForm') ||
     document.getElementById('adminLoginForm');
 
   if (!loginForm) return;

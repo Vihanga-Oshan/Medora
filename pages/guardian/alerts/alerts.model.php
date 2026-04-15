@@ -4,67 +4,31 @@
  */
 class AlertsModel
 {
-    private static function tableExists(string $table): bool
-    {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function resolvePatientTable(): ?string
-    {
-        if (self::tableExists('patients')) return 'patients';
-        if (self::tableExists('patient')) return 'patient';
-        return null;
-    }
+    private const PATIENT_TABLE = 'patient';
 
     public static function getNotificationsByGuardian(string $guardianNic): array
     {
-        Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if (!self::tableExists('notifications') || $patientTable === null) {
-            return [];
-        }
-
-        $guardianNic = Database::$connection->real_escape_string($guardianNic);
-        $rs = Database::search("
+        return Database::fetchAll("
             SELECT n.*, p.name AS patient_name, '' AS patient_phone
             FROM notifications n
-            JOIN `$patientTable` p ON n.patient_nic = p.nic
-            WHERE p.guardian_nic = '$guardianNic'
+            JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic
+            WHERE p.guardian_nic = ?
             ORDER BY n.created_at DESC
-        ");
-        if (!($rs instanceof mysqli_result)) {
-            return [];
-        }
-
-        $rows = [];
-        while ($row = $rs->fetch_assoc()) $rows[] = $row;
-        return $rows;
+        ", 's', [$guardianNic]);
     }
 
     public static function markAsRead(int $id): bool
     {
-        if (!self::tableExists('notifications')) {
-            return false;
-        }
-        return Database::iud("UPDATE notifications SET is_read = 1 WHERE id = $id");
+        return Database::execute("UPDATE notifications SET is_read = 1 WHERE id = ?", 'i', [$id]);
     }
 
     public static function markAllRead(string $guardianNic): bool
     {
-        Database::setUpConnection();
-        $patientTable = self::resolvePatientTable();
-        if (!self::tableExists('notifications') || $patientTable === null) {
-            return false;
-        }
-
-        $guardianNic = Database::$connection->real_escape_string($guardianNic);
-        return Database::iud("
+        return Database::execute("
             UPDATE notifications n
-            JOIN `$patientTable` p ON n.patient_nic = p.nic
+            JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic
             SET n.is_read = 1
-            WHERE p.guardian_nic = '$guardianNic' AND n.is_read = 0
-        ");
+            WHERE p.guardian_nic = ? AND n.is_read = 0
+        ", 's', [$guardianNic]);
     }
 }

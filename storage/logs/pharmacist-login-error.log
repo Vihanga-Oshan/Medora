@@ -1,0 +1,6 @@
+[2026-04-11 11:30:48] [ERROR] Pharmacist login failed. {"id_numeric":8777,"reason":"user_not_found"}
+[2026-04-11 11:31:03] [ERROR] Pharmacist login failed. {"id_numeric":7777,"reason":"password_mismatch"}
+[2026-04-11 11:32:14] [ERROR] Pharmacist login failed. {"id_numeric":8888,"reason":"user_not_found"}
+[2026-04-11 11:32:20] [ERROR] Pharmacist login failed. {"id_numeric":8888,"reason":"user_not_found"}
+[2026-04-11 11:41:35] [ERROR] Pharmacist login failed. {"id_numeric":7777,"reason":"user_not_found"}
+[2026-04-15 16:26:27] [ERROR] Pharmacist login failed. {"id_numeric":7777,"reason":"user_not_found"}

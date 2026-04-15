@@ -1,45 +1,46 @@
 <?php
 
-class CounselorClientsModel
+class PatientsClientsModel
 {
-    private static function currentPharmacyId(): int
+    public static function getAll(string $search = '', int $currentPharmacyId = 0): array
     {
-        $auth = Auth::getUser();
-        $pid = (int)($auth['pharmacy_id'] ?? 0);
-        if ($pid > 0) return $pid;
-        return PharmacyContext::resolvePharmacistPharmacyId((int)($auth['id'] ?? 0));
-    }
+        $search = trim($search);
+        $currentPharmacyId = max(0, $currentPharmacyId);
 
-    public static function getAll(string $search = ''): array
-    {
-        Database::setUpConnection();
+        $sql = "
+            SELECT p.nic, p.name, p.email, p.emergency_contact
+            FROM patient p
+        ";
+        $types = '';
+        $params = [];
+        $where = [];
 
-        $whereParts = [];
+        if ($currentPharmacyId > 0 && PharmacyContext::tableExists('patient_pharmacy_selection')) {
+            $sql .= "
+                INNER JOIN patient_pharmacy_selection pps
+                    ON pps.patient_nic = p.nic
+                   AND pps.is_active = 1
+                   AND pps.pharmacy_id = ?
+            ";
+            $types .= 'i';
+            $params[] = $currentPharmacyId;
+        }
+
         if ($search !== '') {
-            $safe = Database::escape($search);
-            $whereParts[] = "(nic LIKE '%$safe%' OR name LIKE '%$safe%' OR email LIKE '%$safe%')";
+            $where[] = '(p.nic LIKE ? OR p.name LIKE ? OR p.email LIKE ?)';
+            $like = '%' . $search . '%';
+            $types .= 'sss';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
         }
 
-        if (PharmacyContext::tableHasPharmacyId('patient') && self::currentPharmacyId() > 0) {
-            $whereParts[] = "pharmacy_id = " . self::currentPharmacyId();
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        $where = !empty($whereParts) ? ("WHERE " . implode(' AND ', $whereParts)) : '';
+        $sql .= ' ORDER BY p.name ASC, p.nic ASC';
 
-        $rs = Database::search("
-            SELECT nic, name, email, emergency_contact
-            FROM patient
-            $where
-            ORDER BY name ASC
-        ");
-
-        $rows = [];
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $rows[] = $row;
-            }
-        }
-
-        return $rows;
+        return Database::fetchAll($sql, $types, $params);
     }
 }

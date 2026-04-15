@@ -13,29 +13,17 @@ class DashboardModel
 
     private static function tableExists(string $table): bool
     {
-        Database::setUpConnection();
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return true;
     }
 
     private static function columnExists(string $table, string $column): bool
     {
-        Database::setUpConnection();
-        $safeTable = self::safeTable($table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return true;
     }
 
     private static function resolveTable(array $candidates): ?string
     {
-        foreach ($candidates as $table) {
-            if (self::tableExists($table)) {
-                return $table;
-            }
-        }
-        return null;
+        return $candidates[0] ?? null;
     }
 
     private static function safeCount(string $table, ?string $where = null): int
@@ -50,7 +38,7 @@ class DashboardModel
             return 0;
         }
         $row = $rs->fetch_assoc();
-        return (int)($row['cnt'] ?? 0);
+        return (int) ($row['cnt'] ?? 0);
     }
 
     private static function safeCountToday(string $table, string $dateTimeColumn): int
@@ -70,51 +58,29 @@ class DashboardModel
             return 0;
         }
         $row = $rs->fetch_assoc();
-        return (int)($row['cnt'] ?? 0);
+        return (int) ($row['cnt'] ?? 0);
     }
 
     public static function getSummary(): array
     {
-        $pharmacistTable = self::resolveTable(['pharmacists', 'pharmacist']);
-        $patientTable = self::resolveTable(['patients', 'patient']);
-        $guardianTable = self::resolveTable(['guardians', 'guardian']);
-        $prescriptionTable = self::resolveTable(['prescriptions', 'prescription']);
-
-        // Pharmacist counts (if status exists, count ACTIVE only)
-        $activePharmacists = 0;
-        if ($pharmacistTable !== null) {
-            $where = null;
-            if (self::columnExists($pharmacistTable, 'status')) {
-                $where = "LOWER(status) = 'active'";
-            } elseif (self::columnExists($pharmacistTable, 'is_active')) {
-                $where = "is_active = 1";
-            }
-            $activePharmacists = self::safeCount($pharmacistTable, $where);
-        }
+        $activePharmacists = self::safeCount('pharmacist');
 
         // Patient counts
-        $totalPatients = $patientTable ? self::safeCount($patientTable) : 0;
-        $patientsToday = 0;
-        if ($patientTable !== null && self::columnExists($patientTable, 'created_at')) {
-            $patientsToday = self::safeCountToday($patientTable, 'created_at');
-        }
+        $totalPatients = self::safeCount('patient');
+        $patientsToday = self::safeCountToday('patient', 'created_at');
 
         // Guardian counts
-        $totalGuardians = $guardianTable ? self::safeCount($guardianTable) : 0;
+        $totalGuardians = self::safeCount('guardian');
 
         // Prescription Review Status
-        $pendingReviews = 0;
-        if ($prescriptionTable !== null) {
-            $where = self::columnExists($prescriptionTable, 'status') ? "status = 'PENDING'" : null;
-            $pendingReviews = self::safeCount($prescriptionTable, $where);
-        }
+        $pendingReviews = self::safeCount('prescriptions', "status = 'PENDING'");
 
         return [
             'activePharmacists' => $activePharmacists,
-            'totalPatients'     => $totalPatients,
-            'patientsToday'     => $patientsToday,
-            'totalGuardians'    => $totalGuardians,
-            'pendingReviews'    => $pendingReviews,
+            'totalPatients' => $totalPatients,
+            'patientsToday' => $patientsToday,
+            'totalGuardians' => $totalGuardians,
+            'pendingReviews' => $pendingReviews,
         ];
     }
 
@@ -126,11 +92,16 @@ class DashboardModel
         }
 
         $diff = time() - $ts;
-        if ($diff <= 5) return 'just now';
-        if ($diff < 60) return $diff . ' seconds ago';
-        if ($diff < 3600) return floor($diff / 60) . ' minutes ago';
-        if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
-        if ($diff < 604800) return floor($diff / 86400) . ' days ago';
+        if ($diff <= 5)
+            return 'just now';
+        if ($diff < 60)
+            return $diff . ' seconds ago';
+        if ($diff < 3600)
+            return floor($diff / 60) . ' minutes ago';
+        if ($diff < 86400)
+            return floor($diff / 3600) . ' hours ago';
+        if ($diff < 604800)
+            return floor($diff / 86400) . ' days ago';
         return date('M d, Y', $ts);
     }
 
@@ -142,10 +113,10 @@ class DashboardModel
         }
 
         $events[] = [
-            'name'      => $name,
-            'action'    => $action,
-            'time'      => self::formatRelativeTime($timestamp),
-            'tone'      => $tone,
+            'name' => $name,
+            'action' => $action,
+            'time' => self::formatRelativeTime($timestamp),
+            'tone' => $tone,
             '__sort_ts' => $ts,
         ];
     }
@@ -156,15 +127,15 @@ class DashboardModel
         if (!empty($logged)) {
             $events = [];
             foreach ($logged as $log) {
-                $createdAt = (string)($log['created_at'] ?? '');
+                $createdAt = (string) ($log['created_at'] ?? '');
                 if ($createdAt === '') {
                     continue;
                 }
                 $events[] = [
-                    'name'   => (string)($log['name'] ?? 'Admin'),
-                    'action' => (string)($log['action'] ?? ''),
-                    'tone'   => (string)($log['tone'] ?? 'blue'),
-                    'time'   => self::formatRelativeTime($createdAt),
+                    'name' => (string) ($log['name'] ?? 'Admin'),
+                    'action' => (string) ($log['action'] ?? ''),
+                    'tone' => (string) ($log['tone'] ?? 'blue'),
+                    'time' => self::formatRelativeTime($createdAt),
                 ];
             }
             if (!empty($events)) {
@@ -194,10 +165,10 @@ class DashboardModel
             ");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string)($row['full_name'] ?? 'Pharmacist'));
-                    $status = strtolower((string)($row['status'] ?? 'pending'));
-                    $createdAt = (string)($row['created_at'] ?? '');
-                    $reviewedAt = (string)($row['reviewed_at'] ?? '');
+                    $name = trim((string) ($row['full_name'] ?? 'Pharmacist'));
+                    $status = strtolower((string) ($row['status'] ?? 'pending'));
+                    $createdAt = (string) ($row['created_at'] ?? '');
+                    $reviewedAt = (string) ($row['reviewed_at'] ?? '');
 
                     if ($status === 'approved' && $reviewedAt !== '') {
                         self::addEvent($events, $name, 'Pharmacist request approved', $reviewedAt, 'green');
@@ -222,8 +193,8 @@ class DashboardModel
             ");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string)($row['name'] ?? 'Pharmacist'));
-                    $createdAt = (string)($row['created_at'] ?? '');
+                    $name = trim((string) ($row['name'] ?? 'Pharmacist'));
+                    $createdAt = (string) ($row['created_at'] ?? '');
                     if ($createdAt !== '') {
                         self::addEvent($events, $name, 'Created pharmacist account', $createdAt, 'green');
                     }
@@ -242,15 +213,15 @@ class DashboardModel
             ");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string)($row['name'] ?? 'Pharmacy'));
-                    $createdAt = (string)($row['created_at'] ?? '');
+                    $name = trim((string) ($row['name'] ?? 'Pharmacy'));
+                    $createdAt = (string) ($row['created_at'] ?? '');
                     if ($createdAt !== '') {
                         self::addEvent($events, $name, 'Registered pharmacy', $createdAt, 'blue');
                     }
 
                     if ($hasUpdatedAt) {
-                        $updatedAt = (string)($row['updated_at'] ?? '');
-                        $status = strtolower((string)($row['status'] ?? 'active'));
+                        $updatedAt = (string) ($row['updated_at'] ?? '');
+                        $status = strtolower((string) ($row['status'] ?? 'active'));
                         $createdTs = strtotime($createdAt);
                         $updatedTs = strtotime($updatedAt);
                         if ($updatedAt !== '' && $updatedTs !== false && $createdTs !== false && $updatedTs > ($createdTs + 2)) {
@@ -282,9 +253,9 @@ class DashboardModel
             ");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
-                    $pharmacistName = trim((string)($row['pharmacist_name'] ?? 'Pharmacist'));
-                    $pharmacyName = trim((string)($row['pharmacy_name'] ?? 'Pharmacy'));
-                    $createdAt = (string)($row['created_at'] ?? '');
+                    $pharmacistName = trim((string) ($row['pharmacist_name'] ?? 'Pharmacist'));
+                    $pharmacyName = trim((string) ($row['pharmacy_name'] ?? 'Pharmacy'));
+                    $createdAt = (string) ($row['created_at'] ?? '');
                     if ($createdAt !== '') {
                         self::addEvent($events, $pharmacistName, 'Assigned to ' . $pharmacyName, $createdAt, 'blue');
                     }
@@ -304,8 +275,8 @@ class DashboardModel
             ");
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string)($row['name'] ?? 'Patient'));
-                    $createdAt = (string)($row['created_at'] ?? '');
+                    $name = trim((string) ($row['name'] ?? 'Patient'));
+                    $createdAt = (string) ($row['created_at'] ?? '');
                     if ($createdAt !== '') {
                         self::addEvent($events, $name, 'Registered as patient', $createdAt, 'green');
                     }
@@ -314,7 +285,7 @@ class DashboardModel
         }
 
         usort($events, static function (array $a, array $b): int {
-            return (int)$b['__sort_ts'] <=> (int)$a['__sort_ts'];
+            return (int) $b['__sort_ts'] <=> (int) $a['__sort_ts'];
         });
 
         $events = array_slice($events, 0, 10);

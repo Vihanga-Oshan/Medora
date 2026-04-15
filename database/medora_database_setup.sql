@@ -418,6 +418,24 @@ CREATE TABLE IF NOT EXISTS notifications (
   INDEX idx_pharmacy (pharmacy_id)
 );
 
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sender_type VARCHAR(32) NOT NULL,
+  sender_id VARCHAR(64) NOT NULL,
+  receiver_id VARCHAR(64) NOT NULL,
+  message_text TEXT NOT NULL,
+  sent_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  typing VARCHAR(32) NULL,
+  type VARCHAR(32) NULL,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  pharmacy_id INT NULL,
+  INDEX idx_sender_receiver (sender_id, receiver_id),
+  INDEX idx_receiver_sent (receiver_id, sent_at),
+  INDEX idx_is_read (is_read),
+  INDEX idx_pharmacy (pharmacy_id)
+);
+
 CREATE TABLE IF NOT EXISTS medication_reminder_events (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_nic VARCHAR(50) NOT NULL,

@@ -48,29 +48,17 @@ class LoginModel
         try {
             Database::setUpConnection();
 
-            $table = self::resolveGuardianTable();
-            if ($table === null) {
-                self::logError('No guardian table resolved.', ['nic_suffix' => substr($nic, -4)]);
-                return null;
-            }
-
-            $nameCol = self::columnExists($table, 'name') ? 'name' : 'g_name';
-            $passCol = self::columnExists($table, 'password') ? 'password' : null;
-            $passHashCol = self::columnExists($table, 'password_hash') ? 'password_hash' : null;
-            $passExpr = $passCol !== null ? $passCol : 'NULL';
-            $passHashExpr = $passHashCol !== null ? $passHashCol : 'NULL';
-
             $normalizedNic = strtoupper(preg_replace('/[\s\-]+/', '', $nic) ?? $nic);
             $row = Database::fetchOne("
-            SELECT nic, $nameCol AS guardian_name, $passExpr AS password_value, $passHashExpr AS password_hash_value
-            FROM `$table`
+            SELECT nic, g_name AS guardian_name, password AS password_value, NULL AS password_hash_value
+            FROM guardian
             WHERE nic = ?
                OR REPLACE(REPLACE(UPPER(nic), ' ', ''), '-', '') = ?
             LIMIT 1
         ", 'ss', [$nic, $normalizedNic]);
 
             self::logDebug('Guardian lookup result.', [
-                'table' => $table,
+                'table' => 'guardian',
                 'nic_suffix' => substr($nic, -4),
                 'normalized_nic_suffix' => substr($normalizedNic, -4),
                 'found' => $row !== null ? 1 : 0,
@@ -86,34 +74,5 @@ class LoginModel
             ]);
             return null;
         }
-    }
-
-    private static function resolveGuardianTable(): ?string
-    {
-        if (self::tableExists('guardians')) {
-            return 'guardians';
-        }
-        if (self::tableExists('guardian')) {
-            return 'guardian';
-        }
-        return null;
-    }
-
-    private static function tableExists(string $table): bool
-    {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        $safeTable = Database::escape($table);
-        $safeCol = Database::escape($column);
-        if ($safeTable === '') {
-            return false;
-        }
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
     }
 }

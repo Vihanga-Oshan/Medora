@@ -40,14 +40,14 @@ class MedicationReminderService
     {
         self::ensureSchema();
 
-        $patientNic = trim((string)($payload['patient_nic'] ?? ''));
-        $sourceType = trim((string)($payload['source_type'] ?? ''));
-        $sourceId = (int)($payload['source_schedule_id'] ?? 0);
-        $doseDate = trim((string)($payload['dose_date'] ?? ''));
-        $message = trim((string)($payload['message'] ?? ''));
-        $timesOfDay = trim((string)($payload['times_of_day'] ?? ''));
-        $frequencyLabel = trim((string)($payload['frequency_label'] ?? ''));
-        $pharmacyId = (int)($payload['pharmacy_id'] ?? 0);
+        $patientNic = trim((string) ($payload['patient_nic'] ?? ''));
+        $sourceType = trim((string) ($payload['source_type'] ?? ''));
+        $sourceId = (int) ($payload['source_schedule_id'] ?? 0);
+        $doseDate = trim((string) ($payload['dose_date'] ?? ''));
+        $message = trim((string) ($payload['message'] ?? ''));
+        $timesOfDay = trim((string) ($payload['times_of_day'] ?? ''));
+        $frequencyLabel = trim((string) ($payload['frequency_label'] ?? ''));
+        $pharmacyId = (int) ($payload['pharmacy_id'] ?? 0);
 
         if ($patientNic === '' || $sourceType === '' || $sourceId <= 0 || $doseDate === '') {
             return;
@@ -115,7 +115,7 @@ class MedicationReminderService
         $pid = PharmacyContext::selectedPharmacyId();
         $eventFilter = "e.patient_nic = '$nic' AND e.dose_date = '$day'";
         if ($pid > 0 && self::columnExists(self::TABLE, 'pharmacy_id')) {
-            $eventFilter .= " AND (e.pharmacy_id IS NULL OR e.pharmacy_id = " . (int)$pid . ")";
+            $eventFilter .= " AND (e.pharmacy_id IS NULL OR e.pharmacy_id = " . (int) $pid . ")";
         }
 
         $rows = [];
@@ -177,13 +177,13 @@ class MedicationReminderService
             ";
             if ($pid > 0) {
                 if (PharmacyContext::tableHasPharmacyId('schedule_master')) {
-                    $sql .= " AND sm.pharmacy_id = " . (int)$pid;
+                    $sql .= " AND sm.pharmacy_id = " . (int) $pid;
                 }
                 if (PharmacyContext::tableHasPharmacyId('medication_schedule')) {
-                    $sql .= " AND ms.pharmacy_id = " . (int)$pid;
+                    $sql .= " AND ms.pharmacy_id = " . (int) $pid;
                 }
                 if (PharmacyContext::tableHasPharmacyId('medicines')) {
-                    $sql .= " AND (m.pharmacy_id IS NULL OR m.pharmacy_id = " . (int)$pid . ")";
+                    $sql .= " AND (m.pharmacy_id IS NULL OR m.pharmacy_id = " . (int) $pid . ")";
                 }
             }
             $rs = Database::search($sql);
@@ -195,10 +195,10 @@ class MedicationReminderService
         }
 
         usort($rows, static function (array $a, array $b): int {
-            $ta = strtotime((string)($a['scheduled_at'] ?? ''));
-            $tb = strtotime((string)($b['scheduled_at'] ?? ''));
+            $ta = strtotime((string) ($a['scheduled_at'] ?? ''));
+            $tb = strtotime((string) ($b['scheduled_at'] ?? ''));
             if ($ta === $tb) {
-                return ((int)($a['reminder_event_id'] ?? 0)) <=> ((int)($b['reminder_event_id'] ?? 0));
+                return ((int) ($a['reminder_event_id'] ?? 0)) <=> ((int) ($b['reminder_event_id'] ?? 0));
             }
             return $ta <=> $tb;
         });
@@ -240,13 +240,13 @@ class MedicationReminderService
         }
 
         foreach ($events as $event) {
-            $eventId = (int)($event['id'] ?? 0);
+            $eventId = (int) ($event['id'] ?? 0);
             if ($eventId <= 0) {
                 continue;
             }
 
-            $message = trim((string)($event['message'] ?? 'Medication reminder'));
-            $pharmacyId = (int)($event['pharmacy_id'] ?? 0);
+            $message = trim((string) ($event['message'] ?? 'Medication reminder'));
+            $pharmacyId = (int) ($event['pharmacy_id'] ?? 0);
 
             if (PharmacyContext::tableHasPharmacyId('notifications') && $pharmacyId > 0) {
                 $ok = Database::execute(
@@ -266,7 +266,7 @@ class MedicationReminderService
                 continue;
             }
 
-            $notificationId = (int)(Database::$connection->insert_id ?? 0);
+            $notificationId = (int) (Database::$connection->insert_id ?? 0);
             Database::execute(
                 "UPDATE " . self::TABLE . " SET delivered_at = NOW(), delivered_notification_id = ? WHERE id = ? AND delivered_at IS NULL",
                 'ii',
@@ -311,29 +311,29 @@ class MedicationReminderService
                   AND ms.schedule_date = '$safeDate'
             ";
             if ($pid > 0 && PharmacyContext::tableHasPharmacyId('medication_schedules')) {
-                $sql .= " AND ms.pharmacy_id = " . (int)$pid;
+                $sql .= " AND ms.pharmacy_id = " . (int) $pid;
             }
             if ($pid > 0 && PharmacyContext::tableHasPharmacyId('medicines')) {
-                $sql .= " AND (m.pharmacy_id IS NULL OR m.pharmacy_id = " . (int)$pid . ")";
+                $sql .= " AND (m.pharmacy_id IS NULL OR m.pharmacy_id = " . (int) $pid . ")";
             }
 
             $rs = Database::search($sql);
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
                     $message = self::composeReminderMessage(
-                        (string)($row['medicine_name'] ?? 'Medication'),
-                        (string)($row['dosage'] ?? ''),
-                        (string)($row['meal_timing'] ?? '')
+                        (string) ($row['medicine_name'] ?? 'Medication'),
+                        (string) ($row['dosage'] ?? ''),
+                        (string) ($row['meal_timing'] ?? '')
                     );
                     self::createEventsForSchedule([
-                        'patient_nic' => (string)($row['patient_nic'] ?? $patientNic),
+                        'patient_nic' => (string) ($row['patient_nic'] ?? $patientNic),
                         'source_type' => 'expanded',
-                        'source_schedule_id' => (int)($row['schedule_id'] ?? 0),
-                        'dose_date' => (string)($row['schedule_date'] ?? $date),
+                        'source_schedule_id' => (int) ($row['schedule_id'] ?? 0),
+                        'dose_date' => (string) ($row['schedule_date'] ?? $date),
                         'times_of_day' => '',
-                        'frequency_label' => (string)($row['frequency_label'] ?? ''),
+                        'frequency_label' => (string) ($row['frequency_label'] ?? ''),
                         'message' => $message,
-                        'pharmacy_id' => (int)($row['pharmacy_id'] ?? 0),
+                        'pharmacy_id' => (int) ($row['pharmacy_id'] ?? 0),
                     ]);
                 }
             }
@@ -364,32 +364,32 @@ class MedicationReminderService
                                   AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
             ";
             if ($pid > 0 && PharmacyContext::tableHasPharmacyId('schedule_master')) {
-                $sql .= " AND sm.pharmacy_id = " . (int)$pid;
+                $sql .= " AND sm.pharmacy_id = " . (int) $pid;
             }
             if ($pid > 0 && PharmacyContext::tableHasPharmacyId('medication_schedule')) {
-                $sql .= " AND ms.pharmacy_id = " . (int)$pid;
+                $sql .= " AND ms.pharmacy_id = " . (int) $pid;
             }
             if ($pid > 0 && PharmacyContext::tableHasPharmacyId('medicines')) {
-                $sql .= " AND (m.pharmacy_id IS NULL OR m.pharmacy_id = " . (int)$pid . ")";
+                $sql .= " AND (m.pharmacy_id IS NULL OR m.pharmacy_id = " . (int) $pid . ")";
             }
 
             $rs = Database::search($sql);
             if ($rs instanceof mysqli_result) {
                 while ($row = $rs->fetch_assoc()) {
                     $message = self::composeReminderMessage(
-                        (string)($row['medicine_name'] ?? 'Medication'),
-                        (string)($row['dosage'] ?? ''),
-                        (string)($row['meal_timing'] ?? '')
+                        (string) ($row['medicine_name'] ?? 'Medication'),
+                        (string) ($row['dosage'] ?? ''),
+                        (string) ($row['meal_timing'] ?? '')
                     );
                     self::createEventsForSchedule([
-                        'patient_nic' => (string)($row['patient_nic'] ?? $patientNic),
+                        'patient_nic' => (string) ($row['patient_nic'] ?? $patientNic),
                         'source_type' => 'legacy',
-                        'source_schedule_id' => (int)($row['schedule_id'] ?? 0),
-                        'dose_date' => (string)($row['dose_date'] ?? $date),
-                        'times_of_day' => (string)($row['times_of_day'] ?? ''),
-                        'frequency_label' => (string)($row['frequency_label'] ?? ''),
+                        'source_schedule_id' => (int) ($row['schedule_id'] ?? 0),
+                        'dose_date' => (string) ($row['dose_date'] ?? $date),
+                        'times_of_day' => (string) ($row['times_of_day'] ?? ''),
+                        'frequency_label' => (string) ($row['frequency_label'] ?? ''),
                         'message' => $message,
-                        'pharmacy_id' => (int)($row['pharmacy_id'] ?? 0),
+                        'pharmacy_id' => (int) ($row['pharmacy_id'] ?? 0),
                     ]);
                 }
             }
@@ -425,7 +425,7 @@ class MedicationReminderService
             return false;
         }
 
-        if (strtoupper((string)($event['status'] ?? '')) === $targetStatus) {
+        if (strtoupper((string) ($event['status'] ?? '')) === $targetStatus) {
             return true;
         }
 
@@ -439,17 +439,17 @@ class MedicationReminderService
         }
 
         if ($event['delivered_notification_id'] ?? null) {
-            $notifId = (int)$event['delivered_notification_id'];
+            $notifId = (int) $event['delivered_notification_id'];
             if ($notifId > 0 && self::tableExists('notifications')) {
                 Database::execute("UPDATE notifications SET is_read = 1 WHERE id = ? AND patient_nic = ?", 'is', [$notifId, $patientNic]);
             }
         }
 
-        $sourceType = (string)($event['source_type'] ?? '');
-        $sourceId = (int)($event['source_schedule_id'] ?? 0);
-        $doseDate = (string)($event['dose_date'] ?? date('Y-m-d'));
-        $slot = (string)($event['time_slot'] ?? 'general');
-        $pharmacyId = (int)($event['pharmacy_id'] ?? 0);
+        $sourceType = (string) ($event['source_type'] ?? '');
+        $sourceId = (int) ($event['source_schedule_id'] ?? 0);
+        $doseDate = (string) ($event['dose_date'] ?? date('Y-m-d'));
+        $slot = (string) ($event['time_slot'] ?? 'general');
+        $pharmacyId = (int) ($event['pharmacy_id'] ?? 0);
 
         if ($sourceType === 'legacy' && $sourceId > 0 && self::tableExists('medication_log')) {
             $existing = Database::fetchOne(
@@ -458,7 +458,7 @@ class MedicationReminderService
                 [$sourceId, $patientNic, $doseDate, $slot]
             );
             if ($existing) {
-                $logId = (int)($existing['id'] ?? 0);
+                $logId = (int) ($existing['id'] ?? 0);
                 if ($logId > 0) {
                     Database::execute("UPDATE medication_log SET status = ?, updated_at = NOW() WHERE id = ?", 'si', [$targetStatus, $logId]);
                 }
@@ -487,14 +487,14 @@ class MedicationReminderService
                 'is',
                 [$sourceId, $doseDate]
             );
-            $remaining = (int)($pending['c'] ?? 0);
+            $remaining = (int) ($pending['c'] ?? 0);
             if ($remaining <= 0 && self::columnExists('medication_schedules', 'status')) {
                 $final = Database::fetchOne(
                     "SELECT COUNT(*) AS c FROM " . self::TABLE . " WHERE source_type = 'expanded' AND source_schedule_id = ? AND dose_date = ? AND status = 'MISSED'",
                     'is',
                     [$sourceId, $doseDate]
                 );
-                $finalStatus = ((int)($final['c'] ?? 0) > 0) ? 'MISSED' : 'TAKEN';
+                $finalStatus = ((int) ($final['c'] ?? 0) > 0) ? 'MISSED' : 'TAKEN';
                 Database::execute("UPDATE medication_schedules SET status = ? WHERE id = ? AND patient_nic = ?", 'sis', [$finalStatus, $sourceId, $patientNic]);
             }
         }
@@ -525,10 +525,14 @@ class MedicationReminderService
             return [];
         }
 
-        if (str_contains($label, 'morning')) $slots[] = 'morning';
-        if (str_contains($label, 'day')) $slots[] = 'day';
-        if (str_contains($label, 'night')) $slots[] = 'night';
-        if (empty($slots)) $slots[] = 'morning';
+        if (str_contains($label, 'morning'))
+            $slots[] = 'morning';
+        if (str_contains($label, 'day'))
+            $slots[] = 'day';
+        if (str_contains($label, 'night'))
+            $slots[] = 'night';
+        if (empty($slots))
+            $slots[] = 'morning';
 
         return array_values(array_unique($slots));
     }
@@ -536,16 +540,21 @@ class MedicationReminderService
     private static function normalizeSlot(string $token): ?string
     {
         $t = strtolower(trim($token));
-        if ($t === 'morning') return 'morning';
-        if ($t === 'day' || $t === 'daytime' || $t === 'afternoon' || $t === 'noon') return 'day';
-        if ($t === 'night' || $t === 'evening') return 'night';
+        if ($t === 'morning')
+            return 'morning';
+        if ($t === 'day' || $t === 'daytime' || $t === 'afternoon' || $t === 'noon')
+            return 'day';
+        if ($t === 'night' || $t === 'evening')
+            return 'night';
         return null;
     }
 
     private static function slotTime(string $slot): string
     {
-        if ($slot === 'night') return '18:00';
-        if ($slot === 'day') return '13:00';
+        if ($slot === 'night')
+            return '18:00';
+        if ($slot === 'day')
+            return '13:00';
         return '08:00';
     }
 
@@ -582,35 +591,38 @@ class MedicationReminderService
     private static function slotLabel(string $slot): string
     {
         $s = strtolower(trim($slot));
-        if ($s === 'day') return 'Day';
-        if ($s === 'night') return 'Night';
+        if ($s === 'day')
+            return 'Day';
+        if ($s === 'night')
+            return 'Night';
         return 'Morning';
     }
 
     private static function normalizeDoseRow(array $row): array
     {
-        $slot = strtolower(trim((string)($row['frequency_slot'] ?? 'morning')));
+        $slot = strtolower(trim((string) ($row['frequency_slot'] ?? 'morning')));
         $row['frequency'] = self::slotLabel($slot);
-        $row['status'] = strtoupper((string)($row['status'] ?? 'PENDING'));
+        $row['status'] = strtoupper((string) ($row['status'] ?? 'PENDING'));
         return $row;
     }
 
     private static function tableExists(string $table): bool
     {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return in_array($table, ['medication_reminder_events', 'medication_schedules', 'medication_schedule', 'schedule_master', 'medication_log', 'notifications', 'medicines', 'frequencies', 'meal_timing', 'dosage_categories'], true);
     }
 
     private static function columnExists(string $table, string $column): bool
     {
-        if (!self::tableExists($table)) {
-            return false;
-        }
-        $safeTable = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-        $safeColumn = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeColumn'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        $schema = [
+            'medication_reminder_events' => ['pharmacy_id', 'delivered_notification_id', 'status', 'taken_at', 'updated_at'],
+            'medication_schedules' => ['id', 'patient_nic', 'medicine_id', 'dosage', 'frequency', 'meal_timing', 'schedule_date', 'status', 'instructions', 'prescription_id', 'created_at', 'pharmacy_id'],
+            'medication_schedule' => ['schedule_master_id', 'medicine_id', 'dosage_id', 'frequency_id', 'meal_timing_id', 'start_date', 'end_date', 'duration_days', 'instructions', 'pharmacy_id'],
+            'schedule_master' => ['prescription_id', 'patient_nic', 'pharmacist_id', 'created_at', 'updated_at', 'pharmacy_id'],
+            'medication_log' => ['medication_schedule_id', 'patient_nic', 'dose_date', 'status', 'updated_at', 'time_slot', 'pharmacy_id'],
+            'notifications' => ['patient_nic', 'message', 'type', 'is_read', 'created_at', 'pharmacy_id'],
+        ];
+
+        return in_array($column, $schema[$table] ?? [], true);
     }
 }
 

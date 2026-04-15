@@ -4,101 +4,16 @@
  */
 class SettingsModel
 {
-    private static function safeTable(string $table): string
-    {
-        return preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-    }
-
-    private static function tableExists(string $table): bool
-    {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        $safeTable = self::safeTable($table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
-    }
-
-    private static function resolveAdminTable(): ?string
-    {
-        if (self::tableExists('admins')) return 'admins';
-        if (self::tableExists('admin')) return 'admin';
-        if (self::tableExists('users')) return 'users';
-        return null;
-    }
-
-    private static function columnsFor(string $table): ?array
-    {
-        $safeTable = self::safeTable($table);
-        if ($safeTable === 'users') {
-            $id = self::columnExists($safeTable, 'user_id') ? 'user_id' : (self::columnExists($safeTable, 'id') ? 'id' : null);
-            $email = self::columnExists($safeTable, 'email') ? 'email' : (self::columnExists($safeTable, 'admin_email') ? 'admin_email' : null);
-            $password = self::columnExists($safeTable, 'password_hash') ? 'password_hash' : (self::columnExists($safeTable, 'password') ? 'password' : null);
-            $name = self::columnExists($safeTable, 'display_name') ? 'display_name' : (self::columnExists($safeTable, 'name') ? 'name' : null);
-            $role = self::columnExists($safeTable, 'role') ? 'role' : null;
-
-            if ($id && $email && $password) {
-                return [
-                    'table' => $safeTable,
-                    'id' => $id,
-                    'email' => $email,
-                    'password' => $password,
-                    'name' => $name,
-                    'role' => $role,
-                ];
-            }
-            return null;
-        }
-
-        $id = self::columnExists($safeTable, 'id') ? 'id' : (self::columnExists($safeTable, 'admin_id') ? 'admin_id' : null);
-        $email = self::columnExists($safeTable, 'email') ? 'email' : (self::columnExists($safeTable, 'admin_email') ? 'admin_email' : null);
-        $password = self::columnExists($safeTable, 'password_hash') ? 'password_hash' : (self::columnExists($safeTable, 'password') ? 'password' : null);
-        $name = self::columnExists($safeTable, 'name') ? 'name' : (self::columnExists($safeTable, 'full_name') ? 'full_name' : null);
-
-        if ($id && $email && $password) {
-            return [
-                'table' => $safeTable,
-                'id' => $id,
-                'email' => $email,
-                'password' => $password,
-                'name' => $name,
-                'role' => null,
-            ];
-        }
-        return null;
-    }
-
     public static function getCurrentAdmin(int $adminId): ?array
     {
         Database::setUpConnection();
         if ($adminId <= 0) {
             return null;
         }
-
-        $table = self::resolveAdminTable();
-        if ($table === null) {
-            return null;
-        }
-        $cols = self::columnsFor($table);
-        if ($cols === null) {
-            return null;
-        }
-
-        $nameSelect = $cols['name'] ? "{$cols['name']} AS full_name" : "'Admin' AS full_name";
-        $where = "{$cols['id']} = $adminId";
-        if ($cols['role']) {
-            $where .= " AND {$cols['role']} = 'admin'";
-        }
-
         $rs = Database::search("
-            SELECT {$cols['id']} AS id, {$cols['email']} AS email, {$cols['password']} AS password_hash, $nameSelect
-            FROM `{$cols['table']}`
-            WHERE $where
+            SELECT id, email, password AS password_hash, name AS full_name
+            FROM admins
+            WHERE id = $adminId
             LIMIT 1
         ");
         if (!($rs instanceof mysqli_result) || $rs->num_rows === 0) {
@@ -117,14 +32,8 @@ class SettingsModel
     public static function updateEmail(int $adminId, string $email, ?string &$error = null): bool
     {
         Database::setUpConnection();
-        $table = self::resolveAdminTable();
-        if ($table === null || $adminId <= 0) {
+        if ($adminId <= 0) {
             $error = 'Admin account not found.';
-            return false;
-        }
-        $cols = self::columnsFor($table);
-        if ($cols === null) {
-            $error = 'Admin account schema is unsupported.';
             return false;
         }
 
@@ -135,11 +44,10 @@ class SettingsModel
         }
 
         $safeEmail = Database::escape($email);
-        $whereRole = $cols['role'] ? " AND {$cols['role']} = 'admin'" : '';
         $rsExisting = Database::search("
-            SELECT {$cols['id']} AS id
-            FROM `{$cols['table']}`
-            WHERE {$cols['email']} = '$safeEmail' AND {$cols['id']} <> $adminId $whereRole
+            SELECT id
+            FROM admins
+            WHERE email = '$safeEmail' AND id <> $adminId
             LIMIT 1
         ");
         if ($rsExisting instanceof mysqli_result && $rsExisting->num_rows > 0) {
@@ -148,9 +56,9 @@ class SettingsModel
         }
 
         return Database::iud("
-            UPDATE `{$cols['table']}`
-            SET {$cols['email']} = '$safeEmail'
-            WHERE {$cols['id']} = $adminId $whereRole
+            UPDATE admins
+            SET email = '$safeEmail'
+            WHERE id = $adminId
             LIMIT 1
         ");
     }
@@ -217,20 +125,11 @@ class SettingsModel
             return false;
         }
 
-        $table = self::resolveAdminTable();
-        $cols = $table ? self::columnsFor($table) : null;
-        if ($cols === null) {
-            $error = 'Admin account schema is unsupported.';
-            return false;
-        }
-
         $hashed = Database::escape(password_hash($newPassword, PASSWORD_BCRYPT));
-        $whereRole = $cols['role'] ? " AND {$cols['role']} = 'admin'" : '';
-
         return Database::iud("
-            UPDATE `{$cols['table']}`
-            SET {$cols['password']} = '$hashed'
-            WHERE {$cols['id']} = $adminId $whereRole
+            UPDATE admins
+            SET password = '$hashed'
+            WHERE id = $adminId
             LIMIT 1
         ");
     }
@@ -239,10 +138,6 @@ class SettingsModel
     public static function getAll(): array
     {
         $settings = [];
-        if (!self::tableExists('settings')) {
-            return $settings;
-        }
-
         $rs = Database::search("SELECT * FROM settings");
         if ($rs instanceof mysqli_result) {
             while ($row = $rs->fetch_assoc()) {

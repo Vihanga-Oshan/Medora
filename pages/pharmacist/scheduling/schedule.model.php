@@ -9,16 +9,15 @@ class ScheduleModel
     private static function currentPharmacyId(): int
     {
         $auth = Auth::getUser();
-        $fromToken = (int)($auth['pharmacy_id'] ?? 0);
-        if ($fromToken > 0) return $fromToken;
-        return PharmacyContext::resolvePharmacistPharmacyId((int)($auth['id'] ?? 0));
+        $fromToken = (int) ($auth['pharmacy_id'] ?? 0);
+        if ($fromToken > 0)
+            return $fromToken;
+        return PharmacyContext::resolvePharmacistPharmacyId((int) ($auth['id'] ?? 0));
     }
 
     private static function tableExists(string $name): bool
     {
-        $safe = Database::escape($name);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return in_array($name, ['medication_schedules', 'medication_schedule', 'schedule_master', 'medication_log', 'medication_reminder_events', 'medicines', 'dosage_categories', 'frequencies', 'meal_timing', 'prescriptions', 'patient_pharmacy_selection', 'pharmacies'], true);
     }
 
     private static function columnExists(string $table, string $column): bool
@@ -28,15 +27,22 @@ class ScheduleModel
             return self::$columnExistsCache[$key];
         }
 
-        if (!self::tableExists($table)) {
-            self::$columnExistsCache[$key] = false;
-            return false;
-        }
+        $schema = [
+            'medication_schedules' => ['id', 'patient_nic', 'medicine_id', 'dosage', 'frequency', 'meal_timing', 'schedule_date', 'status', 'instructions', 'prescription_id', 'created_at', 'pharmacy_id'],
+            'medication_schedule' => ['id', 'start_date', 'end_date', 'duration_days', 'instructions', 'created_at', 'medicine_id', 'dosage_id', 'frequency_id', 'meal_timing_id', 'schedule_master_id'],
+            'schedule_master' => ['id', 'prescription_id', 'patient_nic', 'pharmacist_id', 'created_at', 'updated_at', 'pharmacy_id'],
+            'medication_log' => ['id', 'medication_schedule_id', 'patient_nic', 'dose_date', 'status', 'updated_at', 'time_slot', 'pharmacy_id'],
+            'medication_reminder_events' => ['id', 'patient_nic', 'source_type', 'source_schedule_id', 'dose_date', 'time_slot', 'scheduled_at', 'message', 'status', 'delivered_at', 'delivered_notification_id', 'pharmacy_id', 'taken_at', 'created_at', 'updated_at'],
+            'medicines' => ['id', 'name', 'med_name', 'generic_name', 'category', 'description', 'dosage_form', 'strength', 'quantity_in_stock', 'pricing', 'manufacturer', 'expiry_date', 'added_by', 'created_at', 'pharmacy_id'],
+            'dosage_categories' => ['id', 'label'],
+            'frequencies' => ['id', 'label', 'times_of_day'],
+            'meal_timing' => ['id', 'label'],
+            'prescriptions' => ['id', 'patient_nic', 'file_name', 'file_path', 'upload_date', 'status', 'pharmacy_id'],
+            'patient_pharmacy_selection' => ['id', 'patient_nic', 'pharmacy_id', 'selected_at', 'is_active'],
+            'pharmacies' => ['id', 'name', 'address_line1', 'address_line2', 'city', 'district', 'postal_code', 'latitude', 'longitude', 'phone', 'email', 'is_demo', 'status', 'created_at', 'updated_at'],
+        ];
 
-        $safeTable = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        $exists = $rs instanceof mysqli_result && $rs->num_rows > 0;
+        $exists = in_array($column, $schema[$table] ?? [], true);
         self::$columnExistsCache[$key] = $exists;
         return $exists;
     }
@@ -135,7 +141,7 @@ class ScheduleModel
 
     private static function logSchedulingError(string $context): void
     {
-        $err = trim((string)(Database::$connection->error ?? ''));
+        $err = trim((string) (Database::$connection->error ?? ''));
         if ($err === '') {
             return;
         }
@@ -149,18 +155,25 @@ class ScheduleModel
 
     private static function buildReminderMessage(array $schedule): string
     {
-        $medicineId = (int)($schedule['medicine_id'] ?? 0);
+        $medicineId = (int) ($schedule['medicine_id'] ?? 0);
         $medicineName = 'medication';
         if ($medicineId > 0 && self::tableExists('medicines')) {
-            $row = Database::fetchOne("SELECT name FROM medicines WHERE id = ? LIMIT 1", 'i', [$medicineId]);
-            $name = trim((string)($row['name'] ?? ''));
+            $row = Database::fetchOne(
+                "SELECT COALESCE(NULLIF(TRIM(med_name), ''), NULLIF(TRIM(name), '')) AS med_label
+                 FROM medicines
+                 WHERE id = ?
+                 LIMIT 1",
+                'i',
+                [$medicineId]
+            );
+            $name = trim((string) ($row['med_label'] ?? ''));
             if ($name !== '') {
                 $medicineName = $name;
             }
         }
 
-        $dosage = trim((string)($schedule['dosage'] ?? ''));
-        $mealTiming = trim((string)($schedule['meal_timing'] ?? ''));
+        $dosage = trim((string) ($schedule['dosage'] ?? ''));
+        $mealTiming = trim((string) ($schedule['meal_timing'] ?? ''));
         $parts = ["Time to take $medicineName"];
         if ($dosage !== '') {
             $parts[] = "($dosage)";
@@ -176,11 +189,35 @@ class ScheduleModel
         if (!self::tableExists('medicines')) {
             return [];
         }
-        $where = '';
+
+        $sql = "
+            SELECT
+                MIN(id) AS id,
+                med_label AS name
+            FROM (
+                SELECT
+                    id,
+                    pharmacy_id,
+                    TRIM(COALESCE(NULLIF(med_name, ''), NULLIF(name, ''))) AS med_label
+                FROM medicines
+            ) m
+            WHERE med_label <> ''
+        ";
+        $types = '';
+        $params = [];
+
         if (PharmacyContext::tableHasPharmacyId('medicines') && self::currentPharmacyId() > 0) {
-            $where = ' WHERE pharmacy_id = ' . self::currentPharmacyId();
+            $sql .= ' AND m.pharmacy_id = ?';
+            $types .= 'i';
+            $params[] = self::currentPharmacyId();
         }
-        return self::fetchRows("SELECT id, name FROM medicines$where ORDER BY name ASC");
+
+        $sql .= "
+            GROUP BY LOWER(med_label), med_label
+            ORDER BY med_label ASC
+        ";
+
+        return Database::fetchAll($sql, $types, $params);
     }
 
     public static function getDosages(): array
@@ -212,11 +249,15 @@ class ScheduleModel
 
     public static function getPrescription(int $id): ?array
     {
-        $where = ["id = $id"];
+        $where = ['id = ?'];
+        $params = [$id];
+        $types = 'i';
         if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
-            $where[] = "pharmacy_id = " . self::currentPharmacyId();
+            $where[] = 'pharmacy_id = ?';
+            $params[] = self::currentPharmacyId();
+            $types .= 'i';
         }
-        return Database::fetchOne("SELECT * FROM prescriptions WHERE " . implode(' AND ', $where) . " LIMIT 1");
+        return Database::fetchOne("SELECT * FROM prescriptions WHERE " . implode(' AND ', $where) . " LIMIT 1", $types, $params);
     }
 
     public static function bulkInsert(array $schedules): bool
@@ -244,19 +285,19 @@ class ScheduleModel
         if ($useExpandedFlow) {
             foreach ($schedules as $s) {
                 $nic = Database::$connection->real_escape_string($s['patient_nic']);
-                $medId = (int)$s['medicine_id'];
+                $medId = (int) $s['medicine_id'];
                 $dosage = Database::$connection->real_escape_string($s['dosage']);
                 $freq = Database::$connection->real_escape_string($s['frequency']);
                 $meal = Database::$connection->real_escape_string($s['meal_timing'] ?? '');
                 $start = Database::$connection->real_escape_string($s['start_date']);
-                $dur = max(1, (int)$s['duration_days']);
+                $dur = max(1, (int) $s['duration_days']);
                 $inst = Database::$connection->real_escape_string($s['instructions'] ?? '');
-                $prescId = (int)$s['prescription_id'];
+                $prescId = (int) $s['prescription_id'];
 
                 for ($i = 0; $i < $dur; $i++) {
                     $currentDate = date('Y-m-d', strtotime("$start +$i days"));
                     $cols = ['patient_nic', 'medicine_id', 'schedule_date'];
-                    $vals = ["'$nic'", (string)$medId, "'$currentDate'"];
+                    $vals = ["'$nic'", (string) $medId, "'$currentDate'"];
                     if (self::columnExists('medication_schedules', 'dosage')) {
                         $cols[] = 'dosage';
                         $vals[] = "'$dosage'";
@@ -279,26 +320,26 @@ class ScheduleModel
                     }
                     if (self::columnExists('medication_schedules', 'prescription_id')) {
                         $cols[] = 'prescription_id';
-                        $vals[] = (string)$prescId;
+                        $vals[] = (string) $prescId;
                     }
-                    if (PharmacyContext::tableHasPharmacyId('medication_schedules') && self::currentPharmacyId() > 0) {
+                    if (self::columnExists('medication_schedules', 'pharmacy_id') && self::currentPharmacyId() > 0) {
                         $cols[] = 'pharmacy_id';
-                        $vals[] = (string)self::currentPharmacyId();
+                        $vals[] = (string) self::currentPharmacyId();
                     }
                     $ok = Database::iud("INSERT INTO medication_schedules (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")");
                     if (!$ok) {
                         self::logSchedulingError('Insert into medication_schedules failed');
                         return false;
                     }
-                    $expandedId = (int)(Database::$connection->insert_id ?? 0);
+                    $expandedId = (int) (Database::$connection->insert_id ?? 0);
                     if ($expandedId > 0) {
                         MedicationReminderService::createEventsForSchedule([
-                            'patient_nic' => (string)$s['patient_nic'],
+                            'patient_nic' => (string) $s['patient_nic'],
                             'source_type' => 'expanded',
                             'source_schedule_id' => $expandedId,
                             'dose_date' => $currentDate,
-                            'times_of_day' => (string)($s['times_of_day'] ?? ''),
-                            'frequency_label' => (string)($s['frequency'] ?? ''),
+                            'times_of_day' => (string) ($s['times_of_day'] ?? ''),
+                            'frequency_label' => (string) ($s['frequency'] ?? ''),
                             'message' => self::buildReminderMessage($s),
                             'pharmacy_id' => self::currentPharmacyId(),
                         ]);
@@ -312,13 +353,13 @@ class ScheduleModel
         if ($useLegacyFlow) {
             $first = $schedules[0];
             $nic = Database::$connection->real_escape_string($first['patient_nic']);
-            $prescId = (int)$first['prescription_id'];
+            $prescId = (int) $first['prescription_id'];
 
             $masterCols = [];
             $masterVals = [];
             if (self::columnExists('schedule_master', 'prescription_id')) {
                 $masterCols[] = 'prescription_id';
-                $masterVals[] = (string)$prescId;
+                $masterVals[] = (string) $prescId;
             }
             if (self::columnExists('schedule_master', 'patient_nic')) {
                 $masterCols[] = 'patient_nic';
@@ -328,9 +369,9 @@ class ScheduleModel
                 self::logSchedulingError('No writable columns found for schedule_master');
                 return false;
             }
-            if (PharmacyContext::tableHasPharmacyId('schedule_master') && self::currentPharmacyId() > 0) {
+            if (self::columnExists('schedule_master', 'pharmacy_id') && self::currentPharmacyId() > 0) {
                 $masterCols[] = 'pharmacy_id';
-                $masterVals[] = (string)self::currentPharmacyId();
+                $masterVals[] = (string) self::currentPharmacyId();
             }
             $masterOk = Database::iud("INSERT INTO schedule_master (" . implode(', ', $masterCols) . ") VALUES (" . implode(', ', $masterVals) . ")");
             if (!$masterOk) {
@@ -344,28 +385,28 @@ class ScheduleModel
             }
 
             foreach ($schedules as $s) {
-                $medId = (int)$s['medicine_id'];
-                $dosageId = isset($s['dosage_id']) && $s['dosage_id'] !== '' ? (int)$s['dosage_id'] : 0;
-                $frequencyId = isset($s['frequency_id']) && $s['frequency_id'] !== '' ? (int)$s['frequency_id'] : 0;
-                $mealTimingId = isset($s['meal_timing_id']) && $s['meal_timing_id'] !== '' ? (int)$s['meal_timing_id'] : 0;
-                $startDate = Database::$connection->real_escape_string((string)$s['start_date']);
-                $durationDays = max(1, (int)$s['duration_days']);
-                $instructions = Database::$connection->real_escape_string((string)($s['instructions'] ?? ''));
+                $medId = (int) $s['medicine_id'];
+                $dosageId = isset($s['dosage_id']) && $s['dosage_id'] !== '' ? (int) $s['dosage_id'] : 0;
+                $frequencyId = isset($s['frequency_id']) && $s['frequency_id'] !== '' ? (int) $s['frequency_id'] : 0;
+                $mealTimingId = isset($s['meal_timing_id']) && $s['meal_timing_id'] !== '' ? (int) $s['meal_timing_id'] : 0;
+                $startDate = Database::$connection->real_escape_string((string) $s['start_date']);
+                $durationDays = max(1, (int) $s['duration_days']);
+                $instructions = Database::$connection->real_escape_string((string) ($s['instructions'] ?? ''));
 
-                $dosageSql = $dosageId > 0 ? (string)$dosageId : "NULL";
-                $frequencySql = $frequencyId > 0 ? (string)$frequencyId : "NULL";
-                $mealSql = $mealTimingId > 0 ? (string)$mealTimingId : "NULL";
+                $dosageSql = $dosageId > 0 ? (string) $dosageId : "NULL";
+                $frequencySql = $frequencyId > 0 ? (string) $frequencyId : "NULL";
+                $mealSql = $mealTimingId > 0 ? (string) $mealTimingId : "NULL";
                 $instSql = $instructions !== '' ? "'$instructions'" : "NULL";
 
                 $msCols = [];
                 $msVals = [];
                 if (self::columnExists('medication_schedule', 'schedule_master_id')) {
                     $msCols[] = 'schedule_master_id';
-                    $msVals[] = (string)$scheduleMasterId;
+                    $msVals[] = (string) $scheduleMasterId;
                 }
                 if (self::columnExists('medication_schedule', 'medicine_id')) {
                     $msCols[] = 'medicine_id';
-                    $msVals[] = (string)$medId;
+                    $msVals[] = (string) $medId;
                 }
                 if (self::columnExists('medication_schedule', 'dosage_id')) {
                     $msCols[] = 'dosage_id';
@@ -385,7 +426,7 @@ class ScheduleModel
                 }
                 if (self::columnExists('medication_schedule', 'duration_days')) {
                     $msCols[] = 'duration_days';
-                    $msVals[] = (string)$durationDays;
+                    $msVals[] = (string) $durationDays;
                 } elseif (self::columnExists('medication_schedule', 'end_date') && self::columnExists('medication_schedule', 'start_date')) {
                     $endDate = date('Y-m-d', strtotime($startDate . ' +' . max(0, $durationDays - 1) . ' days'));
                     $msCols[] = 'end_date';
@@ -399,26 +440,26 @@ class ScheduleModel
                     self::logSchedulingError('No writable columns found for medication_schedule');
                     return false;
                 }
-                if (PharmacyContext::tableHasPharmacyId('medication_schedule') && self::currentPharmacyId() > 0) {
+                if (self::columnExists('medication_schedule', 'pharmacy_id') && self::currentPharmacyId() > 0) {
                     $msCols[] = 'pharmacy_id';
-                    $msVals[] = (string)self::currentPharmacyId();
+                    $msVals[] = (string) self::currentPharmacyId();
                 }
                 $ok = Database::iud("INSERT INTO medication_schedule (" . implode(', ', $msCols) . ") VALUES (" . implode(', ', $msVals) . ")");
                 if (!$ok) {
                     self::logSchedulingError('Insert into medication_schedule failed');
                     return false;
                 }
-                $legacyId = (int)(Database::$connection->insert_id ?? 0);
+                $legacyId = (int) (Database::$connection->insert_id ?? 0);
                 if ($legacyId > 0) {
                     for ($day = 0; $day < $durationDays; $day++) {
                         $doseDate = date('Y-m-d', strtotime($startDate . ' +' . $day . ' days'));
                         MedicationReminderService::createEventsForSchedule([
-                            'patient_nic' => (string)$s['patient_nic'],
+                            'patient_nic' => (string) $s['patient_nic'],
                             'source_type' => 'legacy',
                             'source_schedule_id' => $legacyId,
                             'dose_date' => $doseDate,
-                            'times_of_day' => (string)($s['times_of_day'] ?? ''),
-                            'frequency_label' => (string)($s['frequency'] ?? ''),
+                            'times_of_day' => (string) ($s['times_of_day'] ?? ''),
+                            'frequency_label' => (string) ($s['frequency'] ?? ''),
                             'message' => self::buildReminderMessage($s),
                             'pharmacy_id' => self::currentPharmacyId(),
                         ]);
@@ -434,13 +475,17 @@ class ScheduleModel
         }
 
         // Keep prescription lifecycle aligned with Java flow.
-        $prescriptionId = (int)($schedules[0]['prescription_id'] ?? 0);
+        $prescriptionId = (int) ($schedules[0]['prescription_id'] ?? 0);
         if ($prescriptionId > 0 && self::tableExists('prescriptions')) {
-            $where = ["id = $prescriptionId"];
+            $where = ['id = ?'];
+            $params = [$prescriptionId];
+            $types = 'i';
             if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
-                $where[] = "pharmacy_id = " . self::currentPharmacyId();
+                $where[] = 'pharmacy_id = ?';
+                $params[] = self::currentPharmacyId();
+                $types .= 'i';
             }
-            Database::iud("UPDATE prescriptions SET status = 'SCHEDULED' WHERE " . implode(' AND ', $where));
+            Database::execute("UPDATE prescriptions SET status = 'SCHEDULED' WHERE " . implode(' AND ', $where), $types, $params);
         }
 
         return true;

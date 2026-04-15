@@ -16,9 +16,7 @@ class AdherenceModel
 
     private static function tableExists(string $table): bool
     {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return in_array($table, ['medication_log', 'medication_schedules', 'medication_schedule', 'schedule_master', 'medication_reminder_events', 'patient_pharmacy_selection'], true);
     }
 
     public static function getOverallAdherence(string $nic): int
@@ -27,7 +25,7 @@ class AdherenceModel
 
         // Java-compatible source of truth.
         if (self::tableExists('medication_log')) {
-            $rs  = Database::search("
+            $rs = Database::search("
                 SELECT
                     COUNT(*) AS total,
                     SUM(CASE WHEN status = 'TAKEN' THEN 1 ELSE 0 END) AS taken
@@ -38,9 +36,9 @@ class AdherenceModel
             ");
             if ($rs instanceof mysqli_result) {
                 $row = $rs->fetch_assoc();
-                $total = (int)($row['total'] ?? 0);
-                $taken = (int)($row['taken'] ?? 0);
-                return $total > 0 ? (int)(($taken / $total) * 100) : 0;
+                $total = (int) ($row['total'] ?? 0);
+                $taken = (int) ($row['taken'] ?? 0);
+                return $total > 0 ? (int) (($taken / $total) * 100) : 0;
             }
         }
 
@@ -48,7 +46,7 @@ class AdherenceModel
             return 0;
         }
 
-        $rs  = Database::search("
+        $rs = Database::search("
             SELECT
                 COUNT(*) AS total,
                 SUM(CASE WHEN status = 'TAKEN' THEN 1 ELSE 0 END) AS taken
@@ -61,20 +59,20 @@ class AdherenceModel
         }
 
         $row = $rs->fetch_assoc();
-        $total = (int)($row['total'] ?? 0);
-        $taken = (int)($row['taken'] ?? 0);
-        return $total > 0 ? (int)(($taken / $total) * 100) : 0;
+        $total = (int) ($row['total'] ?? 0);
+        $taken = (int) ($row['taken'] ?? 0);
+        return $total > 0 ? (int) (($taken / $total) * 100) : 0;
     }
 
     public static function getWeeklyAdherence(string $nic): array
     {
-        $nic  = Database::escape($nic);
+        $nic = Database::escape($nic);
         $days = [];
         $useLog = self::tableExists('medication_log');
         $useExpanded = self::tableExists('medication_schedules');
 
         for ($i = 6; $i >= 0; $i--) {
-            $date    = date('Y-m-d', strtotime("-$i days"));
+            $date = date('Y-m-d', strtotime("-$i days"));
             $dayName = date('D, M j', strtotime($date));
             if ($useLog) {
                 $rs = Database::search("
@@ -105,11 +103,11 @@ class AdherenceModel
                 continue;
             }
 
-            $row        = $rs->fetch_assoc();
-            $total      = (int)$row['total'];
-            $taken      = (int)$row['taken'];
-            $percentage = $total > 0 ? (int)(($taken / $total) * 100) : 0;
-            $days[]     = ['day' => $dayName, 'percentage' => $percentage];
+            $row = $rs->fetch_assoc();
+            $total = (int) $row['total'];
+            $taken = (int) $row['taken'];
+            $percentage = $total > 0 ? (int) (($taken / $total) * 100) : 0;
+            $days[] = ['day' => $dayName, 'percentage' => $percentage];
         }
         return $days;
     }
@@ -135,7 +133,8 @@ class AdherenceModel
             ");
             if ($rs instanceof mysqli_result) {
                 $rows = [];
-                while ($row = $rs->fetch_assoc()) $rows[] = $row;
+                while ($row = $rs->fetch_assoc())
+                    $rows[] = $row;
                 return $rows;
             }
         }
@@ -144,7 +143,7 @@ class AdherenceModel
             return [];
         }
 
-        $rs  = Database::search("
+        $rs = Database::search("
             SELECT ms.schedule_date AS date,
                    CONCAT(m.name, ' (', ms.frequency, ')') AS medicine,
                    ms.status
@@ -161,7 +160,8 @@ class AdherenceModel
         }
 
         $rows = [];
-        while ($row = $rs->fetch_assoc()) $rows[] = $row;
+        while ($row = $rs->fetch_assoc())
+            $rows[] = $row;
         return $rows;
     }
 }

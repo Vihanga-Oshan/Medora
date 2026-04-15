@@ -185,9 +185,168 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 <script>
     (function () {
         const container = document.getElementById('message-container');
-        if (container) {
+        const form = document.querySelector('.chat-input-area');
+        const input = form ? form.querySelector('input[name="message"]') : null;
+        const navBadge = document.querySelector('.nav-badge');
+        const chatType = <?= json_encode((string)$chatType) ?>;
+        const selectedContactId = <?= json_encode((string)$selectedContactId) ?>;
+        let pollInFlight = false;
+        let sendInFlight = false;
+
+        if (!container) return;
+
+        const esc = (value) => {
+            const d = document.createElement('div');
+            d.textContent = String(value ?? '');
+            return d.innerHTML;
+        };
+
+        const formatTime = (sentAt) => {
+            if (!sentAt) return '';
+            const date = new Date(String(sentAt).replace(' ', 'T'));
+            if (Number.isNaN(date.getTime())) return String(sentAt);
+            return date.toLocaleString(undefined, {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        };
+
+        const renderMessages = (items) => {
+            if (!Array.isArray(items) || items.length === 0) {
+                container.innerHTML =
+                    '<div class="message received">' +
+                    '<span>No messages yet. Start the conversation.</span>' +
+                    '<span class="message-time">Now</span>' +
+                    '</div>';
+                return;
+            }
+
+            container.innerHTML = items.map((msg) => {
+                const sender = String(msg.senderType || '').toLowerCase();
+                const isSent = sender === 'pharmacist';
+                return (
+                    '<div class="message ' + (isSent ? 'sent' : 'received') + '">' +
+                    '<span>' + esc(msg.text || '') + '</span>' +
+                    '<span class="message-time">' + esc(formatTime(msg.sentAt || '')) + '</span>' +
+                    '</div>'
+                );
+            }).join('');
+        };
+
+        const scrollToBottom = () => {
             container.scrollTop = container.scrollHeight;
+        };
+
+        const updateUnreadUi = (contacts, unreadTotal) => {
+            if (navBadge) {
+                if (Number(unreadTotal) > 0) {
+                    navBadge.textContent = String(unreadTotal);
+                    navBadge.style.display = '';
+                } else {
+                    navBadge.style.display = 'none';
+                }
+            }
+
+            if (!Array.isArray(contacts)) return;
+            const unreadById = {};
+            contacts.forEach((contact) => {
+                unreadById[String(contact.id ?? '')] = Number(contact.unread ?? 0);
+            });
+
+            document.querySelectorAll('.contact-item').forEach((link) => {
+                try {
+                    const url = new URL(link.href);
+                    const id = url.searchParams.get('with') || '';
+                    const unread = unreadById[id] || 0;
+                    link.classList.toggle('has-unread', unread > 0);
+                    let dot = link.querySelector('.unread-dot');
+                    if (unread > 0 && !dot) {
+                        const h4 = link.querySelector('h4');
+                        if (h4) {
+                            dot = document.createElement('span');
+                            dot.className = 'unread-dot';
+                            h4.prepend(dot);
+                        }
+                    }
+                    if (unread === 0 && dot) {
+                        dot.remove();
+                    }
+                } catch (e) {}
+            });
+        };
+
+        const fetchMessages = () => {
+            if (!selectedContactId) return;
+            if (pollInFlight) return;
+            pollInFlight = true;
+            const url = '<?= htmlspecialchars($base) ?>/pharmacist/messages?action=fetch&type=' +
+                encodeURIComponent(chatType) +
+                '&with=' + encodeURIComponent(selectedContactId);
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            })
+            .then((res) => res.ok ? res.json() : null)
+            .then((payload) => {
+                if (!payload || payload.ok !== true) return;
+                const prevHeight = container.scrollHeight;
+                const nearBottom = (container.scrollTop + container.clientHeight + 80) >= prevHeight;
+                renderMessages(payload.messages || []);
+                updateUnreadUi(payload.contacts || [], payload.unreadTotal || 0);
+                if (nearBottom) scrollToBottom();
+            })
+            .catch(() => {})
+            .finally(() => {
+                pollInFlight = false;
+            });
+        };
+
+        if (form) {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const message = (input ? input.value : '').trim();
+                if (!message || !selectedContactId || sendInFlight) return;
+                sendInFlight = true;
+
+                const body = new URLSearchParams();
+                body.set('type', chatType);
+                body.set('contact_id', selectedContactId);
+                body.set('message', message);
+                body.set('ajax', '1');
+
+                fetch('<?= htmlspecialchars($base) ?>/pharmacist/messages', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body.toString()
+                })
+                .then((res) => res.ok ? res.json() : null)
+                .then((payload) => {
+                    if (!payload || payload.ok !== true) return;
+                    if (input) input.value = '';
+                    renderMessages(payload.messages || []);
+                    updateUnreadUi(payload.contacts || [], payload.unreadTotal || 0);
+                    scrollToBottom();
+                })
+                .catch(() => {})
+                .finally(() => {
+                    sendInFlight = false;
+                });
+            });
         }
+
+        scrollToBottom();
+        setInterval(fetchMessages, 4000);
     })();
 </script>
 </body>

@@ -50,7 +50,7 @@ class Auth
         $payload['iat'] = time();
         $payload['exp'] = time() + $ttlSeconds;
 
-        $body      = self::base64url(json_encode($payload));
+        $body = self::base64url(json_encode($payload));
         $signature = self::base64url(hash_hmac('sha256', "$header.$body", self::secret(), true));
 
         return "$header.$body.$signature";
@@ -62,19 +62,23 @@ class Auth
     public static function decode(string $token): ?array
     {
         $parts = explode('.', $token);
-        if (count($parts) !== 3) return null;
+        if (count($parts) !== 3)
+            return null;
 
         [$header, $body, $sig] = $parts;
 
         // Verify signature
         $expected = self::base64url(hash_hmac('sha256', "$header.$body", self::secret(), true));
-        if (!hash_equals($expected, $sig)) return null;
+        if (!hash_equals($expected, $sig))
+            return null;
 
         $payload = json_decode(self::base64urlDecode($body), true);
-        if (!is_array($payload)) return null;
+        if (!is_array($payload))
+            return null;
 
         // Check expiry
-        if (isset($payload['exp']) && $payload['exp'] < time()) return null;
+        if (isset($payload['exp']) && $payload['exp'] < time())
+            return null;
 
         return $payload;
     }
@@ -114,7 +118,7 @@ class Auth
     {
         if ($role === null) {
             $decoded = self::decode($token);
-            $role = is_array($decoded) ? (string)($decoded['role'] ?? '') : '';
+            $role = is_array($decoded) ? (string) ($decoded['role'] ?? '') : '';
             if ($role === '') {
                 $role = null;
             }
@@ -122,21 +126,21 @@ class Auth
 
         if ($role !== null) {
             setcookie(self::cookieNameForRole($role), $token, [
-                'expires'  => time() + $ttlSeconds,
-                'path'     => '/',
+                'expires' => time() + $ttlSeconds,
+                'path' => '/',
                 'httponly' => true,
                 'samesite' => 'Strict',
-                'secure'   => self::isHttps(),
+                'secure' => self::isHttps(),
             ]);
         }
 
         // keep legacy cookie for existing flows that still expect `jwt`
         setcookie(self::LEGACY_COOKIE_NAME, $token, [
-            'expires'  => time() + $ttlSeconds,
-            'path'     => '/',
+            'expires' => time() + $ttlSeconds,
+            'path' => '/',
             'httponly' => true,
             'samesite' => 'Strict',
-            'secure'   => self::isHttps(),   // true on HTTPS, false on local HTTP
+            'secure' => self::isHttps(),   // true on HTTPS, false on local HTTP
         ]);
     }
 
@@ -151,8 +155,8 @@ class Auth
 
         foreach ($cookieNames as $cookieName) {
             setcookie($cookieName, '', [
-                'expires'  => time() - 3600,
-                'path'     => '/',
+                'expires' => time() - 3600,
+                'path' => '/',
                 'httponly' => true,
                 'samesite' => 'Strict',
             ]);
@@ -168,7 +172,8 @@ class Auth
         $legacy = $_COOKIE[self::LEGACY_COOKIE_NAME] ?? null;
         if ($legacy !== null) {
             $payload = self::decode($legacy);
-            if ($payload !== null) return $payload;
+            if ($payload !== null)
+                return $payload;
         }
 
         foreach (self::knownCookieNames() as $cookieName) {
@@ -180,7 +185,8 @@ class Auth
                 continue;
             }
             $payload = self::decode($token);
-            if ($payload !== null) return $payload;
+            if ($payload !== null)
+                return $payload;
         }
 
         return null;
@@ -206,7 +212,6 @@ class Auth
             'guardian' => '/guardian/login',
             'pharmacist' => '/pharmacist/login',
             'admin' => '/admin/login',
-            'counselor' => '/pharmacist/login',
         ];
 
         Response::redirect($loginByRole[strtolower($role)] ?? '/patient/login');
@@ -214,12 +219,12 @@ class Auth
 
     private static function isHttps(): bool
     {
-        $https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
+        $https = strtolower((string) ($_SERVER['HTTPS'] ?? ''));
         if ($https === 'on' || $https === '1') {
             return true;
         }
 
-        $forwarded = strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
+        $forwarded = strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''));
         if ($forwarded === 'https') {
             return true;
         }

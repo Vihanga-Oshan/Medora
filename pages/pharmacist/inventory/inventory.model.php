@@ -41,28 +41,36 @@ class InventoryModel
             return self::$pharmacyIdCache;
         }
         $auth = Auth::getUser();
-        $fromToken = (int)($auth['pharmacy_id'] ?? 0);
+        $fromToken = (int) ($auth['pharmacy_id'] ?? 0);
         if ($fromToken > 0) {
             self::$pharmacyIdCache = $fromToken;
             return $fromToken;
         }
-        self::$pharmacyIdCache = PharmacyContext::resolvePharmacistPharmacyId((int)($auth['id'] ?? 0));
+        self::$pharmacyIdCache = PharmacyContext::resolvePharmacistPharmacyId((int) ($auth['id'] ?? 0));
         return self::$pharmacyIdCache;
     }
 
     private static function tableExists(string $name): bool
     {
-        $safe = Database::escape($name);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        return in_array($name, ['medicines', 'dosage_categories', 'frequencies', 'meal_timing', 'selling_units', 'medicine_brands', 'medicine_manufacturers', 'prescriptions', 'pharmacies', 'patient_pharmacy_selection'], true);
     }
 
     private static function columnExists(string $table, string $column): bool
     {
-        $safeTable = Database::escape($table);
-        $safeColumn = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeColumn'");
-        return $rs instanceof mysqli_result && $rs->num_rows > 0;
+        $schema = [
+            'medicines' => ['id', 'name', 'med_name', 'generic_name', 'category', 'description', 'dosage_form', 'strength', 'quantity_in_stock', 'pricing', 'manufacturer', 'expiry_date', 'added_by', 'created_at', 'pharmacy_id', 'image_path', 'image', 'image_url', 'medicine_image', 'photo'],
+            'dosage_categories' => ['id', 'label'],
+            'frequencies' => ['id', 'label', 'times_of_day'],
+            'meal_timing' => ['id', 'label'],
+            'selling_units' => ['id', 'label'],
+            'medicine_brands' => ['id', 'name'],
+            'medicine_manufacturers' => ['id', 'name'],
+            'prescriptions' => ['id', 'patient_nic', 'file_name', 'file_path', 'upload_date', 'status'],
+            'pharmacies' => ['id', 'name', 'address_line1', 'address_line2', 'city', 'district', 'postal_code', 'latitude', 'longitude', 'phone', 'email', 'is_demo', 'status', 'created_at', 'updated_at'],
+            'patient_pharmacy_selection' => ['id', 'patient_nic', 'pharmacy_id', 'selected_at', 'is_active'],
+        ];
+
+        return in_array($column, $schema[$table] ?? [], true);
     }
 
     private static function selectExpr(string $table, string $column, string $fallback = "''"): string
@@ -76,21 +84,23 @@ class InventoryModel
             return self::$medicineColumnsCache;
         }
 
-        $cols = [];
-        if (!self::tableExists('medicines')) {
-            self::$medicineColumnsCache = $cols;
-            return $cols;
-        }
-
-        $rs = Database::search("SHOW COLUMNS FROM medicines");
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $field = strtolower((string)($row['Field'] ?? ''));
-                if ($field !== '') {
-                    $cols[$field] = true;
-                }
-            }
-        }
+        $cols = array_fill_keys([
+            'id',
+            'name',
+            'med_name',
+            'generic_name',
+            'category',
+            'description',
+            'dosage_form',
+            'strength',
+            'quantity_in_stock',
+            'pricing',
+            'manufacturer',
+            'expiry_date',
+            'added_by',
+            'created_at',
+            'pharmacy_id',
+        ], true);
 
         self::$medicineColumnsCache = $cols;
         return $cols;
@@ -125,7 +135,7 @@ class InventoryModel
     private static function extractImagePath(array $row): string
     {
         foreach (['image_path', 'image', 'image_url', 'medicine_image', 'photo'] as $col) {
-            $value = trim((string)($row[$col] ?? ''));
+            $value = trim((string) ($row[$col] ?? ''));
             if ($value !== '') {
                 return $value;
             }
@@ -135,11 +145,11 @@ class InventoryModel
 
     private static function saveUploadedImage(?array $file): string
     {
-        if (!$file || !isset($file['error']) || (int)$file['error'] !== UPLOAD_ERR_OK || empty($file['tmp_name'])) {
+        if (!$file || !isset($file['error']) || (int) $file['error'] !== UPLOAD_ERR_OK || empty($file['tmp_name'])) {
             return '';
         }
 
-        $ext = strtolower(pathinfo((string)($file['name'] ?? ''), PATHINFO_EXTENSION));
+        $ext = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
         $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         if (!in_array($ext, $allowed, true)) {
             return '';
@@ -157,7 +167,7 @@ class InventoryModel
         $name = 'medicine_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = $uploadDir . '/' . $name;
 
-        if (!@move_uploaded_file((string)$file['tmp_name'], $dest)) {
+        if (!@move_uploaded_file((string) $file['tmp_name'], $dest)) {
             return '';
         }
 
@@ -182,12 +192,9 @@ class InventoryModel
                 continue;
             }
 
-            $rs = Database::search("SELECT `$nameCol` AS n FROM `$table` WHERE `$idCol` = $categoryId LIMIT 1");
-            if ($rs instanceof mysqli_result) {
-                $row = $rs->fetch_assoc();
-                if (!empty($row['n'])) {
-                    return (string)$row['n'];
-                }
+            $row = Database::fetchOne("SELECT `$nameCol` AS n FROM `$table` WHERE `$idCol` = ? LIMIT 1", 'i', [$categoryId]);
+            if ($row && !empty($row['n'])) {
+                return (string) $row['n'];
             }
         }
 
@@ -240,11 +247,13 @@ class InventoryModel
 
     private static function resolveSelectableValue(array $input, string $existingKey, string $newKey, string $fallback = ''): string
     {
-        $existing = self::normalizeOption((string)($input[$existingKey] ?? ''));
-        $new = self::normalizeOption((string)($input[$newKey] ?? ''));
+        $existing = self::normalizeOption((string) ($input[$existingKey] ?? ''));
+        $new = self::normalizeOption((string) ($input[$newKey] ?? ''));
         $fallback = self::normalizeOption($fallback);
-        if ($new !== '') return $new;
-        if ($existing !== '') return $existing;
+        if ($new !== '')
+            return $new;
+        if ($existing !== '')
+            return $existing;
         return $fallback;
     }
 
@@ -254,8 +263,7 @@ class InventoryModel
         if ($name === '' || !self::tableExists($table)) {
             return;
         }
-        $safe = Database::escape($name);
-        Database::iud("INSERT IGNORE INTO `$table` (`name`) VALUES ('$safe')");
+        Database::execute("INSERT IGNORE INTO `$table` (`name`) VALUES (?)", 's', [$name]);
     }
 
     private static function getLookupValues(string $table): array
@@ -265,17 +273,15 @@ class InventoryModel
         if (!self::tableExists($table)) {
             return [];
         }
-        $rs = Database::search("SELECT name FROM `$table` WHERE is_active = 1 ORDER BY name ASC");
-        $rows = [];
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $val = trim((string)($row['name'] ?? ''));
-                if ($val !== '') {
-                    $rows[] = $val;
-                }
+        $rows = Database::fetchAll("SELECT name FROM `$table` WHERE is_active = ? ORDER BY name ASC", 'i', [1]);
+        $values = [];
+        foreach ($rows as $row) {
+            $val = trim((string) ($row['name'] ?? ''));
+            if ($val !== '') {
+                $values[] = $val;
             }
         }
-        return $rows;
+        return $values;
     }
 
     public static function getDosageForms(): array
@@ -303,13 +309,11 @@ class InventoryModel
                 }
                 $where .= " AND pharmacy_id = $pid";
             }
-            $rs = Database::search("SELECT DISTINCT name FROM medicines WHERE $where ORDER BY name ASC");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $name = self::normalizeOption((string)($row['name'] ?? ''));
-                    if ($name !== '' && !in_array($name, $brands, true)) {
-                        $brands[] = $name;
-                    }
+            $rows = Database::fetchAll("SELECT DISTINCT name FROM medicines WHERE $where ORDER BY name ASC");
+            foreach ($rows as $row) {
+                $name = self::normalizeOption((string) ($row['name'] ?? ''));
+                if ($name !== '' && !in_array($name, $brands, true)) {
+                    $brands[] = $name;
                 }
             }
             sort($brands);
@@ -332,13 +336,11 @@ class InventoryModel
                 }
                 $where .= " AND pharmacy_id = $pid";
             }
-            $rs = Database::search("SELECT DISTINCT manufacturer FROM medicines WHERE $where ORDER BY manufacturer ASC");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $name = self::normalizeOption((string)($row['manufacturer'] ?? ''));
-                    if ($name !== '' && !in_array($name, $makers, true)) {
-                        $makers[] = $name;
-                    }
+            $rows = Database::fetchAll("SELECT DISTINCT manufacturer FROM medicines WHERE $where ORDER BY manufacturer ASC");
+            foreach ($rows as $row) {
+                $name = self::normalizeOption((string) ($row['manufacturer'] ?? ''));
+                if ($name !== '' && !in_array($name, $makers, true)) {
+                    $makers[] = $name;
                 }
             }
             sort($makers);
@@ -362,14 +364,7 @@ class InventoryModel
                 continue;
             }
 
-            $rs = Database::search("SELECT `$idCol` AS id, `$nameCol` AS name FROM `$table` ORDER BY `$nameCol` ASC");
-            $rows = [];
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $rows[] = $row;
-                }
-            }
-            return $rows;
+            return Database::fetchAll("SELECT `$idCol` AS id, `$nameCol` AS name FROM `$table` ORDER BY `$nameCol` ASC");
         }
 
         return [];
@@ -425,15 +420,7 @@ class InventoryModel
             self::selectExpr('medicines', 'expiry_date'),
         ]);
 
-        $rs = Database::search("\n            SELECT $select\n            FROM medicines\n            $where\n            ORDER BY name ASC\n        ");
-
-        $rows = [];
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $rows[] = $row;
-            }
-        }
-        return $rows;
+        return Database::fetchAll("\n            SELECT $select\n            FROM medicines\n            $where\n            ORDER BY name ASC\n        ");
     }
 
     public static function getById(int $id): ?array
@@ -450,22 +437,21 @@ class InventoryModel
             return null;
         }
 
-        $id = (int)$id;
-        $where = "id = $id";
+        $sql = "SELECT * FROM medicines WHERE id = ?";
+        $types = 'i';
+        $params = [$id];
         if ($hasPharmacyId) {
-            $where .= " AND pharmacy_id = " . $currentPharmacyId;
+            $sql .= " AND pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = $currentPharmacyId;
         }
-        $rs = Database::search("SELECT * FROM medicines WHERE $where LIMIT 1");
-        if (!($rs instanceof mysqli_result)) {
-            return null;
-        }
-        $row = $rs->fetch_assoc();
-        if (!is_array($row)) {
+        $row = Database::fetchOne($sql . " LIMIT 1", $types, $params);
+        if (!$row) {
             return null;
         }
         if (!isset($row['price'])) {
             $priceCol = self::medicinePriceColumn();
-            $row['price'] = $priceCol !== '' ? (float)($row[$priceCol] ?? 0) : 0;
+            $row['price'] = $priceCol !== '' ? (float) ($row[$priceCol] ?? 0) : 0;
         }
         return $row;
     }
@@ -489,86 +475,102 @@ class InventoryModel
             $input,
             'brand_existing',
             'brand_new',
-            trim((string)($input['name'] ?? ''))
+            trim((string) ($input['name'] ?? ''))
         );
         if ($name === '') {
             return false;
         }
-        $medName = trim((string)($input['med_name'] ?? ''));
+        $medName = trim((string) ($input['med_name'] ?? ''));
 
         $imagePath = self::saveUploadedImage($file);
 
-        $generic = trim((string)($input['generic_name'] ?? ''));
-        $categoryId = (int)($input['category_id'] ?? 0);
-        $category = trim((string)($input['category'] ?? ''));
+        $generic = trim((string) ($input['generic_name'] ?? ''));
+        $categoryId = (int) ($input['category_id'] ?? 0);
+        $category = trim((string) ($input['category'] ?? ''));
         if ($category === '' && $categoryId > 0) {
             $category = self::resolveCategoryName($categoryId);
         }
 
-        $description = trim((string)($input['description'] ?? ''));
+        $description = trim((string) ($input['description'] ?? ''));
         $dosageForm = self::resolveSelectableValue(
             $input,
             'dosage_form_existing',
             'dosage_form_new',
-            trim((string)($input['dosage_form'] ?? ''))
+            trim((string) ($input['dosage_form'] ?? ''))
         );
-        $strength = trim((string)($input['strength'] ?? ''));
+        $strength = trim((string) ($input['strength'] ?? ''));
         $manufacturer = self::resolveSelectableValue(
             $input,
             'manufacturer_existing',
             'manufacturer_new',
-            trim((string)($input['manufacturer'] ?? ''))
+            trim((string) ($input['manufacturer'] ?? ''))
         );
-        $expiryDate = trim((string)($input['expiry_date'] ?? ''));
-        $qty = (int)($input['quantity_in_stock'] ?? 0);
-        $price = (float)($input['price'] ?? 0);
+        $expiryDate = trim((string) ($input['expiry_date'] ?? ''));
+        $qty = (int) ($input['quantity_in_stock'] ?? 0);
+        $price = (float) ($input['price'] ?? 0);
         $sellingUnit = self::resolveSelectableValue(
             $input,
             'selling_unit_existing',
             'selling_unit_new',
-            trim((string)($input['selling_unit'] ?? ''))
+            trim((string) ($input['selling_unit'] ?? ''))
         );
-        $unitQuantity = (int)($input['unit_quantity'] ?? 1);
-        $addedBy = (int)($input['added_by'] ?? 0);
+        $unitQuantity = (int) ($input['unit_quantity'] ?? 1);
+        $addedBy = (int) ($input['added_by'] ?? 0);
 
         $cols = [];
         $vals = [];
 
-        $addStr = function(string $col, string $val) use (&$cols, &$vals) {
+        $addStr = function (string $col, string $val) use (&$cols, &$vals) {
             $cols[] = $col;
             $vals[] = "'" . Database::escape($val) . "'";
         };
-        $addInt = function(string $col, int $val) use (&$cols, &$vals) {
+        $addInt = function (string $col, int $val) use (&$cols, &$vals) {
             $cols[] = $col;
-            $vals[] = (string)$val;
+            $vals[] = (string) $val;
         };
-        $addNum = function(string $col, float $val) use (&$cols, &$vals) {
+        $addNum = function (string $col, float $val) use (&$cols, &$vals) {
             $cols[] = $col;
-            $vals[] = (string)$val;
+            $vals[] = (string) $val;
         };
 
-        if (self::hasMedicineColumn('name')) $addStr('name', $name);
-        if (self::hasMedicineColumn('med_name')) $addStr('med_name', $medName);
-        if (self::hasMedicineColumn('generic_name')) $addStr('generic_name', $generic);
-        if (self::hasMedicineColumn('category')) $addStr('category', $category);
-        if (self::hasMedicineColumn('category_id')) $addInt('category_id', max(0, $categoryId));
-        if (self::hasMedicineColumn('description')) $addStr('description', $description);
-        if (self::hasMedicineColumn('dosage_form')) $addStr('dosage_form', $dosageForm);
-        if (self::hasMedicineColumn('strength')) $addStr('strength', $strength);
-        if (self::hasMedicineColumn('quantity_in_stock')) $addInt('quantity_in_stock', max(0, $qty));
+        if (self::hasMedicineColumn('name'))
+            $addStr('name', $name);
+        if (self::hasMedicineColumn('med_name'))
+            $addStr('med_name', $medName);
+        if (self::hasMedicineColumn('generic_name'))
+            $addStr('generic_name', $generic);
+        if (self::hasMedicineColumn('category'))
+            $addStr('category', $category);
+        if (self::hasMedicineColumn('category_id'))
+            $addInt('category_id', max(0, $categoryId));
+        if (self::hasMedicineColumn('description'))
+            $addStr('description', $description);
+        if (self::hasMedicineColumn('dosage_form'))
+            $addStr('dosage_form', $dosageForm);
+        if (self::hasMedicineColumn('strength'))
+            $addStr('strength', $strength);
+        if (self::hasMedicineColumn('quantity_in_stock'))
+            $addInt('quantity_in_stock', max(0, $qty));
         $priceCol = self::medicinePriceColumn();
-        if ($priceCol !== '') $addNum($priceCol, max(0, $price));
+        if ($priceCol !== '')
+            $addNum($priceCol, max(0, $price));
         $imageColumn = self::getMedicineImageColumn();
-        if ($imageColumn !== '') $addStr($imageColumn, $imagePath);
-        if (self::hasMedicineColumn('manufacturer')) $addStr('manufacturer', $manufacturer);
+        if ($imageColumn !== '')
+            $addStr($imageColumn, $imagePath);
+        if (self::hasMedicineColumn('manufacturer'))
+            $addStr('manufacturer', $manufacturer);
         if (self::hasMedicineColumn('expiry_date')) {
             $cols[] = 'expiry_date';
             $vals[] = $expiryDate !== '' ? "'" . Database::escape($expiryDate) . "'" : 'NULL';
         }
-        if (self::hasMedicineColumn('selling_unit')) $addStr('selling_unit', $sellingUnit);
-        if (self::hasMedicineColumn('unit_quantity')) $addInt('unit_quantity', max(1, $unitQuantity));
-        if (self::hasMedicineColumn('added_by')) $addInt('added_by', max(0, $addedBy));
-        if ($hasPharmacyId) $addInt('pharmacy_id', $currentPharmacyId);
+        if (self::hasMedicineColumn('selling_unit'))
+            $addStr('selling_unit', $sellingUnit);
+        if (self::hasMedicineColumn('unit_quantity'))
+            $addInt('unit_quantity', max(1, $unitQuantity));
+        if (self::hasMedicineColumn('added_by'))
+            $addInt('added_by', max(0, $addedBy));
+        if ($hasPharmacyId)
+            $addInt('pharmacy_id', $currentPharmacyId);
         if (self::hasMedicineColumn('created_at')) {
             $cols[] = 'created_at';
             $vals[] = 'NOW()';
@@ -604,7 +606,7 @@ class InventoryModel
             return false;
         }
 
-        $id = (int)$id;
+        $id = (int) $id;
         if ($id <= 0) {
             return false;
         }
@@ -621,79 +623,94 @@ class InventoryModel
             $input,
             'brand_existing',
             'brand_new',
-            trim((string)($input['name'] ?? ($existing['name'] ?? '')))
+            trim((string) ($input['name'] ?? ($existing['name'] ?? '')))
         );
         if ($name === '') {
             return false;
         }
-        $medName = trim((string)($input['med_name'] ?? ($existing['med_name'] ?? '')));
+        $medName = trim((string) ($input['med_name'] ?? ($existing['med_name'] ?? '')));
 
-        $generic = trim((string)($input['generic_name'] ?? ($existing['generic_name'] ?? '')));
-        $categoryId = (int)($input['category_id'] ?? ($existing['category_id'] ?? 0));
-        $category = trim((string)($input['category'] ?? ($existing['category'] ?? '')));
+        $generic = trim((string) ($input['generic_name'] ?? ($existing['generic_name'] ?? '')));
+        $categoryId = (int) ($input['category_id'] ?? ($existing['category_id'] ?? 0));
+        $category = trim((string) ($input['category'] ?? ($existing['category'] ?? '')));
         if ($category === '' && $categoryId > 0) {
             $category = self::resolveCategoryName($categoryId);
         }
 
-        $description = trim((string)($input['description'] ?? ($existing['description'] ?? '')));
+        $description = trim((string) ($input['description'] ?? ($existing['description'] ?? '')));
         $dosageForm = self::resolveSelectableValue(
             $input,
             'dosage_form_existing',
             'dosage_form_new',
-            trim((string)($input['dosage_form'] ?? ($existing['dosage_form'] ?? '')))
+            trim((string) ($input['dosage_form'] ?? ($existing['dosage_form'] ?? '')))
         );
-        $strength = trim((string)($input['strength'] ?? ($existing['strength'] ?? '')));
+        $strength = trim((string) ($input['strength'] ?? ($existing['strength'] ?? '')));
         $manufacturer = self::resolveSelectableValue(
             $input,
             'manufacturer_existing',
             'manufacturer_new',
-            trim((string)($input['manufacturer'] ?? ($existing['manufacturer'] ?? '')))
+            trim((string) ($input['manufacturer'] ?? ($existing['manufacturer'] ?? '')))
         );
-        $expiryDate = trim((string)($input['expiry_date'] ?? ($existing['expiry_date'] ?? '')));
-        $qty = (int)($input['quantity_in_stock'] ?? ($existing['quantity_in_stock'] ?? 0));
-        $existingPrice = (float)($existing['price'] ?? ($existing['pricing'] ?? 0));
-        $price = (float)($input['price'] ?? $existingPrice);
+        $expiryDate = trim((string) ($input['expiry_date'] ?? ($existing['expiry_date'] ?? '')));
+        $qty = (int) ($input['quantity_in_stock'] ?? ($existing['quantity_in_stock'] ?? 0));
+        $existingPrice = (float) ($existing['price'] ?? ($existing['pricing'] ?? 0));
+        $price = (float) ($input['price'] ?? $existingPrice);
         $sellingUnit = self::resolveSelectableValue(
             $input,
             'selling_unit_existing',
             'selling_unit_new',
-            trim((string)($input['selling_unit'] ?? ($existing['selling_unit'] ?? '')))
+            trim((string) ($input['selling_unit'] ?? ($existing['selling_unit'] ?? '')))
         );
-        $unitQuantity = (int)($input['unit_quantity'] ?? ($existing['unit_quantity'] ?? 1));
+        $unitQuantity = (int) ($input['unit_quantity'] ?? ($existing['unit_quantity'] ?? 1));
 
         $sets = [];
-        $setStr = function(string $col, string $val) use (&$sets) {
+        $setStr = function (string $col, string $val) use (&$sets) {
             $sets[] = "$col = '" . Database::escape($val) . "'";
         };
-        $setInt = function(string $col, int $val) use (&$sets) {
+        $setInt = function (string $col, int $val) use (&$sets) {
             $sets[] = "$col = $val";
         };
-        $setNum = function(string $col, float $val) use (&$sets) {
+        $setNum = function (string $col, float $val) use (&$sets) {
             $sets[] = "$col = $val";
         };
 
-        if (self::hasMedicineColumn('name')) $setStr('name', $name);
-        if (self::hasMedicineColumn('med_name')) $setStr('med_name', $medName);
-        if (self::hasMedicineColumn('generic_name')) $setStr('generic_name', $generic);
-        if (self::hasMedicineColumn('category')) $setStr('category', $category);
-        if (self::hasMedicineColumn('category_id')) $setInt('category_id', max(0, $categoryId));
-        if (self::hasMedicineColumn('description')) $setStr('description', $description);
-        if (self::hasMedicineColumn('dosage_form')) $setStr('dosage_form', $dosageForm);
-        if (self::hasMedicineColumn('strength')) $setStr('strength', $strength);
-        if (self::hasMedicineColumn('quantity_in_stock')) $setInt('quantity_in_stock', max(0, $qty));
+        if (self::hasMedicineColumn('name'))
+            $setStr('name', $name);
+        if (self::hasMedicineColumn('med_name'))
+            $setStr('med_name', $medName);
+        if (self::hasMedicineColumn('generic_name'))
+            $setStr('generic_name', $generic);
+        if (self::hasMedicineColumn('category'))
+            $setStr('category', $category);
+        if (self::hasMedicineColumn('category_id'))
+            $setInt('category_id', max(0, $categoryId));
+        if (self::hasMedicineColumn('description'))
+            $setStr('description', $description);
+        if (self::hasMedicineColumn('dosage_form'))
+            $setStr('dosage_form', $dosageForm);
+        if (self::hasMedicineColumn('strength'))
+            $setStr('strength', $strength);
+        if (self::hasMedicineColumn('quantity_in_stock'))
+            $setInt('quantity_in_stock', max(0, $qty));
         $priceCol = self::medicinePriceColumn();
-        if ($priceCol !== '') $setNum($priceCol, max(0, $price));
+        if ($priceCol !== '')
+            $setNum($priceCol, max(0, $price));
         $imageColumn = self::getMedicineImageColumn();
-        if ($imageColumn !== '') $setStr($imageColumn, $imagePath);
-        if (self::hasMedicineColumn('manufacturer')) $setStr('manufacturer', $manufacturer);
+        if ($imageColumn !== '')
+            $setStr($imageColumn, $imagePath);
+        if (self::hasMedicineColumn('manufacturer'))
+            $setStr('manufacturer', $manufacturer);
         if (self::hasMedicineColumn('expiry_date')) {
             $sets[] = $expiryDate !== ''
                 ? "expiry_date = '" . Database::escape($expiryDate) . "'"
                 : 'expiry_date = NULL';
         }
-        if (self::hasMedicineColumn('selling_unit')) $setStr('selling_unit', $sellingUnit);
-        if (self::hasMedicineColumn('unit_quantity')) $setInt('unit_quantity', max(1, $unitQuantity));
-        if (self::hasMedicineColumn('updated_at')) $sets[] = 'updated_at = NOW()';
+        if (self::hasMedicineColumn('selling_unit'))
+            $setStr('selling_unit', $sellingUnit);
+        if (self::hasMedicineColumn('unit_quantity'))
+            $setInt('unit_quantity', max(1, $unitQuantity));
+        if (self::hasMedicineColumn('updated_at'))
+            $sets[] = 'updated_at = NOW()';
 
         if (empty($sets)) {
             return false;
@@ -727,11 +744,14 @@ class InventoryModel
             return false;
         }
 
-        $id = (int)$id;
-        $where = "id = $id";
+        $sql = "DELETE FROM medicines WHERE id = ?";
+        $types = 'i';
+        $params = [$id];
         if ($hasPharmacyId) {
-            $where .= " AND pharmacy_id = " . $currentPharmacyId;
+            $sql .= " AND pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = $currentPharmacyId;
         }
-        return Database::iud("DELETE FROM medicines WHERE $where");
+        return Database::execute($sql, $types, $params);
     }
 }

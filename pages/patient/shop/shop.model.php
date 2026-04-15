@@ -21,14 +21,14 @@ class ShopModel
         $rows = PharmacyContext::getPharmacies();
         $out = [];
         foreach ($rows as $row) {
-            $id = (int)($row['id'] ?? 0);
+            $id = (int) ($row['id'] ?? 0);
             if ($id <= 0) {
                 continue;
             }
             $out[$id] = [
-                'name' => (string)($row['name'] ?? ''),
-                'lat' => (float)($row['latitude'] ?? 0),
-                'lng' => (float)($row['longitude'] ?? 0),
+                'name' => (string) ($row['name'] ?? ''),
+                'lat' => (float) ($row['latitude'] ?? 0),
+                'lng' => (float) ($row['longitude'] ?? 0),
             ];
         }
         return $out;
@@ -45,7 +45,7 @@ class ShopModel
         $bestDistance = PHP_FLOAT_MAX;
 
         foreach ($branchIds as $pid) {
-            $pid = (int)$pid;
+            $pid = (int) $pid;
             if ($pid <= 0 || $pid === $selectedPharmacyId) {
                 continue;
             }
@@ -54,8 +54,8 @@ class ShopModel
             }
 
             if ($selected) {
-                $dLat = ((float)$pharmacyIndex[$pid]['lat']) - ((float)$selected['lat']);
-                $dLng = ((float)$pharmacyIndex[$pid]['lng']) - ((float)$selected['lng']);
+                $dLat = ((float) $pharmacyIndex[$pid]['lat']) - ((float) $selected['lat']);
+                $dLng = ((float) $pharmacyIndex[$pid]['lng']) - ((float) $selected['lng']);
                 $distance = ($dLat * $dLat) + ($dLng * $dLng);
             } else {
                 $distance = 0.0;
@@ -68,12 +68,12 @@ class ShopModel
         }
 
         if ($bestId > 0 && isset($pharmacyIndex[$bestId])) {
-            return (string)($pharmacyIndex[$bestId]['name'] ?? '');
+            return (string) ($pharmacyIndex[$bestId]['name'] ?? '');
         }
 
-        $firstId = (int)($branchIds[0] ?? 0);
+        $firstId = (int) ($branchIds[0] ?? 0);
         if ($firstId > 0 && isset($pharmacyIndex[$firstId])) {
-            return (string)($pharmacyIndex[$firstId]['name'] ?? '');
+            return (string) ($pharmacyIndex[$firstId]['name'] ?? '');
         }
 
         return '';
@@ -87,7 +87,7 @@ class ShopModel
         }
 
         $auth = Auth::getUser();
-        $patientNic = (string)($auth['nic'] ?? '');
+        $patientNic = (string) ($auth['nic'] ?? '');
         if ($patientNic !== '' && PharmacyContext::patientHasSelection($patientNic)) {
             return PharmacyContext::selectedPharmacyId();
         }
@@ -109,17 +109,26 @@ class ShopModel
 
     private static function tableExists(string $table): bool
     {
-        $safe = Database::escape($table);
-        $rs = Database::search("SHOW TABLES LIKE '$safe'");
-        return $rs && $rs->num_rows > 0;
+        return in_array($table, ['medicines', 'prescriptions', 'patient', 'pharmacies', 'patient_pharmacy_selection', 'dosage_categories', 'frequencies', 'meal_timing', 'selling_units', 'medicine_brands', 'medicine_manufacturers'], true);
     }
 
     private static function columnExists(string $table, string $column): bool
     {
-        $safeTable = Database::escape($table);
-        $safeCol = Database::escape($column);
-        $rs = Database::search("SHOW COLUMNS FROM `$safeTable` LIKE '$safeCol'");
-        return $rs && $rs->num_rows > 0;
+        $schema = [
+            'medicines' => ['id', 'name', 'med_name', 'generic_name', 'category', 'description', 'dosage_form', 'strength', 'quantity_in_stock', 'pricing', 'manufacturer', 'expiry_date', 'added_by', 'created_at'],
+            'prescriptions' => ['id', 'patient_nic', 'file_name', 'file_path', 'upload_date', 'status'],
+            'patient' => ['nic', 'name', 'gender', 'emergency_contact', 'email', 'password', 'allergies', 'chronic_issues', 'created_at', 'guardian_nic'],
+            'pharmacies' => ['id', 'name', 'address_line1', 'address_line2', 'city', 'district', 'postal_code', 'latitude', 'longitude', 'phone', 'email', 'is_demo', 'status', 'created_at', 'updated_at'],
+            'patient_pharmacy_selection' => ['id', 'patient_nic', 'pharmacy_id', 'selected_at', 'is_active'],
+            'dosage_categories' => ['id', 'label'],
+            'frequencies' => ['id', 'label', 'times_of_day'],
+            'meal_timing' => ['id', 'label'],
+            'selling_units' => ['id', 'label'],
+            'medicine_brands' => ['id', 'name'],
+            'medicine_manufacturers' => ['id', 'name'],
+        ];
+
+        return in_array($column, $schema[$table] ?? [], true);
     }
 
     private static function findCategoryTable(): ?array
@@ -162,7 +171,7 @@ class ShopModel
             if ($rs) {
                 $rows = [];
                 while ($row = $rs->fetch_assoc()) {
-                    $rows[] = (string)$row['category'];
+                    $rows[] = (string) $row['category'];
                 }
                 return $rows;
             }
@@ -258,10 +267,14 @@ class ShopModel
             $safeQ = Database::escape($q);
             $parts = [];
             $parts[] = "m.name LIKE '%$safeQ%'";
-            if ($hasMedName) $parts[] = "m.med_name LIKE '%$safeQ%'";
-            if ($hasGeneric) $parts[] = "m.generic_name LIKE '%$safeQ%'";
-            if ($hasCategoryText) $parts[] = "m.category LIKE '%$safeQ%'";
-            if ($joinCategory !== '') $parts[] = "c.`{$catTable['name']}` LIKE '%$safeQ%'";
+            if ($hasMedName)
+                $parts[] = "m.med_name LIKE '%$safeQ%'";
+            if ($hasGeneric)
+                $parts[] = "m.generic_name LIKE '%$safeQ%'";
+            if ($hasCategoryText)
+                $parts[] = "m.category LIKE '%$safeQ%'";
+            if ($joinCategory !== '')
+                $parts[] = "c.`{$catTable['name']}` LIKE '%$safeQ%'";
             if (!empty($parts)) {
                 $where[] = '(' . implode(' OR ', $parts) . ')';
             }
@@ -271,7 +284,7 @@ class ShopModel
 
         $selectedPharmacyId = self::currentPharmacyId();
         $pharmacyIndex = self::pharmacyIndex();
-        $selectedPharmacyName = (string)($pharmacyIndex[$selectedPharmacyId]['name'] ?? '');
+        $selectedPharmacyName = (string) ($pharmacyIndex[$selectedPharmacyId]['name'] ?? '');
 
         $rs = Database::search("
             SELECT
@@ -302,15 +315,15 @@ class ShopModel
 
         $groups = [];
         while ($row = $rs->fetch_assoc()) {
-            $name = trim((string)($row['name'] ?? ''));
-            $medName = trim((string)($row['med_name'] ?? ''));
+            $name = trim((string) ($row['name'] ?? ''));
+            $medName = trim((string) ($row['med_name'] ?? ''));
             if ($name === '' && $medName === '') {
                 continue;
             }
 
-            $generic = trim((string)($row['generic_name'] ?? ''));
-            $dosage = trim((string)($row['dosage_form'] ?? ''));
-            $strength = trim((string)($row['strength'] ?? ''));
+            $generic = trim((string) ($row['generic_name'] ?? ''));
+            $dosage = trim((string) ($row['dosage_form'] ?? ''));
+            $strength = trim((string) ($row['strength'] ?? ''));
             $key = strtolower($medName . '|' . $name . '|' . $generic . '|' . $dosage . '|' . $strength);
 
             if (!isset($groups[$key])) {
@@ -322,8 +335,8 @@ class ShopModel
                 ];
             }
 
-            $pid = (int)($row['pharmacy_id'] ?? 0);
-            $stock = max(0, (int)($row['quantity_in_stock'] ?? 0));
+            $pid = (int) ($row['pharmacy_id'] ?? 0);
+            $stock = max(0, (int) ($row['quantity_in_stock'] ?? 0));
 
             if ($selectedPharmacyId > 0 && $pid === $selectedPharmacyId) {
                 $groups[$key]['selected'] = $row;
@@ -333,7 +346,7 @@ class ShopModel
                 $groups[$key]['in_stock_branch_ids'][$pid] = true;
             }
 
-            $img = trim((string)($row['image_path'] ?? ''));
+            $img = trim((string) ($row['image_path'] ?? ''));
             if ($img !== '' && $groups[$key]['image_row'] === null) {
                 $groups[$key]['image_row'] = $row;
             }
@@ -345,13 +358,13 @@ class ShopModel
             $selected = $g['selected'];
             $display = $selected ?: $first;
 
-            $displayImg = trim((string)($display['image_path'] ?? ''));
+            $displayImg = trim((string) ($display['image_path'] ?? ''));
             if ($displayImg === '' && is_array($g['image_row'])) {
-                $display['image_path'] = (string)($g['image_row']['image_path'] ?? '');
+                $display['image_path'] = (string) ($g['image_row']['image_path'] ?? '');
             }
 
-            $selectedStock = $selected ? max(0, (int)($selected['quantity_in_stock'] ?? 0)) : 0;
-            $selectedMedicineId = $selected ? (int)($selected['id'] ?? 0) : 0;
+            $selectedStock = $selected ? max(0, (int) ($selected['quantity_in_stock'] ?? 0)) : 0;
+            $selectedMedicineId = $selected ? (int) ($selected['id'] ?? 0) : 0;
 
             $branchIds = array_map('intval', array_keys($g['in_stock_branch_ids']));
             $nearestBranchName = '';
@@ -359,7 +372,7 @@ class ShopModel
                 $nearestBranchName = self::nearestBranchNameWithStock($selectedPharmacyId, $branchIds, $pharmacyIndex);
             }
 
-            $display['id'] = (int)($display['id'] ?? 0); // representative id for view/recent
+            $display['id'] = (int) ($display['id'] ?? 0); // representative id for view/recent
             $display['cart_id'] = $selectedMedicineId;   // add-to-cart id for selected branch
             $display['quantity_in_stock'] = $selectedStock;
             $display['selected_branch_name'] = $selectedPharmacyName;
@@ -369,7 +382,7 @@ class ShopModel
         }
 
         usort($rows, static function (array $a, array $b): int {
-            return strcmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''));
+            return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
         });
 
         return $rows;
@@ -377,13 +390,13 @@ class ShopModel
 
     public static function getMedicineById(int $id): ?array
     {
-        $id = (int)$id;
+        $id = (int) $id;
         if ($id <= 0) {
             return null;
         }
         $rows = self::getMedicines('', '');
         foreach ($rows as $row) {
-            if ((int)($row['id'] ?? 0) === $id) {
+            if ((int) ($row['id'] ?? 0) === $id) {
                 return $row;
             }
         }
@@ -392,7 +405,7 @@ class ShopModel
 
     public static function getSelectedBranchMedicineById(int $id): ?array
     {
-        $id = (int)$id;
+        $id = (int) $id;
         if ($id <= 0 || !self::tableExists('medicines')) {
             return null;
         }
@@ -429,7 +442,7 @@ class ShopModel
 
         $need = [];
         foreach ($ids as $id) {
-            $num = (int)$id;
+            $num = (int) $id;
             if ($num > 0) {
                 $need[$num] = true;
             }
@@ -441,7 +454,7 @@ class ShopModel
         $all = self::getMedicines('', '');
         $indexed = [];
         foreach ($all as $row) {
-            $mid = (int)($row['id'] ?? 0);
+            $mid = (int) ($row['id'] ?? 0);
             if ($mid > 0 && isset($need[$mid])) {
                 $indexed[$mid] = $row;
             }
@@ -449,7 +462,7 @@ class ShopModel
 
         $ordered = [];
         foreach ($ids as $id) {
-            $num = (int)$id;
+            $num = (int) $id;
             if ($num > 0 && isset($indexed[$num])) {
                 $ordered[] = $indexed[$num];
             }
@@ -459,10 +472,10 @@ class ShopModel
 
     public static function getSuggestions(int $limit = 6, array $excludeIds = []): array
     {
-        $limit = max(1, min(20, (int)$limit));
+        $limit = max(1, min(20, (int) $limit));
         $exclude = [];
         foreach ($excludeIds as $id) {
-            $num = (int)$id;
+            $num = (int) $id;
             if ($num > 0) {
                 $exclude[$num] = true;
             }
@@ -471,7 +484,7 @@ class ShopModel
         $all = self::getMedicines('', '');
         $out = [];
         foreach ($all as $row) {
-            $mid = (int)($row['id'] ?? 0);
+            $mid = (int) ($row['id'] ?? 0);
             if ($mid > 0 && isset($exclude[$mid])) {
                 continue;
             }
