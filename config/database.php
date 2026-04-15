@@ -8,33 +8,120 @@ class Database
 {
     public static $connection;
 
+    private static function connect(string $host, string $user, string $pass, string $name, int $port, bool $useSsl, string $sslKey = '', string $sslCert = '', string $sslCa = ''): ?mysqli
+    {
+        if ($useSsl) {
+            $connection = mysqli_init();
+            if ($connection === false) {
+                return null;
+            }
+
+            $connection->ssl_set(
+                $sslKey !== '' ? $sslKey : null,
+                $sslCert !== '' ? $sslCert : null,
+                $sslCa !== '' ? $sslCa : null,
+                null,
+                null
+            );
+
+            $ok = @$connection->real_connect($host, $user, $pass, $name, $port, null, MYSQLI_CLIENT_SSL);
+            if ($ok === false) {
+                return null;
+            }
+
+            return $connection;
+        }
+
+        $connection = @new mysqli($host, $user, $pass, $name, $port);
+        if ($connection->connect_error) {
+            return null;
+        }
+
+        return $connection;
+    }
+
+    private static function isRetryableConnectionError(int $errno, string $error = ''): bool
+    {
+        if (in_array($errno, [2002, 2006, 2013, 2055], true)) {
+            return true;
+        }
+
+        $msg = strtolower($error);
+        return str_contains($msg, 'server has gone away')
+            || str_contains($msg, 'lost connection')
+            || str_contains($msg, 'forcibly closed');
+    }
+
+    private static function reconnect(): bool
+    {
+        if (self::$connection instanceof mysqli) {
+            @self::$connection->close();
+        }
+
+        self::$connection = null;
+        self::setUpConnection();
+        return self::$connection instanceof mysqli && !self::$connection->connect_error;
+    }
+
+    private static function queryWithReconnect(string $q)
+    {
+        self::setUpConnection();
+
+        $result = @self::$connection->query($q);
+        if ($result !== false) {
+            return $result;
+        }
+
+        $errno = (int)(self::$connection->errno ?? 0);
+        $error = (string)(self::$connection->error ?? '');
+        if (!self::isRetryableConnectionError($errno, $error)) {
+            return false;
+        }
+
+        if (!self::reconnect()) {
+            return false;
+        }
+
+        return @self::$connection->query($q);
+    }
+
     public static function setUpConnection()
     {
         if (!isset(self::$connection)) {
-            self::$connection = mysqli_init();
-
+            $host = env('DB_HOST', 'localhost');
+            $user = env('DB_USER', 'root');
+            $pass = env('DB_PASS', '');
+            $name = env('DB_NAME', 'medoradb');
+            $port = (int) env('DB_PORT', '3306');
             $sslMode = strtolower(env('DB_SSL_MODE', ''));
+            $sslCa = env('DB_SSL_CA', '');
+            $sslCert = env('DB_SSL_CERT', '');
+            $sslKey = env('DB_SSL_KEY', '');
+
             $useSsl = in_array($sslMode, ['required', 'verify_ca', 'verify_identity'], true);
-            if ($useSsl) {
-                $sslKey = env('DB_SSL_KEY', '') !== '' ? env('DB_SSL_KEY', '') : null;
-                $sslCert = env('DB_SSL_CERT', '') !== '' ? env('DB_SSL_CERT', '') : null;
-                $sslCa = env('DB_SSL_CA', '') !== '' ? env('DB_SSL_CA', '') : null;
-                self::$connection->ssl_set($sslKey, $sslCert, $sslCa, null, null);
+            self::$connection = self::connect($host, $user, $pass, $name, $port, $useSsl, $sslKey, $sslCert, $sslCa);
+
+            // Local dev fallback: if cloud host/DNS is unavailable, try local MySQL.
+            if (!self::$connection && !in_array(strtolower($host), ['localhost', '127.0.0.1', '::1'], true)) {
+                $fallbackHost = env('DB_FALLBACK_HOST', '127.0.0.1');
+                $fallbackPort = (int)env('DB_FALLBACK_PORT', '3306');
+                $fallbackUser = env('DB_FALLBACK_USER', 'root');
+                $fallbackPass = env('DB_FALLBACK_PASS', '');
+                $fallbackName = env('DB_FALLBACK_NAME', $name);
+
+                self::$connection = self::connect(
+                    $fallbackHost,
+                    $fallbackUser,
+                    $fallbackPass,
+                    $fallbackName,
+                    $fallbackPort,
+                    false
+                );
             }
 
-            $flags = $useSsl ? MYSQLI_CLIENT_SSL : 0;
-            self::$connection->real_connect(
-                env('DB_HOST', 'localhost'),
-                env('DB_USER', 'root'),
-                env('DB_PASS', ''),
-                env('DB_NAME', 'medoradb'),
-                (int) env('DB_PORT', '3306'),
-                null,
-                $flags
-            );
-
-            if (self::$connection->connect_error) {
-                die("Database connection failed: " . self::$connection->connect_error);
+            if (!self::$connection || self::$connection->connect_error) {
+                $err = mysqli_connect_error();
+                die("Database connection failed: " . ($err !== '' ? $err : 'Unknown connection error.'));
             }
 
             self::$connection->set_charset('utf8mb4');
@@ -46,8 +133,8 @@ class Database
      */
     public static function iud($q)
     {
-        self::setUpConnection();
-        return (bool) self::$connection->query($q);
+        $rs = self::queryWithReconnect($q);
+        return (bool)$rs;
     }
 
     /**
@@ -55,9 +142,7 @@ class Database
      */
     public static function search($q)
     {
-        self::setUpConnection();
-        $rs = self::$connection->query($q);
-        return $rs;
+        return self::queryWithReconnect($q);
     }
 
     private static function normalizeTypes(string $types, array $params): string

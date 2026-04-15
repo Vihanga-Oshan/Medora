@@ -58,6 +58,23 @@ class MedicationReminderService
             $slots = ['morning'];
         }
 
+        $safeSlots = array_map(static fn($s) => "'" . Database::escape((string)$s) . "'", $slots);
+        if (!empty($safeSlots)) {
+            $slotList = implode(', ', $safeSlots);
+            Database::execute(
+                "DELETE FROM " . self::TABLE . "
+                 WHERE patient_nic = ?
+                   AND source_type = ?
+                   AND source_schedule_id = ?
+                   AND dose_date = ?
+                   AND status = 'PENDING'
+                   AND delivered_at IS NULL
+                   AND time_slot NOT IN ($slotList)",
+                'ssis',
+                [$patientNic, $sourceType, $sourceId, $doseDate]
+            );
+        }
+
         foreach ($slots as $slot) {
             $scheduledAt = $doseDate . ' ' . self::slotTime($slot) . ':00';
             $eventMessage = $message !== '' ? $message : self::defaultMessage($slot);
@@ -507,17 +524,11 @@ class MedicationReminderService
         $slots = [];
         $raw = strtolower(trim($timesOfDay));
         if ($raw !== '') {
-            $tokens = preg_split('/\s*,\s*/', $raw) ?: [];
-            foreach ($tokens as $token) {
-                $slot = self::normalizeSlot($token);
-                if ($slot !== null) {
-                    $slots[] = $slot;
-                }
-            }
+            $slots = array_merge($slots, self::extractSlotsFromText($raw));
         }
 
         if (!empty($slots)) {
-            return array_values(array_unique($slots));
+            return self::uniqueOrderedSlots($slots);
         }
 
         $label = strtolower(trim($frequencyLabel));
@@ -525,16 +536,12 @@ class MedicationReminderService
             return [];
         }
 
-        if (str_contains($label, 'morning'))
+        $slots = array_merge($slots, self::extractSlotsFromText($label));
+        if (empty($slots)) {
             $slots[] = 'morning';
-        if (str_contains($label, 'day'))
-            $slots[] = 'day';
-        if (str_contains($label, 'night'))
-            $slots[] = 'night';
-        if (empty($slots))
-            $slots[] = 'morning';
+        }
 
-        return array_values(array_unique($slots));
+        return self::uniqueOrderedSlots($slots);
     }
 
     private static function normalizeSlot(string $token): ?string
@@ -547,6 +554,65 @@ class MedicationReminderService
         if ($t === 'night' || $t === 'evening')
             return 'night';
         return null;
+    }
+
+    private static function extractSlotsFromText(string $text): array
+    {
+        $slots = [];
+        $text = strtolower(trim($text));
+        if ($text === '') {
+            return $slots;
+        }
+
+        // Normalize common separators like "&", "/", "and", "|" into commas.
+        $normalized = preg_replace('/\s*(?:&|\/|\||\band\b)\s*/i', ',', $text) ?? $text;
+        $tokens = preg_split('/\s*,\s*/', $normalized) ?: [];
+        if (empty($tokens)) {
+            $tokens = [$normalized];
+        }
+
+        foreach ($tokens as $token) {
+            $token = strtolower(trim($token));
+            if ($token === '') {
+                continue;
+            }
+
+            $slot = self::normalizeSlot($token);
+            if ($slot !== null) {
+                $slots[] = $slot;
+                continue;
+            }
+
+            // Fuzzy containment for phrases like "day time", "night dose", "day+night".
+            if (preg_match('/\bmorning\b/', $token)) {
+                $slots[] = 'morning';
+            }
+            if (preg_match('/\b(day|daytime|afternoon|noon)\b/', $token)) {
+                $slots[] = 'day';
+            }
+            if (preg_match('/\b(night|evening)\b/', $token)) {
+                $slots[] = 'night';
+            }
+        }
+
+        return $slots;
+    }
+
+    private static function uniqueOrderedSlots(array $slots): array
+    {
+        $seen = [];
+        $ordered = [];
+        foreach (['morning', 'day', 'night'] as $allowed) {
+            foreach ($slots as $slot) {
+                $slot = strtolower(trim((string) $slot));
+                if ($slot !== $allowed || isset($seen[$slot])) {
+                    continue;
+                }
+                $seen[$slot] = true;
+                $ordered[] = $slot;
+            }
+        }
+        return $ordered;
     }
 
     private static function slotTime(string $slot): string
