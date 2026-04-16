@@ -3,28 +3,39 @@
     return document.getElementById(id);
   }
 
+  function initFieldEditor(inputId, changeBtnId, cancelBtnId, saveBtnId, placeholder) {
+    var input = byId(inputId);
+    var changeBtn = byId(changeBtnId);
+    var cancelBtn = byId(cancelBtnId);
+    var saveBtn = byId(saveBtnId);
+    if (!input || !changeBtn || !cancelBtn || !saveBtn) return;
+
+    var original = input.getAttribute('data-original-value') || input.value || '';
+
+    changeBtn.addEventListener('click', function () {
+      input.removeAttribute('readonly');
+      input.value = '';
+      input.placeholder = placeholder || '';
+      input.focus();
+      changeBtn.classList.add('is-hidden');
+      cancelBtn.classList.remove('is-hidden');
+      saveBtn.classList.remove('is-hidden');
+    });
+
+    cancelBtn.addEventListener('click', function () {
+      input.value = original;
+      input.setAttribute('readonly', 'readonly');
+      input.placeholder = '';
+      changeBtn.classList.remove('is-hidden');
+      cancelBtn.classList.add('is-hidden');
+      saveBtn.classList.add('is-hidden');
+    });
+  }
+
   function init() {
-    var cfg = window.AdminSettingsConfig || {};
-    var toast = byId('admin-ux-toast');
-    var updatedBadge = byId('admin-last-updated');
-    var emailInput = byId('admin-email');
-    var emailChangeBtn = byId('email-change-btn');
-    var emailCancelBtn = byId('email-cancel-btn');
-    var emailSaveBtn = byId('email-save-btn');
-
-    var passwordCard = byId('password-change-card');
-    var passwordCardCancelBtn = byId('password-card-cancel-btn');
-    var passwordChangeBtn = byId('password-change-btn');
-    var verifiedCurrentPassword = byId('verified-current-password');
-    var newPasswordInput = byId('new-password');
-    var confirmPasswordInput = byId('confirm-password');
-
-    var modal = byId('password-verify-modal');
-    var modalInput = byId('modal-current-password');
-    var modalVerifyBtn = byId('modal-verify-btn');
-    var modalCancelBtn = byId('modal-cancel-btn');
-    var modalError = byId('password-verify-error');
-    var modalSuccess = byId('password-verify-success');
+    var cfg = window.GuardianSettingsConfig || {};
+    var toast = byId('guardian-ux-toast');
+    var updatedBadge = byId('guardian-last-updated');
 
     function relativeLabel(ts) {
       var now = Math.floor(Date.now() / 1000);
@@ -41,39 +52,32 @@
     function showToast(message, type) {
       if (!toast) return;
       toast.textContent = message;
-      toast.className = 'admin-ux-toast ' + (type || 'info') + ' show';
+      toast.className = '';
+      toast.classList.add(type || 'info');
+      toast.classList.add('show');
       window.clearTimeout(showToast._t);
       showToast._t = window.setTimeout(function () {
         toast.classList.remove('show');
       }, 2200);
     }
 
-    if (emailInput && emailChangeBtn && emailSaveBtn) {
-      var originalEmail = emailInput.getAttribute('data-original-value') || emailInput.value || '';
+    initFieldEditor('guardian-name', 'name-change-btn', 'name-cancel-btn', 'name-save-btn', 'Enter full name');
+    initFieldEditor('guardian-email', 'email-change-btn', 'email-cancel-btn', 'email-save-btn', 'Enter new email');
+    initFieldEditor('guardian-phone', 'phone-change-btn', 'phone-cancel-btn', 'phone-save-btn', 'Enter phone number');
 
-      emailChangeBtn.addEventListener('click', function () {
-        emailInput.removeAttribute('readonly');
-        emailInput.value = '';
-        emailInput.placeholder = 'Enter new EMAIL';
-        emailInput.focus();
-        emailChangeBtn.classList.add('is-hidden');
-        if (emailCancelBtn) {
-          emailCancelBtn.classList.remove('is-hidden');
-        }
-        emailSaveBtn.classList.remove('is-hidden');
-      });
+    var passwordCard = byId('password-change-card');
+    var passwordCardCancelBtn = byId('password-card-cancel-btn');
+    var passwordChangeBtn = byId('password-change-btn');
+    var verifiedCurrentPassword = byId('verified-current-password');
+    var newPasswordInput = byId('new_password');
+    var confirmPasswordInput = byId('confirm_password');
 
-      if (emailCancelBtn) {
-        emailCancelBtn.addEventListener('click', function () {
-          emailInput.value = originalEmail;
-          emailInput.setAttribute('readonly', 'readonly');
-          emailInput.placeholder = '';
-          emailChangeBtn.classList.remove('is-hidden');
-          emailCancelBtn.classList.add('is-hidden');
-          emailSaveBtn.classList.add('is-hidden');
-        });
-      }
-    }
+    var modal = byId('password-verify-modal');
+    var modalInput = byId('modal-current-password');
+    var modalVerifyBtn = byId('modal-verify-btn');
+    var modalCancelBtn = byId('modal-cancel-btn');
+    var modalError = byId('password-verify-error');
+    var modalSuccess = byId('password-verify-success');
 
     function openModal() {
       if (!modal) return;
@@ -110,23 +114,17 @@
         showToast('Password change cancelled.', 'info');
       });
     }
-
     if (modalCancelBtn) {
       modalCancelBtn.addEventListener('click', closeModal);
     }
-
     if (modal) {
       modal.addEventListener('click', function (e) {
-        if (e.target === modal) {
-          closeModal();
-        }
+        if (e.target === modal) closeModal();
       });
     }
 
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
+      if (e.key === 'Escape') closeModal();
     });
 
     if (modalVerifyBtn) {
@@ -168,14 +166,12 @@
               var code = (json && json.code) ? json.code : '';
               var msg = (json && json.message) ? json.message : 'Current password is incorrect.';
               var remaining = (json && typeof json.remaining_attempts === 'number') ? json.remaining_attempts : null;
-
               if (code === 'incorrect_password') {
                 msg = 'Incorrect password. Try again.';
                 if (remaining !== null) {
                   msg += ' (' + remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' left)';
                 }
               }
-
               modalError.textContent = msg;
               modalError.classList.remove('is-hidden');
               if (modalSuccess) {
@@ -198,13 +194,12 @@
     if (cfg.startWithPasswordCard && passwordCard) {
       passwordCard.classList.remove('is-hidden');
     }
-
     if (modal) {
       modal.classList.add('hidden');
       modal.style.display = 'none';
     }
 
-    var successMsg = document.querySelector('.success-msg');
+    var successMsg = document.querySelector('.alert-success');
     if (successMsg && successMsg.textContent.trim()) {
       showToast(successMsg.textContent.trim(), 'success');
     }

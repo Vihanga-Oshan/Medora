@@ -30,14 +30,45 @@ if ($redirect === '' || !str_starts_with($redirect, '/')) {
 }
 
 if (in_array($status, ['TAKEN', 'MISSED'], true)) {
+    $updated = false;
     if ($reminderEventId > 0) {
         if ($status === 'TAKEN') {
-            MedicationReminderService::markTakenFromEvent($reminderEventId, $user['nic']);
+            $updated = MedicationReminderService::markTakenFromEvent($reminderEventId, $user['nic']);
         } else {
-            MedicationReminderService::markMissedFromEvent($reminderEventId, $user['nic']);
+            $updated = MedicationReminderService::markMissedFromEvent($reminderEventId, $user['nic']);
         }
     } elseif ($scheduleId > 0) {
-        MedicationsModel::markStatus($scheduleId, $user['nic'], $status, $timeSlot);
+        $updated = MedicationsModel::markStatus($scheduleId, $user['nic'], $status, $timeSlot);
+    }
+
+    if ($updated && $status === 'MISSED') {
+        $patient = Database::fetchOne(
+            "SELECT nic, name, guardian_nic FROM patient WHERE nic = ? LIMIT 1",
+            's',
+            [$user['nic']]
+        );
+
+        $guardianNic = trim((string)($patient['guardian_nic'] ?? ''));
+        if ($guardianNic !== '') {
+            $patientName = trim((string)($patient['name'] ?? 'Patient'));
+            $message = $patientName . ' missed a scheduled dose.';
+
+            if (PharmacyContext::tableHasPharmacyId('notifications') && PharmacyContext::selectedPharmacyId() > 0) {
+                Database::execute(
+                    "INSERT INTO notifications (patient_nic, message, type, is_read, created_at, pharmacy_id)
+                     VALUES (?, ?, 'DOSE_MISSED', 0, NOW(), ?)",
+                    'ssi',
+                    [$user['nic'], $message, PharmacyContext::selectedPharmacyId()]
+                );
+            } else {
+                Database::execute(
+                    "INSERT INTO notifications (patient_nic, message, type, is_read, created_at)
+                     VALUES (?, ?, 'DOSE_MISSED', 0, NOW())",
+                    'ss',
+                    [$user['nic'], $message]
+                );
+            }
+        }
     }
 }
 

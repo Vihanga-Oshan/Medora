@@ -57,12 +57,46 @@
       main.querySelectorAll('.stats-grid .card, .stats-row .stat-mini-card, .activity-list li, .status-list li')
     );
 
+    var searchBar = input.closest('.search-bar');
+    var info = document.createElement('small');
+    info.className = 'admin-search-meta';
+    info.style.marginLeft = '8px';
+    info.style.color = '#6b7280';
+    info.style.fontSize = '12px';
+    info.textContent = '';
+    if (searchBar && searchBar.parentNode) {
+      searchBar.parentNode.appendChild(info);
+    }
+
+    function countVisible(rows) {
+      return rows.reduce(function (acc, row) {
+        return acc + (row.style.display === 'none' ? 0 : 1);
+      }, 0);
+    }
+
     input.addEventListener('input', function () {
       var q = normalize(input.value);
       tables.forEach(function (table) {
         filterTable(table, q);
       });
       filterCollection(cards, q);
+
+      var visibleCards = countVisible(cards);
+      var hasQuery = q.length > 0;
+      if (info) {
+        if (!hasQuery) {
+          info.textContent = '';
+        } else {
+          info.textContent = visibleCards > 0 ? (visibleCards + ' matches') : 'No matches';
+        }
+      }
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        input.value = '';
+        input.dispatchEvent(new Event('input'));
+      }
     });
   }
 

@@ -5,10 +5,47 @@
 class PatientsModel
 {
     private const PATIENT_TABLE = 'patient';
+    private const REQUEST_TABLE = 'guardian_link_requests';
+
+    private static function normalizeNic(string $nic): string
+    {
+        $nic = strtoupper(trim($nic));
+        return preg_replace('/[\s\-]+/', '', $nic) ?? $nic;
+    }
+
+    private static function patientGuardianMatchExpr(string $patientAlias = 'p'): string
+    {
+        return "REPLACE(REPLACE(UPPER(" . $patientAlias . ".guardian_nic), ' ', ''), '-', '') = ?";
+    }
+
+    public static function ensureLinkRequestTable(): void
+    {
+        Database::iud("
+            CREATE TABLE IF NOT EXISTS `" . self::REQUEST_TABLE . "` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                guardian_nic VARCHAR(45) NOT NULL,
+                patient_nic VARCHAR(20) NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                guardian_seen TINYINT(1) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                responded_at TIMESTAMP NULL DEFAULT NULL,
+                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_guardian_status (guardian_nic, status, responded_at),
+                INDEX idx_patient_status (patient_nic, status, created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+    }
 
     public static function getLinkedPatients(string $guardianNic): array
     {
-        return Database::fetchAll("SELECT * FROM `" . self::PATIENT_TABLE . "` WHERE guardian_nic = ?", 's', [$guardianNic]);
+        $guardianNic = self::normalizeNic($guardianNic);
+        return Database::fetchAll(
+            "SELECT * FROM `" . self::PATIENT_TABLE . "` p
+             WHERE " . self::patientGuardianMatchExpr('p') . "
+             ORDER BY p.name ASC",
+            's',
+            [$guardianNic]
+        );
     }
 
     public static function getPatientProfile(string $nic): ?array
@@ -92,19 +129,44 @@ class PatientsModel
 
     public static function linkPatient(string $patientNic, string $guardianNic): bool
     {
-        Database::setUpConnection();
-        $patientNic = Database::$connection->real_escape_string($patientNic);
-        $guardianNic = Database::$connection->real_escape_string($guardianNic);
-
-        $sql = "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = '$guardianNic', link_status = 'LINKED' WHERE nic = '$patientNic'";
-        return Database::iud($sql);
+        return Database::execute(
+            "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = ? WHERE nic = ?",
+            'ss',
+            [self::normalizeNic($guardianNic), self::normalizeNic($patientNic)]
+        );
     }
 
     public static function unlinkPatient(string $patientNic): bool
     {
-        Database::setUpConnection();
-        $patientNic = Database::$connection->real_escape_string($patientNic);
-        $sql = "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = NULL, link_status = NULL WHERE nic = '$patientNic'";
-        return Database::iud($sql);
+        return Database::execute(
+            "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = NULL WHERE nic = ?",
+            's',
+            [self::normalizeNic($patientNic)]
+        );
+    }
+
+    public static function sendLinkRequest(string $patientNic, string $guardianNic): bool
+    {
+        self::ensureLinkRequestTable();
+        $patientNic = self::normalizeNic($patientNic);
+        $guardianNic = self::normalizeNic($guardianNic);
+
+        // Reset previous pending request for same pair to avoid duplicates.
+        Database::execute(
+            "UPDATE `" . self::REQUEST_TABLE . "`
+             SET status = 'CANCELLED', guardian_seen = 1, updated_at = NOW()
+             WHERE REPLACE(REPLACE(UPPER(patient_nic), ' ', ''), '-', '') = ?
+               AND REPLACE(REPLACE(UPPER(guardian_nic), ' ', ''), '-', '') = ?
+               AND UPPER(status) = 'PENDING'",
+            'ss',
+            [$patientNic, $guardianNic]
+        );
+
+        return Database::execute(
+            "INSERT INTO `" . self::REQUEST_TABLE . "` (guardian_nic, patient_nic, status, guardian_seen, created_at, updated_at)
+             VALUES (?, ?, 'PENDING', 0, NOW(), NOW())",
+            'ss',
+            [$guardianNic, $patientNic]
+        );
     }
 }

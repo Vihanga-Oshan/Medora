@@ -53,3 +53,16 @@
   display: flex;
   justify-content: flex-start;
 }
+.ux-hint {
+  margin-top: 8px;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #334155;
+  background: #eef6ff;
+  border: 1px solid #cfe3fb;
+  border-radius: 999px;
+  padding: 6px 12px;
+}

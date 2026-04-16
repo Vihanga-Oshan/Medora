@@ -117,6 +117,64 @@
   margin-bottom: 12px;
 }
 
+.admin-settings-page .verify-feedback {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-settings-page .verify-feedback.success {
+  background: #ecfdf3;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+.admin-settings-page .update-meta {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+  background: #eef6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+.admin-ux-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  z-index: 2500;
+  min-width: 260px;
+  max-width: 360px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(2, 34, 68, 0.25);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.admin-ux-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.admin-ux-toast.success {
+  background: #15803d;
+}
+
+.admin-ux-toast.info {
+  background: #0369a1;
+}
+
 .admin-settings-page .btn-cancel,
 .admin-settings-page .btn-save,
 .admin-pharmacists-page .btn.btn-primary {

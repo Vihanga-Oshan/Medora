@@ -71,6 +71,7 @@ $base = APP_BASE ?: '';
             <?php endif; ?>
             <?php if (!empty($success)): ?>
                 <div class="success-msg"><?= htmlspecialchars((string)$success) ?></div>
+                <div id="admin-last-updated" class="update-meta" data-updated-at="<?= time() ?>">Last updated just now</div>
             <?php endif; ?>
 
             <div class="settings-form-v2">
@@ -133,6 +134,7 @@ $base = APP_BASE ?: '';
                 </div>
 
                 <div class="settings-actions">
+                    <button type="button" id="password-card-cancel-btn" class="btn-cancel">Cancel</button>
                     <button type="submit" class="btn-save">Update Password</button>
                 </div>
             </form>
@@ -148,12 +150,15 @@ $base = APP_BASE ?: '';
             <input id="modal-current-password" type="password" placeholder="Current password">
         </div>
         <p id="password-verify-error" class="error-msg is-hidden" style="margin-top:10px;"></p>
+        <p id="password-verify-success" class="verify-feedback success is-hidden"></p>
         <div class="modal-actions">
             <button type="button" id="modal-cancel-btn" class="btn-cancel">Cancel</button>
             <button type="button" id="modal-verify-btn" class="btn-save">Verify</button>
         </div>
     </div>
 </div>
+
+<div id="admin-ux-toast" class="admin-ux-toast" role="status" aria-live="polite"></div>
 
 <script src="<?= htmlspecialchars($base) ?>/assets/js/admin/admin-search.js"></script>
 <script src="<?= htmlspecialchars($base) ?>/assets/js/admin/admin-profile-menu.js?v=6"></script>

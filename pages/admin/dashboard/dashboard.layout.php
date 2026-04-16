@@ -58,6 +58,7 @@ $recentLogs = $data['recentLogs'] ?? [];
     <section class="dashboard">
         <h1>Dashboard</h1>
         <p class="subtitle">Welcome back! Here's what's happening today.</p>
+        <p class="ux-hint">&#9432; Metrics and activity update automatically as system events are recorded.</p>
 
         <div class="stats-grid">
             <div class="card">
@@ -142,7 +143,7 @@ $recentLogs = $data['recentLogs'] ?? [];
             </ul>
             <?php if (count($recentLogs) > 5): ?>
                 <div class="activity-actions">
-                    <button id="load-more-activity" type="button" class="btn btn-muted btn-small">See More</button>
+                    <button id="load-more-activity" type="button" class="btn btn-muted btn-small">See More (<?= (int)(count($recentLogs) - 5) ?> left)</button>
                 </div>
             <?php endif; ?>
         </div>
@@ -166,9 +167,12 @@ $recentLogs = $data['recentLogs'] ?? [];
                 item.style.display = '';
             });
             revealed += next.length;
+            const left = Math.max(hiddenItems.length - revealed, 0);
 
             if (revealed >= hiddenItems.length) {
                 btn.style.display = 'none';
+            } else {
+                btn.textContent = 'See More (' + left + ' left)';
             }
         });
     })();
