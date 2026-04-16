@@ -3,8 +3,9 @@
  * Guardian Patient Monitoring Controller
  */
 require_once __DIR__ . '/patients.model.php';
+require_once ROOT . '/core/GuardianLinkRequestSupport.php';
 
-$guardianNic = $user['id'];
+$guardianNic = GuardianLinkRequestSupport::normalizeNic((string)($user['id'] ?? ''));
 $patients = PatientsModel::getLinkedPatients($guardianNic);
 
 $selectedNic = $_GET['nic'] ?? ($patients[0]['nic'] ?? '');

@@ -4,11 +4,12 @@
  * All DB queries for the dashboard page.
  * Returns plain arrays — no HTML, no session logic.
  */
+require_once ROOT . '/core/GuardianLinkRequestSupport.php';
+
 class DashboardModel
 {
     private const PATIENT_TABLE = 'patient';
     private const GUARDIAN_TABLE = 'guardian';
-    private const REQUEST_TABLE = 'guardian_link_requests';
 
     private static function currentPharmacyId(): int
     {
@@ -28,24 +29,6 @@ class DashboardModel
             return "($alias.pharmacy_id IS NULL OR $alias.pharmacy_id = 0 OR $alias.pharmacy_id = " . (int) $pid . ")";
         }
         return PharmacyContext::sqlFilter($alias, $pid);
-    }
-
-    private static function ensureLinkRequestTable(): void
-    {
-        Database::iud("
-            CREATE TABLE IF NOT EXISTS `" . self::REQUEST_TABLE . "` (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                guardian_nic VARCHAR(45) NOT NULL,
-                patient_nic VARCHAR(20) NOT NULL,
-                status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-                guardian_seen TINYINT(1) NOT NULL DEFAULT 0,
-                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-                responded_at TIMESTAMP NULL DEFAULT NULL,
-                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_guardian_status (guardian_nic, status, responded_at),
-                INDEX idx_patient_status (patient_nic, status, created_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
     }
 
     /**
@@ -110,21 +93,19 @@ class DashboardModel
      */
     public static function getPendingGuardianRequest(string $nic): ?array
     {
-        self::ensureLinkRequestTable();
-        $normalizedNic = strtoupper(trim($nic));
-        $normalizedNic = preg_replace('/[\s\-]+/', '', $normalizedNic) ?? $normalizedNic;
+        $pending = GuardianLinkRequestSupport::latestPendingForPatient($nic);
+        $guardianNic = (string) ($pending['guardian_nic'] ?? '');
+        if ($guardianNic === '') {
+            return null;
+        }
 
         return Database::fetchOne(
             "SELECT g.nic, g.g_name AS name, g.email
-             FROM `" . self::REQUEST_TABLE . "` r
-             JOIN " . self::GUARDIAN_TABLE . " g
-               ON REPLACE(REPLACE(UPPER(g.nic), ' ', ''), '-', '') = REPLACE(REPLACE(UPPER(r.guardian_nic), ' ', ''), '-', '')
-             WHERE REPLACE(REPLACE(UPPER(r.patient_nic), ' ', ''), '-', '') = ?
-               AND UPPER(r.status) = 'PENDING'
-             ORDER BY r.id DESC
+             FROM " . self::GUARDIAN_TABLE . " g
+             WHERE g.nic = ?
              LIMIT 1",
             's',
-            [$normalizedNic]
+            [$guardianNic]
         );
     }
 }

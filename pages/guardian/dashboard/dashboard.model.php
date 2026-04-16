@@ -2,43 +2,20 @@
 /**
  * Guardian Dashboard Model
  */
+require_once ROOT . '/core/GuardianLinkRequestSupport.php';
+
 class DashboardModel
 {
     private const PATIENT_TABLE = 'patient';
-    private const REQUEST_TABLE = 'guardian_link_requests';
 
     private static function normalizeNic(string $nic): string
     {
-        $nic = strtoupper(trim($nic));
-        return preg_replace('/[\s\-]+/', '', $nic) ?? $nic;
+        return GuardianLinkRequestSupport::normalizeNic($nic);
     }
 
     private static function guardianMatchExpr(string $patientAlias = 'p'): string
     {
-        return "REPLACE(REPLACE(UPPER(" . $patientAlias . ".guardian_nic), ' ', ''), '-', '') = ?";
-    }
-
-    private static function requestGuardianMatchExpr(string $requestAlias = 'r'): string
-    {
-        return "REPLACE(REPLACE(UPPER(" . $requestAlias . ".guardian_nic), ' ', ''), '-', '') = ?";
-    }
-
-    private static function ensureLinkRequestTable(): void
-    {
-        Database::iud("
-            CREATE TABLE IF NOT EXISTS `" . self::REQUEST_TABLE . "` (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                guardian_nic VARCHAR(45) NOT NULL,
-                patient_nic VARCHAR(20) NOT NULL,
-                status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-                guardian_seen TINYINT(1) NOT NULL DEFAULT 0,
-                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-                responded_at TIMESTAMP NULL DEFAULT NULL,
-                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_guardian_status (guardian_nic, status, responded_at),
-                INDEX idx_patient_status (patient_nic, status, created_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
+        return $patientAlias . ".guardian_nic = ?";
     }
 
     public static function getPatientsByGuardian(string $guardianNic): array
@@ -64,7 +41,7 @@ class DashboardModel
         if ($normalizedNic === '') {
             return [];
         }
-        self::ensureLinkRequestTable();
+        GuardianLinkRequestSupport::ensureTable();
 
         $limit = max(1, (int)$limit);
 
@@ -99,10 +76,10 @@ class DashboardModel
                     COALESCE(r.responded_at, r.updated_at, r.created_at) AS created_at,
                     COALESCE(r.guardian_seen, 0) AS is_read,
                     COALESCE(p.name, 'Patient') AS patient_name
-             FROM `" . self::REQUEST_TABLE . "` r
+             FROM `" . GuardianLinkRequestSupport::TABLE . "` r
              LEFT JOIN `" . self::PATIENT_TABLE . "` p ON p.nic = r.patient_nic
-             WHERE " . self::requestGuardianMatchExpr('r') . "
-               AND UPPER(r.status) IN ('ACCEPTED', 'DECLINED')
+             WHERE r.guardian_nic = ?
+               AND r.status IN ('ACCEPTED', 'DECLINED')
              ORDER BY COALESCE(r.responded_at, r.updated_at, r.created_at) DESC
              LIMIT " . $limit,
             's',
@@ -125,7 +102,7 @@ class DashboardModel
         if ($normalizedNic === '') {
             return 0;
         }
-        self::ensureLinkRequestTable();
+        GuardianLinkRequestSupport::ensureTable();
 
         $doseRow = Database::fetchOne(
             "SELECT COUNT(*) AS cnt
@@ -143,9 +120,9 @@ class DashboardModel
 
         $requestRow = Database::fetchOne(
             "SELECT COUNT(*) AS cnt
-             FROM `" . self::REQUEST_TABLE . "` r
-             WHERE " . self::requestGuardianMatchExpr('r') . "
-               AND UPPER(r.status) IN ('ACCEPTED', 'DECLINED')
+             FROM `" . GuardianLinkRequestSupport::TABLE . "` r
+             WHERE r.guardian_nic = ?
+               AND r.status IN ('ACCEPTED', 'DECLINED')
                AND COALESCE(r.guardian_seen, 0) = 0",
             's',
             [$normalizedNic]

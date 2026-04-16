@@ -413,6 +413,19 @@ CREATE TABLE IF NOT EXISTS patient_pharmacy_selection (
   INDEX idx_pharmacy (pharmacy_id)
 );
 
+CREATE TABLE IF NOT EXISTS guardian_link_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  guardian_nic VARCHAR(20) NOT NULL,
+  patient_nic VARCHAR(20) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  guardian_seen TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  responded_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_guardian_status (guardian_nic, status, responded_at),
+  INDEX idx_patient_status (patient_nic, status, created_at)
+);
+
 CREATE TABLE IF NOT EXISTS notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   patient_nic VARCHAR(50) NOT NULL,
