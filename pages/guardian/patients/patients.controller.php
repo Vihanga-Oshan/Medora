@@ -9,7 +9,7 @@ $guardianNic = GuardianLinkRequestSupport::normalizeNic((string)($user['id'] ?? 
 $patients = PatientsModel::getLinkedPatients($guardianNic);
 $selectedDate = date('Y-m-d');
 
-$selectedNic = $_GET['nic'] ?? ($patients[0]['nic'] ?? '');
+$selectedNic = GuardianLinkRequestSupport::normalizeNic((string)($_GET['nic'] ?? ($patients[0]['nic'] ?? '')));
 $selectedPatient = null;
 $medications = [];
 $summary = [

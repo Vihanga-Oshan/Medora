@@ -9,8 +9,7 @@ $base = APP_BASE ?: '';
 
 if (Request::isPost()) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_alerts_action')) {
-        header('Location: ' . $base . '/guardian/alerts?error=csrf');
-        exit;
+        Response::redirect('/guardian/alerts?error=csrf');
     }
     $action = $_POST['action'] ?? '';
     if ($action === 'markRead') {
@@ -21,8 +20,7 @@ if (Request::isPost()) {
     } elseif ($action === 'markAllRead') {
         AlertsModel::markAllRead($guardianNic);
     }
-    header('Location: ' . $base . '/guardian/alerts?msg=updated');
-    exit;
+    Response::redirect('/guardian/alerts?msg=updated');
 }
 
 $notifications = AlertsModel::getNotificationsByGuardian($guardianNic);

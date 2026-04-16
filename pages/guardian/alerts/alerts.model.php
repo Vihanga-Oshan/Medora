@@ -27,6 +27,7 @@ class AlertsModel
 
     public static function markAsReadForGuardian(int $id, string $guardianNic): bool
     {
+        $guardianNic = self::normalizeNic($guardianNic);
         return Database::execute("
             UPDATE notifications n
             JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic

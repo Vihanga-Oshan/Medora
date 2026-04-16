@@ -32,7 +32,11 @@ class PatientsModel
 
     public static function getPatientProfile(string $nic): ?array
     {
-        return Database::fetchOne("SELECT * FROM `" . self::PATIENT_TABLE . "` WHERE nic = ? LIMIT 1", 's', [$nic]);
+        return Database::fetchOne(
+            "SELECT * FROM `" . self::PATIENT_TABLE . "` WHERE nic = ? LIMIT 1",
+            's',
+            [self::normalizeNic($nic)]
+        );
     }
 
     public static function getTodayMedicationSummary(string $nic, string $date): array
@@ -91,7 +95,7 @@ class PatientsModel
     {
         return Database::execute(
             "UPDATE `" . self::PATIENT_TABLE . "`
-             SET guardian_nic = ?, link_status = 'LINKED'
+             SET guardian_nic = ?
              WHERE nic = ?",
             'ss',
             [self::normalizeNic($guardianNic), self::normalizeNic($patientNic)]
@@ -102,7 +106,7 @@ class PatientsModel
     {
         return Database::execute(
             "UPDATE `" . self::PATIENT_TABLE . "`
-             SET guardian_nic = NULL, link_status = NULL
+             SET guardian_nic = NULL
              WHERE nic = ?",
             's',
             [self::normalizeNic($patientNic)]

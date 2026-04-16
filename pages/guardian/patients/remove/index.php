@@ -7,29 +7,23 @@ require_once __DIR__ . '/../patients.model.php';
 require_once ROOT . '/core/GuardianLinkRequestSupport.php';
 
 if (!Request::isPost()) {
-    header('Location: ' . (APP_BASE ?: '') . '/guardian/patients');
-    exit;
+    Response::redirect('/guardian/patients');
 }
 
 if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_patient_unlink')) {
-    header('Location: ' . (APP_BASE ?: '') . '/guardian/patients?error=csrf');
-    exit;
+    Response::redirect('/guardian/patients?error=csrf');
 }
 
-$base = APP_BASE ?: '';
 $patientNic = GuardianLinkRequestSupport::normalizeNic((string)($_POST['nic'] ?? ''));
 $guardianNic = GuardianLinkRequestSupport::normalizeNic((string)($user['id'] ?? ''));
 $patient = PatientsModel::getPatientProfile($patientNic);
 
 if (!$patient || GuardianLinkRequestSupport::normalizeNic((string)($patient['guardian_nic'] ?? '')) !== $guardianNic) {
-    header('Location: ' . $base . '/guardian/patients?error=unauthorized');
-    exit;
+    Response::redirect('/guardian/patients?error=unauthorized');
 }
 
 if (!PatientsModel::unlinkPatient($patientNic)) {
-    header('Location: ' . $base . '/guardian/patients?error=unlink_failed');
-    exit;
+    Response::redirect('/guardian/patients?error=unlink_failed');
 }
 
-header('Location: ' . $base . '/guardian/patients?msg=unlinked');
-exit;
+Response::redirect('/guardian/patients?msg=unlinked');
