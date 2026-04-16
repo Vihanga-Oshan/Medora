@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../../common/patient.head.php';
 require_once __DIR__ . '/../../shop.state.php';
 require_once __DIR__ . '/../../shop.model.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (!Request::isPost()) {
     Response::redirect('/patient/shop');
 }
 

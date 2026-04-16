@@ -3,35 +3,18 @@
 /**
  * Pharmacist Login Controller
  */
+require_once ROOT . '/core/InputValidator.php';
+require_once ROOT . '/core/AppLogger.php';
+
 $error = null;
-
-if (!function_exists('pharmacistLoginWriteLog')) {
-    function pharmacistLoginWriteLog(string $file, string $level, string $message, array $context = []): void
-    {
-        $rootDir = defined('ROOT') ? ROOT : dirname(__DIR__, 3);
-        $logDir = $rootDir . '/storage/logs';
-        if (!is_dir($logDir)) {
-            @mkdir($logDir, 0777, true);
-        }
-
-        $line = sprintf(
-            "[%s] [%s] %s %s%s",
-            date('Y-m-d H:i:s'),
-            $level,
-            $message,
-            json_encode($context, JSON_UNESCAPED_SLASHES),
-            PHP_EOL
-        );
-        @file_put_contents($logDir . '/' . $file, $line, FILE_APPEND | LOCK_EX);
-    }
-}
 
 if (Request::isPost()) {
     $pharmacistId = trim(Request::post('id') ?? '');
     $password = Request::post('password') ?? '';
+    $rememberMe = InputValidator::isTruthyRememberMe(Request::post('rememberMe'));
     $safeId = (int)preg_replace('/\D+/', '', $pharmacistId);
 
-    pharmacistLoginWriteLog('pharmacist-login-debug.log', 'DEBUG', 'Pharmacist login request received.', [
+    AppLogger::write('pharmacist-login-debug.log', 'DEBUG', 'Pharmacist login request received.', [
         'id_input' => $pharmacistId,
         'id_numeric' => $safeId,
         'password_length' => strlen($password),
@@ -39,9 +22,15 @@ if (Request::isPost()) {
 
     if ($pharmacistId === '' || $password === '') {
         $error = 'Pharmacist ID and password are required.';
-        pharmacistLoginWriteLog('pharmacist-login-error.log', 'ERROR', 'Validation failed: missing ID or password.', [
+        AppLogger::write('pharmacist-login-error.log', 'ERROR', 'Validation failed: missing ID or password.', [
             'id_empty' => $pharmacistId === '' ? 1 : 0,
             'password_empty' => $password === '' ? 1 : 0,
+        ]);
+    } elseif (!InputValidator::isValidLicenseDigits((string)$safeId)) {
+        $error = 'Pharmacist ID must be exactly 4 digits.';
+        AppLogger::write('pharmacist-login-error.log', 'ERROR', 'Validation failed: invalid pharmacist ID format.', [
+            'id_input' => $pharmacistId,
+            'id_numeric' => $safeId,
         ]);
     } else {
         require_once __DIR__ . '/login.model.php';
@@ -54,7 +43,7 @@ if (Request::isPost()) {
         }
 
         $verified = $user !== null && password_verify($password, $hash);
-        pharmacistLoginWriteLog('pharmacist-login-debug.log', 'DEBUG', 'Password verification result.', [
+        AppLogger::write('pharmacist-login-debug.log', 'DEBUG', 'Password verification result.', [
             'id_numeric' => $safeId,
             'user_found' => $user !== null ? 1 : 0,
             'hash_prefix' => substr((string)$hash, 0, 4),
@@ -71,14 +60,14 @@ if (Request::isPost()) {
                 if ($rq) {
                     $_SESSION['pharmacist_request_id'] = (int)($rq['id'] ?? 0);
                 }
-                pharmacistLoginWriteLog('pharmacist-login-debug.log', 'DEBUG', 'Pending request detected, redirecting.', [
+                AppLogger::write('pharmacist-login-debug.log', 'DEBUG', 'Pending request detected, redirecting.', [
                     'id_numeric' => $safeId,
                     'request_id' => (int)($rq['id'] ?? 0),
                 ]);
                 Response::redirect('/pharmacist/pending-approval');
             }
             $error = 'Invalid pharmacist credentials.';
-            pharmacistLoginWriteLog('pharmacist-login-error.log', 'ERROR', 'Pharmacist login failed.', [
+            AppLogger::write('pharmacist-login-error.log', 'ERROR', 'Pharmacist login failed.', [
                 'id_numeric' => $safeId,
                 'reason' => $user === null ? 'user_not_found' : 'password_mismatch',
             ]);
@@ -93,8 +82,8 @@ if (Request::isPost()) {
                 'pharmacy_id' => $assignedPharmacyId,
             ]);
 
-            Auth::setTokenCookie($token, 86400, 'pharmacist');
-            pharmacistLoginWriteLog('pharmacist-login-debug.log', 'DEBUG', 'Pharmacist login successful.', [
+            Auth::setTokenCookie($token, $rememberMe ? 2592000 : 0, 'pharmacist');
+            AppLogger::write('pharmacist-login-debug.log', 'DEBUG', 'Pharmacist login successful.', [
                 'id' => (int)$user['id'],
                 'name' => $displayName,
                 'pharmacy_id' => $assignedPharmacyId,

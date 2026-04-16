@@ -8,12 +8,10 @@ require_once __DIR__ . '/../pharmacists.model.php';
 
 $id = (int)($_GET['id'] ?? $_POST['current_id'] ?? 0);
 if (!$id) {
-    $base = APP_BASE ?: '';
-    header('Location: ' . $base . '/admin/pharmacists');
-    exit;
+    Response::redirect('/admin/pharmacists');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_pharmacists_edit')) {
         $error = "Security validation failed. Please refresh and try again.";
     } else {
@@ -22,9 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($updatedName !== '') {
                 AdminActivityLog::log($user, "Updated pharmacist profile for {$updatedName}", 'blue', $user['name'] ?? 'Admin', 'pharmacist', $id);
             }
-            $base = APP_BASE ?: '';
-            header('Location: ' . $base . '/admin/pharmacists?msg=updated');
-            exit;
+            Response::redirect('/admin/pharmacists?msg=updated');
         }
         $error = "Failed to update pharmacist. Please try again.";
     }
@@ -32,9 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $ph = PharmacistsModel::getById($id);
 if (!$ph) {
-    $base = APP_BASE ?: '';
-    header('Location: ' . $base . '/admin/pharmacists');
-    exit;
+    Response::redirect('/admin/pharmacists');
 }
 
 $base = APP_BASE ?: '';

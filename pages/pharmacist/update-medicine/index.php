@@ -5,7 +5,7 @@
  */
 require_once __DIR__ . '/../common/pharmacist.head.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (!Request::isPost()) {
     Response::redirect('/pharmacist/inventory');
 }
 

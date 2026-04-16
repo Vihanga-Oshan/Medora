@@ -3,14 +3,19 @@
 /**
  * Admin Login Controller
  */
+require_once ROOT . '/core/InputValidator.php';
+
 $error = null;
 
 if (Request::isPost()) {
-    $email    = trim(Request::post('email') ?? '');
+    $email    = InputValidator::normalizeEmail((string) (Request::post('email') ?? ''));
     $password = Request::post('password') ?? '';
+    $rememberMe = InputValidator::isTruthyRememberMe(Request::post('rememberMe'));
 
     if ($email === '' || $password === '') {
         $error = 'Admin email and password are required.';
+    } elseif (!InputValidator::isValidEmail($email)) {
+        $error = 'Please enter a valid email address.';
     } else {
         require_once __DIR__ . '/login.model.php';
         $user = LoginModel::findByEmail($email);
@@ -45,7 +50,7 @@ if (Request::isPost()) {
                 'role' => $user['role'],
             ]);
 
-            Auth::setTokenCookie($token, 86400, 'admin');
+            Auth::setTokenCookie($token, $rememberMe ? 2592000 : 0, 'admin');
             Response::redirect('/admin/dashboard');
         }
     }

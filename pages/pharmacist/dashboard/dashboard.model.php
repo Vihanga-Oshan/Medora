@@ -26,26 +26,13 @@ class DashboardModel
 
     private static function countFromQuery(string $sql): int
     {
-        $rs = Database::search($sql);
-        if (!($rs instanceof mysqli_result)) {
-            return 0;
-        }
-        $row = $rs->fetch_assoc();
+        $row = Database::fetchOne($sql);
         return (int)($row['cnt'] ?? 0);
     }
 
     private static function rowsFromQuery(string $sql): array
     {
-        $rs = Database::search($sql);
-        if (!($rs instanceof mysqli_result)) {
-            return [];
-        }
-
-        $rows = [];
-        while ($row = $rs->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
+        return Database::fetchAll($sql);
     }
 
     public static function getMetrics(): array

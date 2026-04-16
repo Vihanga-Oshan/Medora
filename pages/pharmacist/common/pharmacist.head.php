@@ -6,18 +6,17 @@
  */
 $authUser = Auth::requireRole('pharmacist');
 
-Database::setUpConnection();
 $pharmacistId = (int) ($authUser['id'] ?? 0);
 
 $table = 'pharmacist';
-$rs = Database::search(
+$pharmacist = Database::fetchOne(
     "SELECT id, name, email, '' AS phone, CAST(id AS CHAR) AS license_no, 'pharmacist' AS role, 'ACTIVE' AS status
      FROM pharmacist
-     WHERE id = $pharmacistId
-     LIMIT 1"
+     WHERE id = ?
+     LIMIT 1",
+    'i',
+    [$pharmacistId]
 );
-
-$pharmacist = $rs ? $rs->fetch_assoc() : null;
 if (!$pharmacist) {
     Auth::clearTokenCookie('pharmacist');
     Response::redirect('/pharmacist/login');
@@ -42,7 +41,7 @@ $currentPharmacyId = (int) ($authUser['pharmacy_id'] ?? 0);
 if ($currentPharmacyId <= 0) {
     $currentPharmacyId = PharmacyContext::resolvePharmacistPharmacyId((int) $user['id']);
 }
-if ($currentPharmacyId <= 0 && PharmacyContext::pharmaciesEnabled()) {
+if ($currentPharmacyId <= 0) {
     Auth::clearTokenCookie('pharmacist');
     Response::redirect('/pharmacist/login');
 }

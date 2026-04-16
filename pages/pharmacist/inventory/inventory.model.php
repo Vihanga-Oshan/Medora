@@ -1,3 +1,4 @@
+
 <?php
 /**
  * Medicine Inventory Model
@@ -6,23 +7,6 @@ class InventoryModel
 {
     private static ?array $medicineColumnsCache = null;
     private static ?int $pharmacyIdCache = null;
-
-    private static function ensureMedicineColumns(): void
-    {
-        if (!self::tableExists('medicines')) {
-            return;
-        }
-
-        if (!self::columnExists('medicines', 'pricing')) {
-            Database::iud("ALTER TABLE medicines ADD COLUMN pricing DECIMAL(10,2) NOT NULL DEFAULT 0");
-            self::$medicineColumnsCache = null;
-        }
-
-        if (self::columnExists('medicines', 'price') && self::columnExists('medicines', 'pricing')) {
-            Database::iud("UPDATE medicines SET pricing = price WHERE (pricing IS NULL OR pricing = 0) AND price IS NOT NULL");
-            self::$medicineColumnsCache = null;
-        }
-    }
 
     private static function medicinePriceColumn(): string
     {
@@ -35,49 +19,6 @@ class InventoryModel
         return '';
     }
 
-    private static function currentPharmacyId(): int
-    {
-        if (self::$pharmacyIdCache !== null) {
-            return self::$pharmacyIdCache;
-        }
-        $auth = Auth::getUser();
-        $fromToken = (int) ($auth['pharmacy_id'] ?? 0);
-        if ($fromToken > 0) {
-            self::$pharmacyIdCache = $fromToken;
-            return $fromToken;
-        }
-        self::$pharmacyIdCache = PharmacyContext::resolvePharmacistPharmacyId((int) ($auth['id'] ?? 0));
-        return self::$pharmacyIdCache;
-    }
-
-    private static function tableExists(string $name): bool
-    {
-        return in_array($name, ['medicines', 'dosage_categories', 'frequencies', 'meal_timing', 'selling_units', 'medicine_brands', 'medicine_manufacturers', 'prescriptions', 'pharmacies', 'patient_pharmacy_selection'], true);
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        $schema = [
-            'medicines' => ['id', 'name', 'med_name', 'generic_name', 'category', 'description', 'dosage_form', 'strength', 'quantity_in_stock', 'pricing', 'manufacturer', 'expiry_date', 'added_by', 'created_at', 'pharmacy_id', 'image_path', 'image', 'image_url', 'medicine_image', 'photo'],
-            'dosage_categories' => ['id', 'label'],
-            'frequencies' => ['id', 'label', 'times_of_day'],
-            'meal_timing' => ['id', 'label'],
-            'selling_units' => ['id', 'label'],
-            'medicine_brands' => ['id', 'name'],
-            'medicine_manufacturers' => ['id', 'name'],
-            'prescriptions' => ['id', 'patient_nic', 'file_name', 'file_path', 'upload_date', 'status'],
-            'pharmacies' => ['id', 'name', 'address_line1', 'address_line2', 'city', 'district', 'postal_code', 'latitude', 'longitude', 'phone', 'email', 'is_demo', 'status', 'created_at', 'updated_at'],
-            'patient_pharmacy_selection' => ['id', 'patient_nic', 'pharmacy_id', 'selected_at', 'is_active'],
-        ];
-
-        return in_array($column, $schema[$table] ?? [], true);
-    }
-
-    private static function selectExpr(string $table, string $column, string $fallback = "''"): string
-    {
-        return self::columnExists($table, $column) ? $column : "$fallback AS $column";
-    }
-
     private static function medicineColumns(): array
     {
         if (self::$medicineColumnsCache !== null) {
@@ -85,21 +26,12 @@ class InventoryModel
         }
 
         $cols = array_fill_keys([
-            'id',
-            'name',
-            'med_name',
-            'generic_name',
-            'category',
-            'description',
-            'dosage_form',
-            'strength',
-            'quantity_in_stock',
-            'pricing',
-            'manufacturer',
-            'expiry_date',
-            'added_by',
-            'created_at',
-            'pharmacy_id',
+            'id', 'name', 'med_name', 'generic_name', 'category', 'category_id',
+            'description', 'dosage_form', 'strength', 'quantity_in_stock',
+            'low_stock_threshold', 'reorder_quantity', 'pricing', 'price', 'unit_cost',
+            'manufacturer', 'supplier_id', 'batch_number', 'expiry_date',
+            'last_restocked_at', 'added_by', 'created_at', 'updated_at',
+            'pharmacy_id', 'selling_unit', 'unit_quantity',
         ], true);
 
         self::$medicineColumnsCache = $cols;
@@ -108,27 +40,34 @@ class InventoryModel
 
     private static function hasMedicineColumn(string $column): bool
     {
-        $cols = self::medicineColumns();
-        return isset($cols[strtolower($column)]);
+        return isset(self::medicineColumns()[strtolower($column)]);
+    }
+
+    private static function currentPharmacyId(): int
+    {
+        if (self::$pharmacyIdCache !== null) {
+            return self::$pharmacyIdCache;
+        }
+
+        $auth = Auth::getUser();
+        $fromToken = (int) ($auth['pharmacy_id'] ?? 0);
+        if ($fromToken > 0) {
+            self::$pharmacyIdCache = $fromToken;
+            return $fromToken;
+        }
+
+        self::$pharmacyIdCache = PharmacyContext::resolvePharmacistPharmacyId((int) ($auth['id'] ?? 0));
+        return self::$pharmacyIdCache;
+    }
+
+    private static function currentUserId(): int
+    {
+        $auth = Auth::getUser();
+        return (int) ($auth['id'] ?? 0);
     }
 
     private static function getMedicineImageColumn(): string
     {
-        $candidates = ['image_path', 'image', 'image_url', 'medicine_image', 'photo'];
-        foreach ($candidates as $col) {
-            if (self::hasMedicineColumn($col)) {
-                return $col;
-            }
-        }
-
-        if (self::tableExists('medicines')) {
-            Database::iud("ALTER TABLE medicines ADD COLUMN image_path VARCHAR(255) NULL");
-            self::$medicineColumnsCache = null;
-            if (self::hasMedicineColumn('image_path')) {
-                return 'image_path';
-            }
-        }
-
         return '';
     }
 
@@ -159,85 +98,17 @@ class InventoryModel
         if (!is_dir($uploadDir)) {
             @mkdir($uploadDir, 0755, true);
         }
-
         if (!is_dir($uploadDir)) {
             return '';
         }
 
         $name = 'medicine_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
         $dest = $uploadDir . '/' . $name;
-
         if (!@move_uploaded_file((string) $file['tmp_name'], $dest)) {
             return '';
         }
 
         return 'uploads/medicines/' . $name;
-    }
-
-    private static function resolveCategoryName(int $categoryId): string
-    {
-        if ($categoryId <= 0) {
-            return '';
-        }
-
-        $tables = ['categories', 'category'];
-        foreach ($tables as $table) {
-            if (!self::tableExists($table)) {
-                continue;
-            }
-
-            $idCol = self::columnExists($table, 'id') ? 'id' : (self::columnExists($table, 'category_id') ? 'category_id' : '');
-            $nameCol = self::columnExists($table, 'name') ? 'name' : (self::columnExists($table, 'category_name') ? 'category_name' : '');
-            if ($idCol === '' || $nameCol === '') {
-                continue;
-            }
-
-            $row = Database::fetchOne("SELECT `$nameCol` AS n FROM `$table` WHERE `$idCol` = ? LIMIT 1", 'i', [$categoryId]);
-            if ($row && !empty($row['n'])) {
-                return (string) $row['n'];
-            }
-        }
-
-        return '';
-    }
-
-    private static function ensureLookupTables(): void
-    {
-        Database::setUpConnection();
-
-        Database::iud("CREATE TABLE IF NOT EXISTS dosage_forms (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) NOT NULL UNIQUE,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-        )");
-
-        Database::iud("CREATE TABLE IF NOT EXISTS selling_units (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) NOT NULL UNIQUE,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-        )");
-
-        Database::iud("CREATE TABLE IF NOT EXISTS medicine_brands (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(150) NOT NULL UNIQUE,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-        )");
-
-        Database::iud("CREATE TABLE IF NOT EXISTS medicine_manufacturers (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(150) NOT NULL UNIQUE,
-            is_active TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-        )");
-
-        Database::iud("INSERT IGNORE INTO dosage_forms(name) VALUES
-            ('Tablet'), ('Capsule'), ('Syrup'), ('Suspension'), ('Injection'), ('Cream'),
-            ('Ointment'), ('Drops'), ('Inhaler'), ('Powder')");
-        Database::iud("INSERT IGNORE INTO selling_units(name) VALUES
-            ('Item'), ('Strip'), ('Bottle'), ('Box'), ('Tube'), ('Vial'), ('Sachet'), ('Pack')");
     }
 
     private static function normalizeOption(string $value): string
@@ -250,17 +121,19 @@ class InventoryModel
         $existing = self::normalizeOption((string) ($input[$existingKey] ?? ''));
         $new = self::normalizeOption((string) ($input[$newKey] ?? ''));
         $fallback = self::normalizeOption($fallback);
-        if ($new !== '')
+        if ($new !== '') {
             return $new;
-        if ($existing !== '')
+        }
+        if ($existing !== '') {
             return $existing;
+        }
         return $fallback;
     }
 
     private static function upsertLookupValue(string $table, string $name): void
     {
         $name = self::normalizeOption($name);
-        if ($name === '' || !self::tableExists($table)) {
+        if ($name === '') {
             return;
         }
         Database::execute("INSERT IGNORE INTO `$table` (`name`) VALUES (?)", 's', [$name]);
@@ -268,20 +141,120 @@ class InventoryModel
 
     private static function getLookupValues(string $table): array
     {
-        Database::setUpConnection();
-        self::ensureLookupTables();
-        if (!self::tableExists($table)) {
-            return [];
-        }
         $rows = Database::fetchAll("SELECT name FROM `$table` WHERE is_active = ? ORDER BY name ASC", 'i', [1]);
         $values = [];
         foreach ($rows as $row) {
-            $val = trim((string) ($row['name'] ?? ''));
-            if ($val !== '') {
-                $values[] = $val;
+            $value = trim((string) ($row['name'] ?? ''));
+            if ($value !== '') {
+                $values[] = $value;
             }
         }
         return $values;
+    }
+
+    private static function resolveCategoryName(int $categoryId): string
+    {
+        if ($categoryId <= 0) {
+            return '';
+        }
+        $row = Database::fetchOne("SELECT name AS n FROM categories WHERE id = ? LIMIT 1", 'i', [$categoryId]);
+        return (string) ($row['n'] ?? '');
+    }
+
+    private static function resolveSupplierId(array $input, ?array $existingMedicine = null): int
+    {
+        $existingId = (int) ($input['supplier_existing'] ?? 0);
+        if ($existingId > 0) {
+            return $existingId;
+        }
+
+        $supplierName = self::normalizeOption((string) ($input['supplier_new'] ?? ''));
+        if ($supplierName === '' && $existingMedicine) {
+            return (int) ($existingMedicine['supplier_id'] ?? 0);
+        }
+        if ($supplierName === '') {
+            return 0;
+        }
+
+        $contact = self::normalizeOption((string) ($input['supplier_contact_person'] ?? ''));
+        $phone = self::normalizeOption((string) ($input['supplier_phone'] ?? ''));
+        $email = self::normalizeOption((string) ($input['supplier_email'] ?? ''));
+        $address = self::normalizeOption((string) ($input['supplier_address'] ?? ''));
+        $leadTime = max(0, (int) ($input['supplier_lead_time_days'] ?? 0));
+
+        $row = Database::fetchOne("SELECT id FROM medicine_suppliers WHERE LOWER(name) = LOWER(?) LIMIT 1", 's', [$supplierName]);
+        if ($row) {
+            $supplierId = (int) ($row['id'] ?? 0);
+            Database::execute(
+                "UPDATE medicine_suppliers
+                 SET contact_person = CASE WHEN ? <> '' THEN ? ELSE contact_person END,
+                     phone = CASE WHEN ? <> '' THEN ? ELSE phone END,
+                     email = CASE WHEN ? <> '' THEN ? ELSE email END,
+                     address = CASE WHEN ? <> '' THEN ? ELSE address END,
+                     lead_time_days = CASE WHEN ? > 0 THEN ? ELSE lead_time_days END,
+                     is_active = 1,
+                     updated_at = NOW()
+                 WHERE id = ?",
+                'ssssssssiii',
+                [$contact, $contact, $phone, $phone, $email, $email, $address, $address, $leadTime, $leadTime, $supplierId]
+            );
+            return $supplierId;
+        }
+        $ok = Database::execute(
+            "INSERT INTO medicine_suppliers (name, contact_person, phone, email, address, lead_time_days, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())",
+            'sssssi',
+            [$supplierName, $contact, $phone, $email, $address, $leadTime]
+        );
+        if (!$ok) {
+            return 0;
+        }
+
+        $inserted = Database::fetchOne("SELECT id FROM medicine_suppliers WHERE LOWER(name) = LOWER(?) LIMIT 1", 's', [$supplierName]);
+        return (int) ($inserted['id'] ?? 0);
+    }
+
+    private static function classifyMedicine(array $medicine): array
+    {
+        $qty = (int) ($medicine['quantity_in_stock'] ?? 0);
+        $threshold = max(0, (int) ($medicine['low_stock_threshold'] ?? 0));
+        $expiry = trim((string) ($medicine['expiry_date'] ?? ''));
+
+        $statusKey = 'healthy';
+        $statusLabel = 'Healthy';
+        if ($qty <= 0) {
+            $statusKey = 'out';
+            $statusLabel = 'Out of stock';
+        } elseif ($threshold > 0 && $qty <= $threshold) {
+            $statusKey = 'low';
+            $statusLabel = 'Low stock';
+        }
+
+        $daysToExpiry = null;
+        if ($expiry !== '') {
+            $expTs = strtotime($expiry);
+            if ($expTs !== false) {
+                $daysToExpiry = (int) floor(($expTs - strtotime(date('Y-m-d'))) / 86400);
+            }
+        }
+
+        $medicine['stock_status_key'] = $statusKey;
+        $medicine['stock_status_label'] = $statusLabel;
+        $medicine['is_low_stock'] = $statusKey === 'low';
+        $medicine['is_out_of_stock'] = $statusKey === 'out';
+        $medicine['days_to_expiry'] = $daysToExpiry;
+        $medicine['is_expiring_soon'] = $daysToExpiry !== null && $daysToExpiry >= 0 && $daysToExpiry <= 30;
+        $medicine['total_stock_value'] = (float) ($medicine['unit_cost'] ?? 0) * $qty;
+        return $medicine;
+    }
+
+    private static function decorateMedicineRows(array $rows): array
+    {
+        $decorated = [];
+        foreach ($rows as $row) {
+            $decorated[] = self::classifyMedicine($row);
+        }
+        return $decorated;
     }
 
     public static function getDosageForms(): array
@@ -296,194 +269,270 @@ class InventoryModel
 
     public static function getBrands(): array
     {
-        Database::setUpConnection();
-        self::ensureLookupTables();
-
         $brands = self::getLookupValues('medicine_brands');
-        if (self::tableExists('medicines') && self::hasMedicineColumn('name')) {
-            $where = "TRIM(COALESCE(name,'')) <> ''";
-            if (self::hasMedicineColumn('pharmacy_id')) {
-                $pid = self::currentPharmacyId();
-                if ($pid <= 0) {
-                    return [];
-                }
-                $where .= " AND pharmacy_id = $pid";
-            }
-            $rows = Database::fetchAll("SELECT DISTINCT name FROM medicines WHERE $where ORDER BY name ASC");
-            foreach ($rows as $row) {
-                $name = self::normalizeOption((string) ($row['name'] ?? ''));
-                if ($name !== '' && !in_array($name, $brands, true)) {
-                    $brands[] = $name;
-                }
-            }
-            sort($brands);
+        $pid = self::currentPharmacyId();
+        if (self::hasMedicineColumn('pharmacy_id') && $pid <= 0) {
+            return [];
         }
+
+        $sql = "SELECT DISTINCT name FROM medicines WHERE TRIM(COALESCE(name, '')) <> ''";
+        $types = '';
+        $params = [];
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $sql .= " AND pharmacy_id = ?";
+            $types = 'i';
+            $params[] = $pid;
+        }
+        $sql .= " ORDER BY name ASC";
+        $rows = Database::fetchAll($sql, $types, $params);
+        foreach ($rows as $row) {
+            $name = self::normalizeOption((string) ($row['name'] ?? ''));
+            if ($name !== '' && !in_array($name, $brands, true)) {
+                $brands[] = $name;
+            }
+        }
+        sort($brands);
         return $brands;
     }
 
     public static function getManufacturers(): array
     {
-        Database::setUpConnection();
-        self::ensureLookupTables();
-
-        $makers = self::getLookupValues('medicine_manufacturers');
-        if (self::tableExists('medicines') && self::hasMedicineColumn('manufacturer')) {
-            $where = "TRIM(COALESCE(manufacturer,'')) <> ''";
-            if (self::hasMedicineColumn('pharmacy_id')) {
-                $pid = self::currentPharmacyId();
-                if ($pid <= 0) {
-                    return [];
-                }
-                $where .= " AND pharmacy_id = $pid";
-            }
-            $rows = Database::fetchAll("SELECT DISTINCT manufacturer FROM medicines WHERE $where ORDER BY manufacturer ASC");
-            foreach ($rows as $row) {
-                $name = self::normalizeOption((string) ($row['manufacturer'] ?? ''));
-                if ($name !== '' && !in_array($name, $makers, true)) {
-                    $makers[] = $name;
-                }
-            }
-            sort($makers);
+        $manufacturers = self::getLookupValues('medicine_manufacturers');
+        $pid = self::currentPharmacyId();
+        if (self::hasMedicineColumn('pharmacy_id') && $pid <= 0) {
+            return [];
         }
-        return $makers;
+
+        $sql = "SELECT DISTINCT manufacturer FROM medicines WHERE TRIM(COALESCE(manufacturer, '')) <> ''";
+        $types = '';
+        $params = [];
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $sql .= " AND pharmacy_id = ?";
+            $types = 'i';
+            $params[] = $pid;
+        }
+        $sql .= " ORDER BY manufacturer ASC";
+        $rows = Database::fetchAll($sql, $types, $params);
+        foreach ($rows as $row) {
+            $name = self::normalizeOption((string) ($row['manufacturer'] ?? ''));
+            if ($name !== '' && !in_array($name, $manufacturers, true)) {
+                $manufacturers[] = $name;
+            }
+        }
+        sort($manufacturers);
+        return $manufacturers;
+    }
+
+    public static function getSuppliers(): array
+    {
+        return Database::fetchAll(
+            "SELECT id, name, contact_person, phone, email, address, lead_time_days
+             FROM medicine_suppliers
+             WHERE is_active = 1
+             ORDER BY name ASC"
+        );
     }
 
     public static function getCategories(): array
     {
-        Database::setUpConnection();
-        $tables = ['categories', 'category'];
-
-        foreach ($tables as $table) {
-            if (!self::tableExists($table)) {
-                continue;
-            }
-
-            $idCol = self::columnExists($table, 'id') ? 'id' : (self::columnExists($table, 'category_id') ? 'category_id' : '');
-            $nameCol = self::columnExists($table, 'name') ? 'name' : (self::columnExists($table, 'category_name') ? 'category_name' : '');
-            if ($idCol === '' || $nameCol === '') {
-                continue;
-            }
-
-            return Database::fetchAll("SELECT `$idCol` AS id, `$nameCol` AS name FROM `$table` ORDER BY `$nameCol` ASC");
-        }
-
-        return [];
+        return Database::fetchAll("SELECT id, name FROM categories ORDER BY name ASC");
     }
 
-    public static function getAll(string $search = ''): array
+    public static function getAll(string $search = '', string $status = 'all'): array
     {
-        Database::setUpConnection();
-        self::ensureMedicineColumns();
-
-        if (!self::tableExists('medicines')) {
+        $pharmacyId = self::currentPharmacyId();
+        if (self::hasMedicineColumn('pharmacy_id') && $pharmacyId <= 0) {
             return [];
         }
 
-        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
-        $currentPharmacyId = self::currentPharmacyId();
-        if ($hasPharmacyId && $currentPharmacyId <= 0) {
-            return [];
+        $priceCol = self::medicinePriceColumn();
+        $search = trim($search);
+        $status = trim($status);
+        $where = [];
+        $types = '';
+        $params = [];
+
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $where[] = 'm.pharmacy_id = ?';
+            $types .= 'i';
+            $params[] = $pharmacyId;
         }
 
-        $safeSearch = Database::escape($search);
-        $hasGenericName = self::columnExists('medicines', 'generic_name');
-        $hasMedicineName = self::columnExists('medicines', 'med_name');
-        $where = '';
-        if ($safeSearch !== '') {
-            $parts = ["name LIKE '%$safeSearch%'"];
-            if ($hasMedicineName) {
-                $parts[] = "med_name LIKE '%$safeSearch%'";
-            }
-            if ($hasGenericName) {
-                $parts[] = "generic_name LIKE '%$safeSearch%'";
-            }
-            $where = 'WHERE ' . implode(' OR ', $parts);
-        }
-        if ($hasPharmacyId) {
-            $where = $where === ''
-                ? ("WHERE pharmacy_id = " . $currentPharmacyId)
-                : ($where . " AND pharmacy_id = " . $currentPharmacyId);
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $where[] = "(m.name LIKE ? OR m.med_name LIKE ? OR m.generic_name LIKE ? OR m.category LIKE ? OR COALESCE(s.name, '') LIKE ?)";
+            $types .= 'sssss';
+            array_push($params, $like, $like, $like, $like, $like);
         }
 
-        $select = implode(",\n                   ", [
-            self::selectExpr('medicines', 'id', '0'),
-            self::selectExpr('medicines', 'name'),
-            self::selectExpr('medicines', 'med_name'),
-            self::selectExpr('medicines', 'generic_name'),
-            self::selectExpr('medicines', 'category'),
-            self::selectExpr('medicines', 'strength'),
-            self::selectExpr('medicines', 'dosage_form'),
-            self::selectExpr('medicines', 'quantity_in_stock', '0'),
-            ($priceCol = self::medicinePriceColumn()) !== '' ? "$priceCol AS price" : "0 AS price",
-            ($imgCol = self::getMedicineImageColumn()) !== '' ? "$imgCol AS image_path" : "'' AS image_path",
-            self::selectExpr('medicines', 'manufacturer'),
-            self::selectExpr('medicines', 'expiry_date'),
-        ]);
+        if ($status === 'low') {
+            $where[] = 'm.quantity_in_stock > 0 AND m.quantity_in_stock <= COALESCE(m.low_stock_threshold, 0)';
+        } elseif ($status === 'out') {
+            $where[] = 'm.quantity_in_stock <= 0';
+        } elseif ($status === 'expiring') {
+            $where[] = "m.expiry_date IS NOT NULL AND m.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
+        } elseif ($status === 'healthy') {
+            $where[] = '(m.quantity_in_stock > COALESCE(m.low_stock_threshold, 0))';
+        }
 
-        return Database::fetchAll("\n            SELECT $select\n            FROM medicines\n            $where\n            ORDER BY name ASC\n        ");
+        $sql = "SELECT
+                    m.*,
+                    " . ($priceCol !== '' ? "m.$priceCol AS price" : "0 AS price") . ",
+                    '' AS image_path,
+                    COALESCE(m.unit_cost, 0) AS unit_cost,
+                    COALESCE(m.low_stock_threshold, 0) AS low_stock_threshold,
+                    COALESCE(m.reorder_quantity, 0) AS reorder_quantity,
+                    s.name AS supplier_name,
+                    s.contact_person AS supplier_contact_person,
+                    s.phone AS supplier_phone,
+                    s.email AS supplier_email,
+                    s.address AS supplier_address,
+                    s.lead_time_days AS supplier_lead_time_days
+                FROM medicines m
+                LEFT JOIN medicine_suppliers s ON s.id = m.supplier_id";
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+        $sql .= ' ORDER BY m.quantity_in_stock ASC, m.name ASC';
+
+        return self::decorateMedicineRows(Database::fetchAll($sql, $types, $params));
     }
 
     public static function getById(int $id): ?array
     {
-        Database::setUpConnection();
-        self::ensureMedicineColumns();
-        if (!self::tableExists('medicines')) {
+        $pharmacyId = self::currentPharmacyId();
+        if (self::hasMedicineColumn('pharmacy_id') && $pharmacyId <= 0) {
             return null;
         }
 
-        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
-        $currentPharmacyId = self::currentPharmacyId();
-        if ($hasPharmacyId && $currentPharmacyId <= 0) {
-            return null;
-        }
-
-        $sql = "SELECT * FROM medicines WHERE id = ?";
+        $priceCol = self::medicinePriceColumn();
+        $sql = "SELECT
+                    m.*,
+                    " . ($priceCol !== '' ? "m.$priceCol AS price" : "0 AS price") . ",
+                    s.name AS supplier_name,
+                    s.contact_person AS supplier_contact_person,
+                    s.phone AS supplier_phone,
+                    s.email AS supplier_email,
+                    s.address AS supplier_address,
+                    s.lead_time_days AS supplier_lead_time_days
+                FROM medicines m
+                LEFT JOIN medicine_suppliers s ON s.id = m.supplier_id
+                WHERE m.id = ?";
         $types = 'i';
         $params = [$id];
-        if ($hasPharmacyId) {
-            $sql .= " AND pharmacy_id = ?";
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $sql .= " AND m.pharmacy_id = ?";
             $types .= 'i';
-            $params[] = $currentPharmacyId;
+            $params[] = $pharmacyId;
         }
+
         $row = Database::fetchOne($sql . " LIMIT 1", $types, $params);
         if (!$row) {
             return null;
         }
-        if (!isset($row['price'])) {
-            $priceCol = self::medicinePriceColumn();
-            $row['price'] = $priceCol !== '' ? (float) ($row[$priceCol] ?? 0) : 0;
+
+        $row['image_path'] = self::extractImagePath($row);
+        return self::classifyMedicine($row);
+    }
+
+    public static function getSummary(): array
+    {
+        $rows = self::getAll();
+        $summary = [
+            'total_items' => count($rows),
+            'total_units' => 0,
+            'low_stock_count' => 0,
+            'out_of_stock_count' => 0,
+            'expiring_soon_count' => 0,
+            'total_stock_value' => 0.0,
+        ];
+
+        foreach ($rows as $row) {
+            $summary['total_units'] += (int) ($row['quantity_in_stock'] ?? 0);
+            $summary['total_stock_value'] += (float) ($row['total_stock_value'] ?? 0);
+            $summary['low_stock_count'] += !empty($row['is_low_stock']) ? 1 : 0;
+            $summary['out_of_stock_count'] += !empty($row['is_out_of_stock']) ? 1 : 0;
+            $summary['expiring_soon_count'] += !empty($row['is_expiring_soon']) ? 1 : 0;
         }
-        return $row;
+
+        $supplierCount = Database::fetchOne("SELECT COUNT(*) AS c FROM medicine_suppliers WHERE is_active = 1");
+        $summary['supplier_count'] = (int) ($supplierCount['c'] ?? 0);
+        return $summary;
+    }
+
+    public static function getSupplierOverview(int $limit = 6): array
+    {
+        $pharmacyId = self::currentPharmacyId();
+        $sql = "SELECT
+                    s.id,
+                    s.name,
+                    s.contact_person,
+                    s.phone,
+                    s.email,
+                    s.lead_time_days,
+                    COUNT(m.id) AS medicine_count,
+                    COALESCE(SUM(m.quantity_in_stock), 0) AS stocked_units
+                FROM medicine_suppliers s
+                LEFT JOIN medicines m ON m.supplier_id = s.id";
+        $types = '';
+        $params = [];
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $sql .= " AND m.pharmacy_id = ?";
+            $types = 'i';
+            $params[] = $pharmacyId;
+        }
+        $sql .= " WHERE s.is_active = 1
+                  GROUP BY s.id, s.name, s.contact_person, s.phone, s.email, s.lead_time_days
+                  ORDER BY stocked_units DESC, s.name ASC
+                  LIMIT " . max(1, $limit);
+        return Database::fetchAll($sql, $types, $params);
+    }
+
+    public static function getRecentMovements(int $limit = 8): array
+    {
+        $pharmacyId = self::currentPharmacyId();
+        $sql = "SELECT
+                    sm.id,
+                    sm.movement_type,
+                    sm.quantity_change,
+                    sm.quantity_before,
+                    sm.quantity_after,
+                    sm.note,
+                    sm.reference_no,
+                    sm.created_at,
+                    m.id AS medicine_id,
+                    m.name,
+                    m.med_name,
+                    s.name AS supplier_name
+                FROM medicine_stock_movements sm
+                INNER JOIN medicines m ON m.id = sm.medicine_id
+                LEFT JOIN medicine_suppliers s ON s.id = sm.supplier_id";
+        $types = '';
+        $params = [];
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $sql .= " WHERE sm.pharmacy_id = ?";
+            $types = 'i';
+            $params[] = $pharmacyId;
+        }
+        $sql .= " ORDER BY sm.created_at DESC, sm.id DESC LIMIT " . max(1, $limit);
+        return Database::fetchAll($sql, $types, $params);
     }
 
     public static function create(array $input, ?array $file = null): bool
     {
-        Database::setUpConnection();
-        self::ensureLookupTables();
-        self::ensureMedicineColumns();
-        if (!self::tableExists('medicines')) {
+        $pharmacyId = self::currentPharmacyId();
+        if (self::hasMedicineColumn('pharmacy_id') && $pharmacyId <= 0) {
             return false;
         }
 
-        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
-        $currentPharmacyId = self::currentPharmacyId();
-        if ($hasPharmacyId && $currentPharmacyId <= 0) {
-            return false;
-        }
-
-        $name = self::resolveSelectableValue(
-            $input,
-            'brand_existing',
-            'brand_new',
-            trim((string) ($input['name'] ?? ''))
-        );
-        if ($name === '') {
-            return false;
-        }
+        $name = self::resolveSelectableValue($input, 'brand_existing', 'brand_new', trim((string) ($input['name'] ?? '')));
         $medName = trim((string) ($input['med_name'] ?? ''));
+        $supplierId = self::resolveSupplierId($input);
+        if ($name === '' || $medName === '' || $supplierId <= 0) {
+            return false;
+        }
 
         $imagePath = self::saveUploadedImage($file);
-
         $generic = trim((string) ($input['generic_name'] ?? ''));
         $categoryId = (int) ($input['category_id'] ?? 0);
         $category = trim((string) ($input['category'] ?? ''));
@@ -492,87 +541,87 @@ class InventoryModel
         }
 
         $description = trim((string) ($input['description'] ?? ''));
-        $dosageForm = self::resolveSelectableValue(
-            $input,
-            'dosage_form_existing',
-            'dosage_form_new',
-            trim((string) ($input['dosage_form'] ?? ''))
-        );
+        $dosageForm = self::resolveSelectableValue($input, 'dosage_form_existing', 'dosage_form_new', trim((string) ($input['dosage_form'] ?? '')));
         $strength = trim((string) ($input['strength'] ?? ''));
-        $manufacturer = self::resolveSelectableValue(
-            $input,
-            'manufacturer_existing',
-            'manufacturer_new',
-            trim((string) ($input['manufacturer'] ?? ''))
-        );
+        $manufacturer = self::resolveSelectableValue($input, 'manufacturer_existing', 'manufacturer_new', trim((string) ($input['manufacturer'] ?? '')));
         $expiryDate = trim((string) ($input['expiry_date'] ?? ''));
-        $qty = (int) ($input['quantity_in_stock'] ?? 0);
-        $price = (float) ($input['price'] ?? 0);
-        $sellingUnit = self::resolveSelectableValue(
-            $input,
-            'selling_unit_existing',
-            'selling_unit_new',
-            trim((string) ($input['selling_unit'] ?? ''))
-        );
-        $unitQuantity = (int) ($input['unit_quantity'] ?? 1);
-        $addedBy = (int) ($input['added_by'] ?? 0);
+        $qty = max(0, (int) ($input['quantity_in_stock'] ?? 0));
+        $threshold = max(0, (int) ($input['low_stock_threshold'] ?? 10));
+        $reorderQty = max(0, (int) ($input['reorder_quantity'] ?? 25));
+        $price = max(0, (float) ($input['price'] ?? 0));
+        $unitCost = max(0, (float) ($input['unit_cost'] ?? $price));
+        $sellingUnit = self::resolveSelectableValue($input, 'selling_unit_existing', 'selling_unit_new', trim((string) ($input['selling_unit'] ?? '')));
+        $unitQuantity = max(1, (int) ($input['unit_quantity'] ?? 1));
+        $addedBy = (int) ($input['added_by'] ?? self::currentUserId());
+        $batchNumber = trim((string) ($input['batch_number'] ?? ''));
 
         $cols = [];
         $vals = [];
+        $types = '';
+        $params = [];
 
-        $addStr = function (string $col, string $val) use (&$cols, &$vals) {
+        $addStr = function (string $col, string $val) use (&$cols, &$vals, &$types, &$params) {
             $cols[] = $col;
-            $vals[] = "'" . Database::escape($val) . "'";
+            $vals[] = '?';
+            $types .= 's';
+            $params[] = $val;
         };
-        $addInt = function (string $col, int $val) use (&$cols, &$vals) {
+        $addInt = function (string $col, int $val) use (&$cols, &$vals, &$types, &$params) {
             $cols[] = $col;
-            $vals[] = (string) $val;
+            $vals[] = '?';
+            $types .= 'i';
+            $params[] = $val;
         };
-        $addNum = function (string $col, float $val) use (&$cols, &$vals) {
+        $addNum = function (string $col, float $val) use (&$cols, &$vals, &$types, &$params) {
             $cols[] = $col;
-            $vals[] = (string) $val;
+            $vals[] = '?';
+            $types .= 'd';
+            $params[] = $val;
         };
 
-        if (self::hasMedicineColumn('name'))
-            $addStr('name', $name);
-        if (self::hasMedicineColumn('med_name'))
-            $addStr('med_name', $medName);
-        if (self::hasMedicineColumn('generic_name'))
-            $addStr('generic_name', $generic);
-        if (self::hasMedicineColumn('category'))
-            $addStr('category', $category);
-        if (self::hasMedicineColumn('category_id'))
-            $addInt('category_id', max(0, $categoryId));
-        if (self::hasMedicineColumn('description'))
-            $addStr('description', $description);
-        if (self::hasMedicineColumn('dosage_form'))
-            $addStr('dosage_form', $dosageForm);
-        if (self::hasMedicineColumn('strength'))
-            $addStr('strength', $strength);
-        if (self::hasMedicineColumn('quantity_in_stock'))
-            $addInt('quantity_in_stock', max(0, $qty));
+        if (self::hasMedicineColumn('name')) { $addStr('name', $name); }
+        if (self::hasMedicineColumn('med_name')) { $addStr('med_name', $medName); }
+        if (self::hasMedicineColumn('generic_name')) { $addStr('generic_name', $generic); }
+        if (self::hasMedicineColumn('category')) { $addStr('category', $category); }
+        if (self::hasMedicineColumn('category_id')) { $addInt('category_id', max(0, $categoryId)); }
+        if (self::hasMedicineColumn('description')) { $addStr('description', $description); }
+        if (self::hasMedicineColumn('dosage_form')) { $addStr('dosage_form', $dosageForm); }
+        if (self::hasMedicineColumn('strength')) { $addStr('strength', $strength); }
+        if (self::hasMedicineColumn('quantity_in_stock')) { $addInt('quantity_in_stock', $qty); }
+        if (self::hasMedicineColumn('low_stock_threshold')) { $addInt('low_stock_threshold', $threshold); }
+        if (self::hasMedicineColumn('reorder_quantity')) { $addInt('reorder_quantity', $reorderQty); }
         $priceCol = self::medicinePriceColumn();
-        if ($priceCol !== '')
-            $addNum($priceCol, max(0, $price));
+        if ($priceCol !== '') { $addNum($priceCol, $price); }
+        if (self::hasMedicineColumn('unit_cost')) { $addNum('unit_cost', $unitCost); }
         $imageColumn = self::getMedicineImageColumn();
-        if ($imageColumn !== '')
-            $addStr($imageColumn, $imagePath);
-        if (self::hasMedicineColumn('manufacturer'))
-            $addStr('manufacturer', $manufacturer);
+        if ($imageColumn !== '' && $imagePath !== '') { $addStr($imageColumn, $imagePath); }
+        if (self::hasMedicineColumn('manufacturer')) { $addStr('manufacturer', $manufacturer); }
+        if (self::hasMedicineColumn('supplier_id')) { $addInt('supplier_id', $supplierId); }
+        if (self::hasMedicineColumn('batch_number')) { $addStr('batch_number', $batchNumber); }
         if (self::hasMedicineColumn('expiry_date')) {
             $cols[] = 'expiry_date';
-            $vals[] = $expiryDate !== '' ? "'" . Database::escape($expiryDate) . "'" : 'NULL';
+            if ($expiryDate !== '') {
+                $vals[] = '?';
+                $types .= 's';
+                $params[] = $expiryDate;
+            } else {
+                $vals[] = 'NULL';
+            }
         }
-        if (self::hasMedicineColumn('selling_unit'))
-            $addStr('selling_unit', $sellingUnit);
-        if (self::hasMedicineColumn('unit_quantity'))
-            $addInt('unit_quantity', max(1, $unitQuantity));
-        if (self::hasMedicineColumn('added_by'))
-            $addInt('added_by', max(0, $addedBy));
-        if ($hasPharmacyId)
-            $addInt('pharmacy_id', $currentPharmacyId);
+        if (self::hasMedicineColumn('last_restocked_at')) {
+            $cols[] = 'last_restocked_at';
+            $vals[] = $qty > 0 ? 'NOW()' : 'NULL';
+        }
+        if (self::hasMedicineColumn('selling_unit')) { $addStr('selling_unit', $sellingUnit); }
+        if (self::hasMedicineColumn('unit_quantity')) { $addInt('unit_quantity', $unitQuantity); }
+        if (self::hasMedicineColumn('added_by')) { $addInt('added_by', max(0, $addedBy)); }
+        if (self::hasMedicineColumn('pharmacy_id')) { $addInt('pharmacy_id', $pharmacyId); }
         if (self::hasMedicineColumn('created_at')) {
             $cols[] = 'created_at';
+            $vals[] = 'NOW()';
+        }
+        if (self::hasMedicineColumn('updated_at')) {
+            $cols[] = 'updated_at';
             $vals[] = 'NOW()';
         }
 
@@ -580,55 +629,52 @@ class InventoryModel
             return false;
         }
 
-        $sql = "INSERT INTO medicines (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")";
-        $ok = Database::iud($sql);
-        if ($ok) {
-            self::upsertLookupValue('medicine_brands', $name);
-            self::upsertLookupValue('dosage_forms', $dosageForm);
-            self::upsertLookupValue('selling_units', $sellingUnit);
-            self::upsertLookupValue('medicine_manufacturers', $manufacturer);
+        $ok = Database::execute(
+            "INSERT INTO medicines (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ")",
+            $types,
+            $params
+        );
+        if (!$ok) {
+            return false;
         }
-        return $ok;
+
+        $inserted = Database::fetchOne(
+            "SELECT id FROM medicines WHERE name = ? AND med_name = ? " . (self::hasMedicineColumn('pharmacy_id') ? "AND pharmacy_id = ? " : '') . "ORDER BY id DESC LIMIT 1",
+            self::hasMedicineColumn('pharmacy_id') ? 'ssi' : 'ss',
+            self::hasMedicineColumn('pharmacy_id') ? [$name, $medName, $pharmacyId] : [$name, $medName]
+        );
+        $medicineId = (int) ($inserted['id'] ?? 0);
+        if ($medicineId > 0) {
+            self::logStockMovement($medicineId, $supplierId, 'initial', $qty, 0, $qty, 'Initial stock entry', (string) ($input['reference_no'] ?? ''));
+        }
+
+        self::upsertLookupValue('medicine_brands', $name);
+        self::upsertLookupValue('dosage_forms', $dosageForm);
+        self::upsertLookupValue('selling_units', $sellingUnit);
+        self::upsertLookupValue('medicine_manufacturers', $manufacturer);
+        return true;
     }
 
     public static function update(int $id, array $input, ?array $file = null): bool
     {
-        Database::setUpConnection();
-        self::ensureLookupTables();
-        self::ensureMedicineColumns();
-        if (!self::tableExists('medicines')) {
+        $pharmacyId = self::currentPharmacyId();
+        if (self::hasMedicineColumn('pharmacy_id') && $pharmacyId <= 0) {
             return false;
         }
 
-        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
-        $currentPharmacyId = self::currentPharmacyId();
-        if ($hasPharmacyId && $currentPharmacyId <= 0) {
-            return false;
-        }
-
-        $id = (int) $id;
-        if ($id <= 0) {
-            return false;
-        }
-
-        $existing = self::getById($id);
+        $existing = self::getById((int) $id);
         if (!$existing) {
             return false;
         }
 
         $newImagePath = self::saveUploadedImage($file);
         $imagePath = $newImagePath !== '' ? $newImagePath : self::extractImagePath($existing);
-
-        $name = self::resolveSelectableValue(
-            $input,
-            'brand_existing',
-            'brand_new',
-            trim((string) ($input['name'] ?? ($existing['name'] ?? '')))
-        );
-        if ($name === '') {
+        $name = self::resolveSelectableValue($input, 'brand_existing', 'brand_new', trim((string) ($input['name'] ?? ($existing['name'] ?? ''))));
+        $medName = trim((string) ($input['med_name'] ?? ($existing['med_name'] ?? '')));
+        $supplierId = self::resolveSupplierId($input, $existing);
+        if ($name === '' || $medName === '' || $supplierId <= 0) {
             return false;
         }
-        $medName = trim((string) ($input['med_name'] ?? ($existing['med_name'] ?? '')));
 
         $generic = trim((string) ($input['generic_name'] ?? ($existing['generic_name'] ?? '')));
         $categoryId = (int) ($input['category_id'] ?? ($existing['category_id'] ?? 0));
@@ -638,119 +684,202 @@ class InventoryModel
         }
 
         $description = trim((string) ($input['description'] ?? ($existing['description'] ?? '')));
-        $dosageForm = self::resolveSelectableValue(
-            $input,
-            'dosage_form_existing',
-            'dosage_form_new',
-            trim((string) ($input['dosage_form'] ?? ($existing['dosage_form'] ?? '')))
-        );
+        $dosageForm = self::resolveSelectableValue($input, 'dosage_form_existing', 'dosage_form_new', trim((string) ($input['dosage_form'] ?? ($existing['dosage_form'] ?? ''))));
         $strength = trim((string) ($input['strength'] ?? ($existing['strength'] ?? '')));
-        $manufacturer = self::resolveSelectableValue(
-            $input,
-            'manufacturer_existing',
-            'manufacturer_new',
-            trim((string) ($input['manufacturer'] ?? ($existing['manufacturer'] ?? '')))
-        );
+        $manufacturer = self::resolveSelectableValue($input, 'manufacturer_existing', 'manufacturer_new', trim((string) ($input['manufacturer'] ?? ($existing['manufacturer'] ?? ''))));
         $expiryDate = trim((string) ($input['expiry_date'] ?? ($existing['expiry_date'] ?? '')));
-        $qty = (int) ($input['quantity_in_stock'] ?? ($existing['quantity_in_stock'] ?? 0));
+        $qty = max(0, (int) ($input['quantity_in_stock'] ?? ($existing['quantity_in_stock'] ?? 0)));
+        $threshold = max(0, (int) ($input['low_stock_threshold'] ?? ($existing['low_stock_threshold'] ?? 10)));
+        $reorderQty = max(0, (int) ($input['reorder_quantity'] ?? ($existing['reorder_quantity'] ?? 25)));
         $existingPrice = (float) ($existing['price'] ?? ($existing['pricing'] ?? 0));
-        $price = (float) ($input['price'] ?? $existingPrice);
-        $sellingUnit = self::resolveSelectableValue(
-            $input,
-            'selling_unit_existing',
-            'selling_unit_new',
-            trim((string) ($input['selling_unit'] ?? ($existing['selling_unit'] ?? '')))
-        );
-        $unitQuantity = (int) ($input['unit_quantity'] ?? ($existing['unit_quantity'] ?? 1));
+        $price = max(0, (float) ($input['price'] ?? $existingPrice));
+        $unitCost = max(0, (float) ($input['unit_cost'] ?? ($existing['unit_cost'] ?? $price)));
+        $sellingUnit = self::resolveSelectableValue($input, 'selling_unit_existing', 'selling_unit_new', trim((string) ($input['selling_unit'] ?? ($existing['selling_unit'] ?? ''))));
+        $unitQuantity = max(1, (int) ($input['unit_quantity'] ?? ($existing['unit_quantity'] ?? 1)));
+        $batchNumber = trim((string) ($input['batch_number'] ?? ($existing['batch_number'] ?? '')));
 
         $sets = [];
-        $setStr = function (string $col, string $val) use (&$sets) {
-            $sets[] = "$col = '" . Database::escape($val) . "'";
+        $types = '';
+        $params = [];
+        $setStr = function (string $col, string $val) use (&$sets, &$types, &$params) {
+            $sets[] = "$col = ?";
+            $types .= 's';
+            $params[] = $val;
         };
-        $setInt = function (string $col, int $val) use (&$sets) {
-            $sets[] = "$col = $val";
+        $setInt = function (string $col, int $val) use (&$sets, &$types, &$params) {
+            $sets[] = "$col = ?";
+            $types .= 'i';
+            $params[] = $val;
         };
-        $setNum = function (string $col, float $val) use (&$sets) {
-            $sets[] = "$col = $val";
+        $setNum = function (string $col, float $val) use (&$sets, &$types, &$params) {
+            $sets[] = "$col = ?";
+            $types .= 'd';
+            $params[] = $val;
         };
 
-        if (self::hasMedicineColumn('name'))
-            $setStr('name', $name);
-        if (self::hasMedicineColumn('med_name'))
-            $setStr('med_name', $medName);
-        if (self::hasMedicineColumn('generic_name'))
-            $setStr('generic_name', $generic);
-        if (self::hasMedicineColumn('category'))
-            $setStr('category', $category);
-        if (self::hasMedicineColumn('category_id'))
-            $setInt('category_id', max(0, $categoryId));
-        if (self::hasMedicineColumn('description'))
-            $setStr('description', $description);
-        if (self::hasMedicineColumn('dosage_form'))
-            $setStr('dosage_form', $dosageForm);
-        if (self::hasMedicineColumn('strength'))
-            $setStr('strength', $strength);
-        if (self::hasMedicineColumn('quantity_in_stock'))
-            $setInt('quantity_in_stock', max(0, $qty));
+        if (self::hasMedicineColumn('name')) { $setStr('name', $name); }
+        if (self::hasMedicineColumn('med_name')) { $setStr('med_name', $medName); }
+        if (self::hasMedicineColumn('generic_name')) { $setStr('generic_name', $generic); }
+        if (self::hasMedicineColumn('category')) { $setStr('category', $category); }
+        if (self::hasMedicineColumn('category_id')) { $setInt('category_id', max(0, $categoryId)); }
+        if (self::hasMedicineColumn('description')) { $setStr('description', $description); }
+        if (self::hasMedicineColumn('dosage_form')) { $setStr('dosage_form', $dosageForm); }
+        if (self::hasMedicineColumn('strength')) { $setStr('strength', $strength); }
+        if (self::hasMedicineColumn('quantity_in_stock')) { $setInt('quantity_in_stock', $qty); }
+        if (self::hasMedicineColumn('low_stock_threshold')) { $setInt('low_stock_threshold', $threshold); }
+        if (self::hasMedicineColumn('reorder_quantity')) { $setInt('reorder_quantity', $reorderQty); }
         $priceCol = self::medicinePriceColumn();
-        if ($priceCol !== '')
-            $setNum($priceCol, max(0, $price));
+        if ($priceCol !== '') { $setNum($priceCol, $price); }
+        if (self::hasMedicineColumn('unit_cost')) { $setNum('unit_cost', $unitCost); }
         $imageColumn = self::getMedicineImageColumn();
-        if ($imageColumn !== '')
-            $setStr($imageColumn, $imagePath);
-        if (self::hasMedicineColumn('manufacturer'))
-            $setStr('manufacturer', $manufacturer);
+        if ($imageColumn !== '' && $imagePath !== '') { $setStr($imageColumn, $imagePath); }
+        if (self::hasMedicineColumn('manufacturer')) { $setStr('manufacturer', $manufacturer); }
+        if (self::hasMedicineColumn('supplier_id')) { $setInt('supplier_id', $supplierId); }
+        if (self::hasMedicineColumn('batch_number')) { $setStr('batch_number', $batchNumber); }
         if (self::hasMedicineColumn('expiry_date')) {
-            $sets[] = $expiryDate !== ''
-                ? "expiry_date = '" . Database::escape($expiryDate) . "'"
-                : 'expiry_date = NULL';
+            if ($expiryDate !== '') {
+                $sets[] = "expiry_date = ?";
+                $types .= 's';
+                $params[] = $expiryDate;
+            } else {
+                $sets[] = 'expiry_date = NULL';
+            }
         }
-        if (self::hasMedicineColumn('selling_unit'))
-            $setStr('selling_unit', $sellingUnit);
-        if (self::hasMedicineColumn('unit_quantity'))
-            $setInt('unit_quantity', max(1, $unitQuantity));
-        if (self::hasMedicineColumn('updated_at'))
-            $sets[] = 'updated_at = NOW()';
-
+        if (self::hasMedicineColumn('selling_unit')) { $setStr('selling_unit', $sellingUnit); }
+        if (self::hasMedicineColumn('unit_quantity')) { $setInt('unit_quantity', $unitQuantity); }
+        if (self::hasMedicineColumn('last_restocked_at') && $qty > (int) ($existing['quantity_in_stock'] ?? 0)) {
+            $sets[] = 'last_restocked_at = NOW()';
+        }
+        if (self::hasMedicineColumn('updated_at')) { $sets[] = 'updated_at = NOW()'; }
         if (empty($sets)) {
             return false;
         }
 
-        $where = "id = $id";
-        if ($hasPharmacyId) {
-            $where .= " AND pharmacy_id = " . $currentPharmacyId;
+        $where = "id = ?";
+        $types .= 'i';
+        $params[] = (int) $id;
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $where .= " AND pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = $pharmacyId;
         }
-        $sql = "UPDATE medicines SET " . implode(', ', $sets) . " WHERE $where";
-        $ok = Database::iud($sql);
-        if ($ok) {
-            self::upsertLookupValue('medicine_brands', $name);
-            self::upsertLookupValue('dosage_forms', $dosageForm);
-            self::upsertLookupValue('selling_units', $sellingUnit);
-            self::upsertLookupValue('medicine_manufacturers', $manufacturer);
+        $ok = Database::execute("UPDATE medicines SET " . implode(', ', $sets) . " WHERE $where", $types, $params);
+        if (!$ok) {
+            return false;
         }
-        return $ok;
+
+        self::upsertLookupValue('medicine_brands', $name);
+        self::upsertLookupValue('dosage_forms', $dosageForm);
+        self::upsertLookupValue('selling_units', $sellingUnit);
+        self::upsertLookupValue('medicine_manufacturers', $manufacturer);
+        return true;
+    }
+
+    public static function adjustStock(int $medicineId, string $mode, int $quantity, string $note = '', string $referenceNo = ''): bool
+    {
+        $medicine = self::getById($medicineId);
+        if (!$medicine || $quantity < 0) {
+            return false;
+        }
+
+        $before = (int) ($medicine['quantity_in_stock'] ?? 0);
+        $after = $before;
+        $movementType = 'adjustment';
+        $change = $quantity;
+
+        if ($mode === 'add') {
+            $after = $before + $quantity;
+            $movementType = 'restock';
+            $change = $quantity;
+        } elseif ($mode === 'remove') {
+            $after = max(0, $before - $quantity);
+            $movementType = 'dispense';
+            $change = -1 * min($before, $quantity);
+        } elseif ($mode === 'set') {
+            $after = max(0, $quantity);
+            $movementType = 'set';
+            $change = $after - $before;
+        } else {
+            return false;
+        }
+
+        if ($after === $before) {
+            return true;
+        }
+
+        $where = "id = ?";
+        $types = 'i';
+        $params = [$medicineId];
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $where .= " AND pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = self::currentPharmacyId();
+        }
+
+        $sql = "UPDATE medicines SET quantity_in_stock = ?, updated_at = NOW()";
+        $updateTypes = 'i' . $types;
+        $updateParams = array_merge([$after], $params);
+        if (self::hasMedicineColumn('last_restocked_at') && $after > $before) {
+            $sql .= ", last_restocked_at = NOW()";
+        }
+        $sql .= " WHERE $where";
+        $ok = Database::execute($sql, $updateTypes, $updateParams);
+        if (!$ok) {
+            return false;
+        }
+
+        return self::logStockMovement(
+            $medicineId,
+            (int) ($medicine['supplier_id'] ?? 0),
+            $movementType,
+            $change,
+            $before,
+            $after,
+            $note,
+            $referenceNo
+        );
+    }
+
+    private static function logStockMovement(
+        int $medicineId,
+        int $supplierId,
+        string $movementType,
+        int $quantityChange,
+        int $before,
+        int $after,
+        string $note = '',
+        string $referenceNo = ''
+    ): bool
+    {
+        return Database::execute(
+            "INSERT INTO medicine_stock_movements
+             (medicine_id, supplier_id, pharmacy_id, movement_type, quantity_change, quantity_before, quantity_after, note, reference_no, created_by, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
+            'iiisiiissi',
+            [
+                $medicineId,
+                $supplierId,
+                self::currentPharmacyId(),
+                $movementType,
+                $quantityChange,
+                $before,
+                $after,
+                trim($note),
+                trim($referenceNo),
+                self::currentUserId(),
+            ]
+        );
     }
 
     public static function delete(int $id): bool
     {
-        Database::setUpConnection();
-        if (!self::tableExists('medicines')) {
-            return false;
-        }
-
-        $hasPharmacyId = self::hasMedicineColumn('pharmacy_id');
-        $currentPharmacyId = self::currentPharmacyId();
-        if ($hasPharmacyId && $currentPharmacyId <= 0) {
-            return false;
-        }
-
         $sql = "DELETE FROM medicines WHERE id = ?";
         $types = 'i';
         $params = [$id];
-        if ($hasPharmacyId) {
+        if (self::hasMedicineColumn('pharmacy_id')) {
             $sql .= " AND pharmacy_id = ?";
             $types .= 'i';
-            $params[] = $currentPharmacyId;
+            $params[] = self::currentPharmacyId();
         }
         return Database::execute($sql, $types, $params);
     }

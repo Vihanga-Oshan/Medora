@@ -21,6 +21,12 @@ class DashboardModel
         if ($pid <= 0 || !PharmacyContext::tableHasPharmacyId($table)) {
             return '1=1';
         }
+        if ($table === 'medicines') {
+            return '1=1';
+        }
+        if (in_array($table, ['schedule_master', 'medication_schedule', 'medication_log', 'notifications'], true)) {
+            return "($alias.pharmacy_id IS NULL OR $alias.pharmacy_id = 0 OR $alias.pharmacy_id = " . (int) $pid . ")";
+        }
         return PharmacyContext::sqlFilter($alias, $pid);
     }
 
@@ -52,121 +58,34 @@ class DashboardModel
             return $eventRows;
         }
 
-        $nic  = Database::escape($nic);
-        $date = Database::escape($date);
-        $pid = self::currentPharmacyId();
-        $rows = [];
-
-        if (PharmacyContext::tableExists('medication_schedules')) {
-            $rs = Database::search("
-                SELECT ms.id, m.name AS medicine_name, ms.dosage, ms.frequency,
-                       ms.meal_timing, ms.instructions, ms.status
-                FROM medication_schedules ms
-                JOIN medicines m ON ms.medicine_id = m.id
-                WHERE ms.patient_nic = '$nic'
-                  AND ms.schedule_date = '$date'
-                  AND " . self::pharmacyCondition('ms', 'medication_schedules') . "
-                  AND " . self::pharmacyCondition('m', 'medicines') . "
-                ORDER BY FIELD(ms.frequency,'MORNING','AFTERNOON','EVENING','NIGHT')
-            ");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) $rows[] = $row;
-            }
-            if (!empty($rows)) {
-                return $rows;
-            }
-
-            if ($pid > 0) {
-                $rs = Database::search("\n                    SELECT ms.id, m.name AS medicine_name, ms.dosage, ms.frequency,
-                           ms.meal_timing, ms.instructions, ms.status
-                    FROM medication_schedules ms
-                    JOIN medicines m ON ms.medicine_id = m.id
-                    WHERE ms.patient_nic = '$nic'
-                      AND ms.schedule_date = '$date'
-                    ORDER BY FIELD(ms.frequency,'MORNING','AFTERNOON','EVENING','NIGHT')
-                ");
-                if ($rs instanceof mysqli_result) {
-                    while ($row = $rs->fetch_assoc()) {
-                        $rows[] = $row;
-                    }
-                    if (!empty($rows)) {
-                        return $rows;
-                    }
-                }
-            }
-        }
-
-        if (PharmacyContext::tableExists('medication_schedule') && PharmacyContext::tableExists('schedule_master')) {
-            $rs = Database::search("
-                SELECT
-                    ms.id,
-                    COALESCE(m.name, 'Medication') AS medicine_name,
-                    COALESCE(dc.label, '-') AS dosage,
-                    COALESCE(f.label, '-') AS frequency,
-                    COALESCE(mt.label, '-') AS meal_timing,
-                    COALESCE(ms.instructions, '') AS instructions,
-                    COALESCE(UPPER(ml.status), 'PENDING') AS status
-                FROM medication_schedule ms
-                JOIN schedule_master sm ON sm.id = ms.schedule_master_id
-                LEFT JOIN medicines m ON ms.medicine_id = m.id
-                LEFT JOIN dosage_categories dc ON ms.dosage_id = dc.id
-                LEFT JOIN frequencies f ON ms.frequency_id = f.id
-                LEFT JOIN meal_timing mt ON ms.meal_timing_id = mt.id
-                LEFT JOIN medication_log ml
-                    ON ml.medication_schedule_id = ms.id
-                    AND ml.patient_nic = sm.patient_nic
-                    AND ml.dose_date = '$date'
-                WHERE sm.patient_nic = '$nic'
-                  AND '$date' BETWEEN ms.start_date
-                                  AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
-                  AND " . self::pharmacyCondition('sm', 'schedule_master') . "
-                  AND " . self::pharmacyCondition('ms', 'medication_schedule') . "
-                  AND " . self::pharmacyCondition('m', 'medicines') . "
-                ORDER BY ms.id ASC
-            ");
-            if (!$rs) {
-                return [];
-            }
-
-            while ($row = $rs->fetch_assoc()) $rows[] = $row;
-            if (!empty($rows)) {
-                return $rows;
-            }
-
-            if ($pid > 0) {
-                $rs2 = Database::search("\n                    SELECT
-                        ms.id,
-                        COALESCE(m.name, 'Medication') AS medicine_name,
-                        COALESCE(dc.label, '-') AS dosage,
-                        COALESCE(f.label, '-') AS frequency,
-                        COALESCE(mt.label, '-') AS meal_timing,
-                        COALESCE(ms.instructions, '') AS instructions,
-                        COALESCE(UPPER(ml.status), 'PENDING') AS status
-                    FROM medication_schedule ms
-                    JOIN schedule_master sm ON sm.id = ms.schedule_master_id
-                    LEFT JOIN medicines m ON ms.medicine_id = m.id
-                    LEFT JOIN dosage_categories dc ON ms.dosage_id = dc.id
-                    LEFT JOIN frequencies f ON ms.frequency_id = f.id
-                    LEFT JOIN meal_timing mt ON ms.meal_timing_id = mt.id
-                    LEFT JOIN medication_log ml
-                        ON ml.medication_schedule_id = ms.id
-                        AND ml.patient_nic = sm.patient_nic
-                        AND ml.dose_date = '$date'
-                    WHERE sm.patient_nic = '$nic'
-                      AND '$date' BETWEEN ms.start_date
-                                      AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
-                    ORDER BY ms.id ASC
-                ");
-                if ($rs2 instanceof mysqli_result) {
-                    while ($row = $rs2->fetch_assoc()) {
-                        $rows[] = $row;
-                    }
-                }
-            }
-            return $rows;
-        } else {
-            return [];
-        }
+        $rows = Database::fetchAll("
+            SELECT
+                ms.id,
+                COALESCE(m.name, 'Medication') AS medicine_name,
+                COALESCE(dc.label, '-') AS dosage,
+                COALESCE(f.label, '-') AS frequency,
+                COALESCE(mt.label, '-') AS meal_timing,
+                COALESCE(ms.instructions, '') AS instructions,
+                COALESCE(UPPER(ml.status), 'PENDING') AS status
+            FROM medication_schedule ms
+            JOIN schedule_master sm ON sm.id = ms.schedule_master_id
+            LEFT JOIN medicines m ON ms.medicine_id = m.id
+            LEFT JOIN dosage_categories dc ON ms.dosage_id = dc.id
+            LEFT JOIN frequencies f ON ms.frequency_id = f.id
+            LEFT JOIN meal_timing mt ON ms.meal_timing_id = mt.id
+            LEFT JOIN medication_log ml
+                ON ml.medication_schedule_id = ms.id
+                AND ml.patient_nic = sm.patient_nic
+                AND ml.dose_date = ?
+            WHERE sm.patient_nic = ?
+              AND ? BETWEEN ms.start_date
+                              AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . self::pharmacyCondition('sm', 'schedule_master') . "
+              AND " . self::pharmacyCondition('ms', 'medication_schedule') . "
+              AND " . self::pharmacyCondition('m', 'medicines') . "
+            ORDER BY ms.id ASC
+        ", 'sss', [$date, $nic, $date]);
+        return $rows;
     }
 
     /**
@@ -176,23 +95,14 @@ class DashboardModel
     {
         MedicationReminderService::deliverDueReminders($nic);
 
-        $nic = Database::escape($nic);
-        $rs = Database::search("
+        return Database::fetchAll("
             SELECT id, message, is_read, created_at
             FROM notifications
-            WHERE patient_nic = '$nic'
+            WHERE patient_nic = ?
               AND " . self::pharmacyCondition('notifications', 'notifications') . "
             ORDER BY created_at DESC
             LIMIT 3
-        ");
-
-        if (!$rs) {
-            return [];
-        }
-
-        $rows = [];
-        while ($row = $rs->fetch_assoc()) $rows[] = $row;
-        return $rows;
+        ", 's', [$nic]);
     }
 
     /**

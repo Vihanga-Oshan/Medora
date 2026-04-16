@@ -7,7 +7,7 @@ require_once __DIR__ . '/alerts.model.php';
 $guardianNic = $user['id'];
 
 // Handle POST actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     $action = $_POST['action'] ?? '';
     if ($action === 'markRead') {
         $id = (int)$_POST['id'];
@@ -15,8 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'markAllRead') {
         AlertsModel::markAllRead($guardianNic);
     }
-    header('Location: /guardian/alerts');
-    exit;
+    Response::redirect('/guardian/alerts');
 }
 
 $notifications = AlertsModel::getNotificationsByGuardian($guardianNic);

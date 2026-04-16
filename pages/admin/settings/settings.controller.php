@@ -14,7 +14,7 @@ if ($adminId <= 0) {
     $error = 'Unable to resolve current admin account.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === null) {
+if (Request::isPost() && $error === null) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_settings_update')) {
         $error = 'Security validation failed. Please refresh and try again.';
     } else {

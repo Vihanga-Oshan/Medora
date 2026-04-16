@@ -7,14 +7,12 @@
 require_once __DIR__ . '/../../common/patient.head.php';
 require_once __DIR__ . '/../../prescriptions/prescriptions.model.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . (APP_BASE ?: '') . '/patient/prescriptions');
-    exit;
+if (!Request::isPost()) {
+    Response::redirect('/patient/prescriptions');
 }
 
 if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_prescription_delete')) {
-    header('Location: ' . (APP_BASE ?: '') . '/patient/prescriptions?error=csrf');
-    exit;
+    Response::redirect('/patient/prescriptions?error=csrf');
 }
 
 $id      = (int)($_POST['id'] ?? 0);
@@ -32,5 +30,4 @@ if ($filePath) {
     }
 }
 
-header('Location: ' . (APP_BASE ?: '') . '/patient/prescriptions');
-exit;
+Response::redirect('/patient/prescriptions');

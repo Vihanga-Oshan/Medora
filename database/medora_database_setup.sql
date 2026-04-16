@@ -202,11 +202,19 @@ CREATE TABLE `medicines` (
   `dosage_form` varchar(50) DEFAULT NULL,
   `strength` varchar(50) DEFAULT NULL,
   `quantity_in_stock` int DEFAULT '0',
+  `low_stock_threshold` int NOT NULL DEFAULT '10',
+  `reorder_quantity` int NOT NULL DEFAULT '25',
   `pricing` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `unit_cost` decimal(10,2) NOT NULL DEFAULT '0.00',
   `manufacturer` varchar(100) DEFAULT NULL,
+  `supplier_id` int DEFAULT NULL,
+  `batch_number` varchar(100) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
+  `last_restocked_at` datetime DEFAULT NULL,
   `added_by` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `pharmacy_id` int DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -474,6 +482,62 @@ SET @sql = IF(
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'low_stock_threshold'),
+  'ALTER TABLE medicines ADD COLUMN low_stock_threshold INT NOT NULL DEFAULT 10 AFTER quantity_in_stock',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'reorder_quantity'),
+  'ALTER TABLE medicines ADD COLUMN reorder_quantity INT NOT NULL DEFAULT 25 AFTER low_stock_threshold',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'unit_cost'),
+  'ALTER TABLE medicines ADD COLUMN unit_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER pricing',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'supplier_id'),
+  'ALTER TABLE medicines ADD COLUMN supplier_id INT NULL AFTER manufacturer',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'batch_number'),
+  'ALTER TABLE medicines ADD COLUMN batch_number VARCHAR(100) NULL AFTER supplier_id',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'last_restocked_at'),
+  'ALTER TABLE medicines ADD COLUMN last_restocked_at DATETIME NULL AFTER expiry_date',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medicines')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medicines' AND column_name = 'updated_at'),
+  'ALTER TABLE medicines ADD COLUMN updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
   EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'prescriptions')
   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'prescriptions' AND column_name = 'pharmacy_id'),
   'ALTER TABLE prescriptions ADD COLUMN pharmacy_id INT NULL',
@@ -574,6 +638,36 @@ CREATE TABLE IF NOT EXISTS medicine_manufacturers (
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS medicine_suppliers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL UNIQUE,
+  contact_person VARCHAR(150) DEFAULT NULL,
+  phone VARCHAR(50) DEFAULT NULL,
+  email VARCHAR(150) DEFAULT NULL,
+  address TEXT DEFAULT NULL,
+  lead_time_days INT NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS medicine_stock_movements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  medicine_id INT NOT NULL,
+  supplier_id INT DEFAULT NULL,
+  pharmacy_id INT DEFAULT NULL,
+  movement_type ENUM('initial','restock','dispense','adjustment','set') NOT NULL,
+  quantity_change INT NOT NULL,
+  quantity_before INT NOT NULL DEFAULT 0,
+  quantity_after INT NOT NULL DEFAULT 0,
+  note VARCHAR(255) DEFAULT NULL,
+  reference_no VARCHAR(100) DEFAULT NULL,
+  created_by INT DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_medicine_created (medicine_id, created_at),
+  INDEX idx_pharmacy_created (pharmacy_id, created_at)
+);
+
 INSERT IGNORE INTO dosage_forms(name) VALUES
   ('Tablet'), ('Capsule'), ('Syrup'), ('Suspension'), ('Injection'), ('Cream'),
   ('Ointment'), ('Drops'), ('Inhaler'), ('Powder');
@@ -581,8 +675,28 @@ INSERT IGNORE INTO dosage_forms(name) VALUES
 INSERT IGNORE INTO selling_units(name) VALUES
   ('Item'), ('Strip'), ('Bottle'), ('Box'), ('Tube'), ('Vial'), ('Sachet'), ('Pack');
 
+INSERT IGNORE INTO medicine_suppliers(name, contact_person, phone, email, address, lead_time_days) VALUES
+  ('Sun Pharma Distributors', 'Nadeesha Silva', '+94 11 555 1001', 'orders@sunpharma.example', 'Colombo 05', 2),
+  ('HealthLine Medical Supply', 'Kamal Perera', '+94 11 555 1002', 'supply@healthline.example', 'Kandy', 3),
+  ('CarePlus Wholesale', 'Ishara Fernando', '+94 11 555 1003', 'sales@careplus.example', 'Negombo', 4);
+
 -- Seed alignment for commercial medicine names
 UPDATE medicines
 SET med_name = 'Lipitor'
 WHERE LOWER(TRIM(COALESCE(name, ''))) = 'atorvastatin'
    OR LOWER(TRIM(COALESCE(generic_name, ''))) = 'atorvastatin';
+
+UPDATE medicines
+SET low_stock_threshold = CASE
+    WHEN COALESCE(low_stock_threshold, 0) <= 0 THEN 10
+    ELSE low_stock_threshold
+  END,
+  reorder_quantity = CASE
+    WHEN COALESCE(reorder_quantity, 0) <= 0 THEN 25
+    ELSE reorder_quantity
+  END,
+  unit_cost = CASE
+    WHEN COALESCE(unit_cost, 0) <= 0 THEN COALESCE(pricing, 0)
+    ELSE unit_cost
+  END,
+  last_restocked_at = COALESCE(last_restocked_at, created_at);

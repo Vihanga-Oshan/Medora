@@ -9,24 +9,9 @@ class PharmacistsModel
         return 'pharmacist';
     }
 
-    private static function hasColumn(string $table, string $column): bool
-    {
-        return in_array($column, ['id', 'name', 'email', 'password', 'created_at'], true);
-    }
-
     private static function isIdAutoIncrement(string $table): bool
     {
         return false;
-    }
-
-    private static function nextId(string $table): int
-    {
-        $safeTable = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-        $row = Database::fetchOne("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM `$safeTable`");
-        if (!$row) {
-            return 1;
-        }
-        return (int) ($row['next_id'] ?? 1);
     }
 
     private static function normalizeLicenseId($raw): int
@@ -47,46 +32,32 @@ class PharmacistsModel
 
     public static function getAll(string $search = ''): array
     {
-        Database::setUpConnection();
         $table = self::tableName();
-        $search = Database::escape($search);
+        $search = trim($search);
 
         $filters = [];
+        $types = '';
+        $params = [];
         if ($search !== '') {
-            $filters[] = "name LIKE '%$search%'";
-            $filters[] = "email LIKE '%$search%'";
-            if (self::hasColumn($table, 'license_no')) {
-                $filters[] = "license_no LIKE '%$search%'";
-            } else {
-                $filters[] = "CAST(id AS CHAR) LIKE '%$search%'";
-            }
+            $like = '%' . $search . '%';
+            $filters[] = "name LIKE ?";
+            $filters[] = "email LIKE ?";
+            $filters[] = "CAST(id AS CHAR) LIKE ?";
+            $types = 'sss';
+            $params = [$like, $like, $like];
         }
         $where = $filters ? "WHERE " . implode(' OR ', $filters) : "";
 
-        $selectPhone = self::hasColumn($table, 'phone') ? 'phone' : "'' AS phone";
-        $selectLicense = self::hasColumn($table, 'license_no') ? 'license_no' : "CAST(id AS CHAR) AS license_no";
-        $selectStatus = self::hasColumn($table, 'status') ? 'status' : "'ACTIVE' AS status";
-        $selectCreatedAt = self::hasColumn($table, 'created_at') ? 'created_at' : 'NOW() AS created_at';
-
-        $rs = Database::search("
-            SELECT id, name, email, $selectPhone, $selectLicense, $selectStatus, $selectCreatedAt
+        return Database::fetchAll("
+            SELECT id, name, email, '' AS phone, CAST(id AS CHAR) AS license_no, 'ACTIVE' AS status, created_at
             FROM `$table`
             $where
             ORDER BY created_at DESC
-        ");
-
-        $rows = [];
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $rows[] = $row;
-            }
-        }
-        return $rows;
+        ", $types, $params);
     }
 
     public static function getById(int $id): ?array
     {
-        Database::setUpConnection();
         $table = self::tableName();
         $row = Database::fetchOne("SELECT * FROM `$table` WHERE id = ? LIMIT 1", 'i', [$id]);
         if (!$row) {
@@ -101,12 +72,10 @@ class PharmacistsModel
 
     public static function create(array $data): bool
     {
-        Database::setUpConnection();
         $table = self::tableName();
 
         $nameRaw = trim((string) ($data['name'] ?? ''));
         $emailRaw = trim((string) ($data['email'] ?? ''));
-        $phoneRaw = trim((string) ($data['phone'] ?? ''));
         $licenseIdRaw = $data['id'] ?? ($data['license_no'] ?? '');
         $pharmacyId = (int) ($data['pharmacy_id'] ?? 0);
         $passwordRaw = (string) ($data['password'] ?? '');
@@ -115,88 +84,62 @@ class PharmacistsModel
             return false;
         }
 
-        $name = Database::escape($nameRaw);
-        $email = Database::escape($emailRaw);
-        $phone = Database::escape($phoneRaw);
         $licenseId = self::normalizeLicenseId($licenseIdRaw);
         if ($licenseId <= 0) {
             return false;
         }
 
-        $license = Database::escape((string) $licenseId);
         $passwordHash = $passwordRaw !== '' ? password_hash($passwordRaw, PASSWORD_BCRYPT) : '';
-        $password = Database::escape($passwordHash);
 
         $columns = [];
-        $values = [];
+        $valuesSql = [];
+        $types = '';
+        $params = [];
 
-        if (self::hasColumn($table, 'id') && !self::isIdAutoIncrement($table)) {
+        if (!self::isIdAutoIncrement($table)) {
             $columns[] = 'id';
-            $values[] = (string) $licenseId;
+            $valuesSql[] = '?';
+            $types .= 'i';
+            $params[] = $licenseId;
         }
 
-        if (self::hasColumn($table, 'name')) {
-            $columns[] = 'name';
-            $values[] = "'$name'";
-        }
-
-        if (self::hasColumn($table, 'email')) {
-            $columns[] = 'email';
-            $values[] = "'$email'";
-        }
-
-        if (self::hasColumn($table, 'phone')) {
-            $columns[] = 'phone';
-            $values[] = "'$phone'";
-        }
-
-        if (self::hasColumn($table, 'license_no')) {
-            $columns[] = 'license_no';
-            $values[] = "'$license'";
-        }
-
-        if (self::hasColumn($table, 'password')) {
-            $columns[] = 'password';
-            $values[] = "'$password'";
-        }
-
-        if (self::hasColumn($table, 'role')) {
-            $columns[] = 'role';
-            $values[] = "'pharmacist'";
-        }
-
-        if (self::hasColumn($table, 'status')) {
-            $columns[] = 'status';
-            $values[] = "'ACTIVE'";
-        }
-
-        if (self::hasColumn($table, 'created_at')) {
-            $columns[] = 'created_at';
-            $values[] = 'NOW()';
-        }
+        $columns[] = 'name';
+        $valuesSql[] = '?';
+        $types .= 's';
+        $params[] = $nameRaw;
+        $columns[] = 'email';
+        $valuesSql[] = '?';
+        $types .= 's';
+        $params[] = $emailRaw;
+        $columns[] = 'password';
+        $valuesSql[] = '?';
+        $types .= 's';
+        $params[] = $passwordHash;
+        $columns[] = 'created_at';
+        $valuesSql[] = 'NOW()';
 
         if (empty($columns)) {
             return false;
         }
 
-        $sql = "INSERT INTO `$table` (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ")";
-        $ok = Database::iud($sql);
+        $sql = "INSERT INTO `$table` (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $valuesSql) . ")";
+        $ok = Database::execute($sql, $types, $params);
         if (!$ok) {
             return false;
         }
 
         $pharmacistId = 0;
-        if (self::hasColumn($table, 'id') && !self::isIdAutoIncrement($table)) {
+        if (!self::isIdAutoIncrement($table)) {
             $pharmacistId = $licenseId;
         } else {
             $pharmacistId = (int) (Database::$connection->insert_id ?? 0);
             if ($pharmacistId <= 0) {
-                $row = Database::fetchOne("SELECT id FROM `$table` WHERE email = ? ORDER BY id DESC LIMIT 1", 's', [$email]);
+                $row = Database::fetchOne("SELECT id FROM `$table` WHERE email = ? ORDER BY id DESC LIMIT 1", 's', [$emailRaw]);
                 $pharmacistId = (int) ($row['id'] ?? 0);
             }
         }
 
-        if ($pharmacyId <= 0 || !PharmacyContext::tableExists('pharmacies')) {
+        if ($pharmacyId <= 0) {
             return false;
         }
 
@@ -205,7 +148,7 @@ class PharmacistsModel
             return false;
         }
 
-        if ($pharmacistId > 0 && $pharmacyId > 0 && PharmacyContext::tableExists('pharmacy_users')) {
+        if ($pharmacistId > 0 && $pharmacyId > 0) {
             $exists = Database::fetchOne("SELECT id FROM pharmacy_users WHERE pharmacy_id = ? AND pharmacist_id = ? LIMIT 1", 'ii', [$pharmacyId, $pharmacistId]);
             if (!$exists) {
                 Database::execute("INSERT INTO pharmacy_users (pharmacy_id, pharmacist_id, user_id, role, is_primary, status, created_at) VALUES (?, ?, ?, 'pharmacist', 1, 'active', NOW())", 'iii', [$pharmacyId, $pharmacistId, $pharmacistId]);
@@ -217,42 +160,36 @@ class PharmacistsModel
 
     public static function update(int $id, array $data): bool
     {
-        Database::setUpConnection();
         $table = self::tableName();
 
-        $name = (string) ($data['name'] ?? '');
-        $email = (string) ($data['email'] ?? '');
-        $phone = (string) ($data['phone'] ?? '');
+        $name = trim((string) ($data['name'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
         $licenseIdRaw = $data['id'] ?? ($data['license_no'] ?? '');
         $licenseId = self::normalizeLicenseId($licenseIdRaw);
         if ($licenseId <= 0) {
             return false;
         }
-        $license = Database::escape((string) $licenseId);
-        $status = Database::escape((string) ($data['status'] ?? 'ACTIVE'));
 
         $set = [];
-        if (self::hasColumn($table, 'name')) {
-            $set[] = "name = '$name'";
+        $types = '';
+        $params = [];
+
+        $set[] = "name = ?";
+        $types .= 's';
+        $params[] = $name;
+        $set[] = "email = ?";
+        $types .= 's';
+        $params[] = $email;
+        if (!self::isIdAutoIncrement($table)) {
+            $set[] = "id = ?";
+            $types .= 'i';
+            $params[] = $licenseId;
         }
-        if (self::hasColumn($table, 'email')) {
-            $set[] = "email = '$email'";
-        }
-        if (self::hasColumn($table, 'phone')) {
-            $set[] = "phone = '$phone'";
-        }
-        if (self::hasColumn($table, 'id') && !self::isIdAutoIncrement($table)) {
-            $set[] = "id = $licenseId";
-        }
-        if (self::hasColumn($table, 'license_no')) {
-            $set[] = "license_no = '$license'";
-        }
-        if (self::hasColumn($table, 'status')) {
-            $set[] = "status = '$status'";
-        }
-        if (!empty($data['password']) && self::hasColumn($table, 'password')) {
-            $hashed = Database::escape(password_hash((string) $data['password'], PASSWORD_BCRYPT));
-            $set[] = "password = '$hashed'";
+        if (!empty($data['password'])) {
+            $hashed = password_hash((string) $data['password'], PASSWORD_BCRYPT);
+            $set[] = "password = ?";
+            $types .= 's';
+            $params[] = $hashed;
         }
 
         if (empty($set)) {
@@ -260,49 +197,27 @@ class PharmacistsModel
         }
 
         $sql = "UPDATE `$table` SET " . implode(', ', $set) . " WHERE id = ?";
-        $types = '';
-        $params = [];
-        foreach ($set as $assignment) {
-            if (str_contains($assignment, " = NOW()")) {
-                continue;
-            }
-        }
-        return Database::execute($sql, 'i', [$id]);
+        $types .= 'i';
+        $params[] = $id;
+        return Database::execute($sql, $types, $params);
     }
 
     public static function softDelete(int $id): bool
     {
-        Database::setUpConnection();
         $table = self::tableName();
 
-        if (self::hasColumn($table, 'status')) {
-            return Database::execute("UPDATE `$table` SET status = 'DELETED' WHERE id = ?", 'i', [$id]);
-        }
-
-        // Fallback for minimal schemas without status support.
         return Database::execute("DELETE FROM `$table` WHERE id = ?", 'i', [$id]);
     }
 
     public static function getStats(): array
     {
-        Database::setUpConnection();
         $table = self::tableName();
 
         $rs1 = Database::fetchOne("SELECT COUNT(*) AS cnt FROM `$table`");
-        if (self::hasColumn($table, 'status')) {
-            $rs2 = Database::fetchOne("SELECT COUNT(*) AS cnt FROM `$table` WHERE status = ?", 's', ['ACTIVE']);
-            $rs3 = Database::fetchOne("SELECT COUNT(*) AS cnt FROM `$table` WHERE status = ?", 's', ['DELETED']);
-            $active = (int) ($rs2['cnt'] ?? 0);
-            $deleted = (int) ($rs3['cnt'] ?? 0);
-        } else {
-            $active = (int) ($rs1['cnt'] ?? 0);
-            $deleted = 0;
-        }
-
         return [
             'total' => (int) ($rs1['cnt'] ?? 0),
-            'active' => $active,
-            'deleted' => $deleted,
+            'active' => (int) ($rs1['cnt'] ?? 0),
+            'deleted' => 0,
         ];
     }
 }

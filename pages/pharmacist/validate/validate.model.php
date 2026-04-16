@@ -21,12 +21,16 @@ class ValidateModel
     {
         $dateExpr = self::prescriptionDateExpr();
         $whereParts = ["TRIM(UPPER(status)) = 'PENDING'"];
+        $types = '';
+        $params = [];
         if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
-            $whereParts[] = "pharmacy_id = " . self::currentPharmacyId();
+            $whereParts[] = "pharmacy_id = ?";
+            $types .= 'i';
+            $params[] = self::currentPharmacyId();
         }
         $where = !empty($whereParts) ? ("WHERE " . implode(' AND ', $whereParts)) : '';
 
-        $rs = Database::search("
+        return Database::fetchAll("
             SELECT
                 id,
                 patient_nic,
@@ -37,15 +41,6 @@ class ValidateModel
             FROM prescriptions
             $where
             ORDER BY $dateExpr DESC
-        ");
-
-        $rows = [];
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $rows[] = $row;
-            }
-        }
-
-        return $rows;
+        ", $types, $params);
     }
 }

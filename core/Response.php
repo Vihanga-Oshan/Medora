@@ -31,6 +31,29 @@ class Response
     }
 
     /**
+     * Emit a JSON response and stop execution.
+     */
+    public static function json(array $payload, int $status = 200, bool $noCache = true): never
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        if ($noCache) {
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        }
+        echo json_encode($payload);
+        exit;
+    }
+
+    /**
+     * Send an empty response with the given status and stop execution.
+     */
+    public static function empty(int $status = 204): never
+    {
+        http_response_code($status);
+        exit;
+    }
+
+    /**
      * Abort with an HTTP status and a plain message.
      */
     public static function abort(int $code, string $message = ''): never

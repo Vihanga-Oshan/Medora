@@ -18,6 +18,8 @@ if (file_exists($envFile)) {
 }
 
 // Helper — read from $_ENV with a fallback default
+date_default_timezone_set($_ENV['APP_TIMEZONE'] ?? 'Asia/Colombo');
+
 function env(string $key, string $default = ''): string
 {
     return $_ENV[$key] ?? $default;

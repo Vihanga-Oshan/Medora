@@ -1,21 +1,9 @@
 <?php
 class PharmacyAssignmentsModel
 {
-    private static function pharmacistTable(): string
-    {
-        return 'pharmacist';
-    }
-
     public static function pharmacists(): array
     {
-        $t = self::pharmacistTable();
-        $rows = [];
-        $rs = Database::search("SELECT id, name, email FROM `$t` ORDER BY name ASC");
-        if ($rs instanceof mysqli_result) {
-            while ($r = $rs->fetch_assoc())
-                $rows[] = $r;
-        }
-        return $rows;
+        return Database::fetchAll("SELECT id, name, email FROM `pharmacist` ORDER BY name ASC");
     }
 
     public static function pharmacies(): array
@@ -25,19 +13,12 @@ class PharmacyAssignmentsModel
 
     public static function allAssignments(): array
     {
-        $t = self::pharmacistTable();
-        $rows = [];
-        $rs = Database::search("SELECT pu.id, pu.pharmacy_id, pu.pharmacist_id, pu.role, pu.is_primary, pu.status,
+        return Database::fetchAll("SELECT pu.id, pu.pharmacy_id, pu.pharmacist_id, pu.role, pu.is_primary, pu.status,
                                       ph.name AS pharmacy_name, p.name AS pharmacist_name
                                FROM pharmacy_users pu
                                LEFT JOIN pharmacies ph ON ph.id = pu.pharmacy_id
-                               LEFT JOIN `$t` p ON p.id = pu.pharmacist_id
+                               LEFT JOIN `pharmacist` p ON p.id = pu.pharmacist_id
                                ORDER BY pu.id DESC");
-        if ($rs instanceof mysqli_result) {
-            while ($r = $rs->fetch_assoc())
-                $rows[] = $r;
-        }
-        return $rows;
     }
 
     public static function assign(int $pharmacyId, int $pharmacistId, bool $primary): bool

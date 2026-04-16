@@ -21,29 +21,25 @@ if (!$request) {
 
     if ($status === 'approved') {
         // Auto-login pharmacist and redirect to dashboard.
-        $email = Database::escape((string) ($request['email'] ?? ''));
-        $table = PharmacyContext::tableExists('pharmacists') ? 'pharmacists' : (PharmacyContext::tableExists('pharmacist') ? 'pharmacist' : '');
+        $email = (string) ($request['email'] ?? '');
+        $table = 'pharmacist';
 
         if ($table !== '') {
-            $where = "email = '$email' AND status = 'ACTIVE'";
-            $rs = Database::fetchOne("SELECT * FROM `$table` WHERE $where LIMIT 1");
-            if ($rs instanceof mysqli_result) {
-                $ph = $rs->fetch_assoc();
-                if ($ph) {
-                    $pid = (int) ($ph['id'] ?? 0);
-                    $displayName = (string) ($ph['name'] ?? 'Pharmacist');
-                    $assignedPharmacyId = PharmacyContext::resolvePharmacistPharmacyId($pid);
+            $ph = Database::fetchOne("SELECT * FROM `$table` WHERE email = ? AND status = 'ACTIVE' LIMIT 1", 's', [$email]);
+            if ($ph) {
+                $pid = (int) ($ph['id'] ?? 0);
+                $displayName = (string) ($ph['name'] ?? 'Pharmacist');
+                $assignedPharmacyId = PharmacyContext::resolvePharmacistPharmacyId($pid);
 
-                    $token = Auth::sign([
-                        'id' => $pid,
-                        'name' => $displayName,
-                        'role' => 'pharmacist',
-                        'pharmacy_id' => $assignedPharmacyId,
-                    ]);
-                    Auth::setTokenCookie($token, 86400, 'pharmacist');
-                    unset($_SESSION['pharmacist_request_id']);
-                    Response::redirect('/pharmacist/dashboard');
-                }
+                $token = Auth::sign([
+                    'id' => $pid,
+                    'name' => $displayName,
+                    'role' => 'pharmacist',
+                    'pharmacy_id' => $assignedPharmacyId,
+                ]);
+                Auth::setTokenCookie($token, 86400, 'pharmacist');
+                unset($_SESSION['pharmacist_request_id']);
+                Response::redirect('/pharmacist/dashboard');
             }
         }
 

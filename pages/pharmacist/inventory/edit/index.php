@@ -9,7 +9,7 @@ if ($id <= 0) {
     Response::redirect('/pharmacist/inventory');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     $name = trim((string)($_POST['brand_new'] ?? ''));
     if ($name === '') {
         $name = trim((string)($_POST['brand_existing'] ?? ''));
@@ -17,13 +17,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $medName = trim((string)($_POST['med_name'] ?? ''));
     $strength = trim((string)($_POST['strength'] ?? ''));
     $price = (float)($_POST['price'] ?? 0);
+    $supplierId = (int)($_POST['supplier_existing'] ?? 0);
+    $supplierNew = trim((string)($_POST['supplier_new'] ?? ''));
+    $lowStockThreshold = (int)($_POST['low_stock_threshold'] ?? 0);
 
     if ($name === '') {
         $error = 'Brand name is required.';
     } elseif ($medName === '') {
         $error = 'Medicine name is required.';
+    } elseif ($supplierId <= 0 && $supplierNew === '') {
+        $error = 'Supplier is required.';
     } elseif ($strength === '') {
         $error = 'Strength is required.';
+    } elseif ($lowStockThreshold < 0) {
+        $error = 'Low stock threshold cannot be negative.';
     } elseif ($price < 0) {
         $error = 'Price must be zero or positive.';
     } else {
@@ -45,6 +52,7 @@ $brands = InventoryModel::getBrands();
 $dosageForms = InventoryModel::getDosageForms();
 $sellingUnits = InventoryModel::getSellingUnits();
 $manufacturers = InventoryModel::getManufacturers();
+$suppliers = InventoryModel::getSuppliers();
 $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $isDashboard = str_contains($currentPath, '/pharmacist/dashboard');
 $isValidate = str_contains($currentPath, '/pharmacist/validate') || str_contains($currentPath, '/pharmacist/prescriptions');
@@ -144,6 +152,18 @@ $fv = function (string $key, $fallback = '') use ($medicine): string {
                     <input type="text" name="manufacturer_new" value="<?= htmlspecialchars((string)($_POST['manufacturer_new'] ?? '')) ?>" placeholder="Type new manufacturer">
                 </div>
                 <div class="form-group">
+                    <label>Supplier <span style="color:#dc2626;">*</span></label>
+                    <?php $selectedSupplier = (string)($_POST['supplier_existing'] ?? ($medicine['supplier_id'] ?? '')); ?>
+                    <select name="supplier_existing">
+                        <option value="">Select Existing Supplier</option>
+                        <?php foreach ($suppliers as $supplier): ?>
+                            <option value="<?= (int)($supplier['id'] ?? 0) ?>" <?= $selectedSupplier === (string)($supplier['id'] ?? '') ? 'selected' : '' ?>><?= htmlspecialchars((string)($supplier['name'] ?? '')) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small style="color:#64748b;display:block;margin-top:4px;">or add a new supplier</small>
+                    <input type="text" name="supplier_new" value="<?= htmlspecialchars((string)($_POST['supplier_new'] ?? '')) ?>" placeholder="Type new supplier name">
+                </div>
+                <div class="form-group">
                     <label>Category</label>
                     <?php if (!empty($categories)): ?>
                         <?php $selectedCategoryId = (string)($_POST['category_id'] ?? ($medicine['category_id'] ?? '')); ?>
@@ -159,6 +179,13 @@ $fv = function (string $key, $fallback = '') use ($medicine): string {
                     <?php endif; ?>
                 </div>
                 <div class="form-group full-width"><label>Description</label><textarea name="description"><?= htmlspecialchars($fv('description')) ?></textarea></div>
+
+                <div class="form-section-title"><span>&#128222;</span> Supplier Contact</div>
+                <div class="form-group"><label>Contact Person</label><input type="text" name="supplier_contact_person" value="<?= htmlspecialchars((string)($_POST['supplier_contact_person'] ?? ($medicine['supplier_contact_person'] ?? ''))) ?>"></div>
+                <div class="form-group"><label>Supplier Phone</label><input type="text" name="supplier_phone" value="<?= htmlspecialchars((string)($_POST['supplier_phone'] ?? ($medicine['supplier_phone'] ?? ''))) ?>"></div>
+                <div class="form-group"><label>Supplier Email</label><input type="email" name="supplier_email" value="<?= htmlspecialchars((string)($_POST['supplier_email'] ?? ($medicine['supplier_email'] ?? ''))) ?>"></div>
+                <div class="form-group"><label>Lead Time (Days)</label><input type="number" name="supplier_lead_time_days" min="0" value="<?= htmlspecialchars((string)($_POST['supplier_lead_time_days'] ?? ($medicine['supplier_lead_time_days'] ?? '0'))) ?>"></div>
+                <div class="form-group full-width"><label>Supplier Address</label><textarea name="supplier_address"><?= htmlspecialchars((string)($_POST['supplier_address'] ?? ($medicine['supplier_address'] ?? ''))) ?></textarea></div>
 
                 <div class="form-section-title"><span>&#128138;</span> Dosage &amp; Presentation</div>
                 <div class="form-group">
@@ -190,10 +217,14 @@ $fv = function (string $key, $fallback = '') use ($medicine): string {
                 </div>
                 <div class="form-group"><label>Doses per Unit</label><input type="number" name="unit_quantity" min="1" value="<?= htmlspecialchars($fv('unit_quantity', '1')) ?>"></div>
                 <div class="form-group"><label>Current Stock (Units)</label><input type="number" name="quantity_in_stock" min="0" value="<?= htmlspecialchars($fv('quantity_in_stock', '0')) ?>"></div>
+                <div class="form-group"><label>Low Stock Threshold</label><input type="number" name="low_stock_threshold" min="0" value="<?= htmlspecialchars($fv('low_stock_threshold', '10')) ?>"></div>
+                <div class="form-group"><label>Reorder Quantity</label><input type="number" name="reorder_quantity" min="0" value="<?= htmlspecialchars($fv('reorder_quantity', '25')) ?>"></div>
                 <div class="form-group"><label>Price per Unit</label><input type="number" name="price" step="0.01" min="0" value="<?= htmlspecialchars($fv('price', '0')) ?>"></div>
+                <div class="form-group"><label>Unit Cost</label><input type="number" name="unit_cost" step="0.01" min="0" value="<?= htmlspecialchars($fv('unit_cost', $fv('price', '0'))) ?>"></div>
 
                 <div class="form-section-title"><span>&#128197;</span> Logistics &amp; Media</div>
                 <div class="form-group"><label>Expiry Date</label><input type="date" name="expiry_date" value="<?= htmlspecialchars(substr($fv('expiry_date'), 0, 10)) ?>"></div>
+                <div class="form-group"><label>Batch Number</label><input type="text" name="batch_number" value="<?= htmlspecialchars($fv('batch_number')) ?>" placeholder="Batch / lot number"></div>
                 <div class="form-group">
                     <label>Medicine Image</label>
                     <input type="file" name="imageFile" accept="image/*">

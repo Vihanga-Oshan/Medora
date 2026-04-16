@@ -5,9 +5,8 @@
  * Handles both GET (show form) and POST (save file).
  */
 $error      = null;
-$redirected = false;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_prescription_upload')) {
         $error = 'Session expired. Please refresh and try again.';
         return;
@@ -54,10 +53,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (move_uploaded_file($file['tmp_name'], $destPath)) {
                 $displayName = trim((string)pathinfo((string)$file['name'], PATHINFO_FILENAME));
                 $displayName = preg_replace('/[^a-zA-Z0-9\-\._ ]/', '_', $displayName) ?: 'Prescription';
-                PrescriptionsModel::insert($user['nic'], $displayName . '.' . $ext, $safeName);
-                header('Location: ' . (APP_BASE ?: '') . '/patient/prescriptions');
-                $redirected = true;
-                exit;
+                $saved = PrescriptionsModel::insert(
+                    (string)$user['nic'],
+                    $displayName . '.' . $ext,
+                    $safeName,
+                    (string)($user['name'] ?? 'Patient')
+                );
+
+                if ($saved) {
+                    Response::redirect('/patient/prescriptions');
+                }
+
+                if (is_file($destPath)) {
+                    @unlink($destPath);
+                }
+                $error = 'The file was uploaded, but the prescription record could not be saved. Please try again.';
             } else {
                 $error = 'Failed to save the file. Please try again.';
             }

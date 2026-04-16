@@ -8,11 +8,10 @@
 require_once __DIR__ . '/profile.model.php';
 
 $nic        = $user['nic'];
-$redirected = false;
 $success    = false;
 $error      = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     $name   = trim($_POST['name']           ?? '');
     $phone  = trim($_POST['phone']          ?? '');
     $address= trim($_POST['address']        ?? '');
@@ -31,8 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         // Reload to show updated data
         Response::redirect('/patient/profile?saved=1');
-        $redirected = true;
-        exit;
     }
 }
 

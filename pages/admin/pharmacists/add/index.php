@@ -8,7 +8,7 @@ require_once __DIR__ . '/../pharmacists.model.php';
 
 $pharmacies = PharmacyContext::getPharmacies();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_pharmacists_add')) {
         $error = "Security validation failed. Please refresh and try again.";
     } else {
@@ -17,9 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($createdName !== '') {
                 AdminActivityLog::log($user, "Created pharmacist account for {$createdName}", 'green', $user['name'] ?? 'Admin', 'pharmacist');
             }
-            $base = APP_BASE ?: '';
-            header('Location: ' . $base . '/admin/pharmacists?msg=added');
-            exit;
+            Response::redirect('/admin/pharmacists?msg=added');
         }
         $error = "Failed to create pharmacist. Please check the information.";
     }

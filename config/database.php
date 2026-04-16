@@ -1,8 +1,7 @@
 <?php
 
 /**
- * Database Configuration — MySQLi singleton
- * Provides iud() for INSERT/UPDATE/DELETE and search() for SELECT queries.
+ * Database Configuration - MySQLi singleton.
  */
 class Database
 {
@@ -40,51 +39,6 @@ class Database
         return $connection;
     }
 
-    private static function isRetryableConnectionError(int $errno, string $error = ''): bool
-    {
-        if (in_array($errno, [2002, 2006, 2013, 2055], true)) {
-            return true;
-        }
-
-        $msg = strtolower($error);
-        return str_contains($msg, 'server has gone away')
-            || str_contains($msg, 'lost connection')
-            || str_contains($msg, 'forcibly closed');
-    }
-
-    private static function reconnect(): bool
-    {
-        if (self::$connection instanceof mysqli) {
-            @self::$connection->close();
-        }
-
-        self::$connection = null;
-        self::setUpConnection();
-        return self::$connection instanceof mysqli && !self::$connection->connect_error;
-    }
-
-    private static function queryWithReconnect(string $q)
-    {
-        self::setUpConnection();
-
-        $result = @self::$connection->query($q);
-        if ($result !== false) {
-            return $result;
-        }
-
-        $errno = (int)(self::$connection->errno ?? 0);
-        $error = (string)(self::$connection->error ?? '');
-        if (!self::isRetryableConnectionError($errno, $error)) {
-            return false;
-        }
-
-        if (!self::reconnect()) {
-            return false;
-        }
-
-        return @self::$connection->query($q);
-    }
-
     public static function setUpConnection()
     {
         if (!isset(self::$connection)) {
@@ -101,10 +55,9 @@ class Database
             $useSsl = in_array($sslMode, ['required', 'verify_ca', 'verify_identity'], true);
             self::$connection = self::connect($host, $user, $pass, $name, $port, $useSsl, $sslKey, $sslCert, $sslCa);
 
-            // Local dev fallback: if cloud host/DNS is unavailable, try local MySQL.
             if (!self::$connection && !in_array(strtolower($host), ['localhost', '127.0.0.1', '::1'], true)) {
                 $fallbackHost = env('DB_FALLBACK_HOST', '127.0.0.1');
-                $fallbackPort = (int)env('DB_FALLBACK_PORT', '3306');
+                $fallbackPort = (int) env('DB_FALLBACK_PORT', '3306');
                 $fallbackUser = env('DB_FALLBACK_USER', 'root');
                 $fallbackPass = env('DB_FALLBACK_PASS', '');
                 $fallbackName = env('DB_FALLBACK_NAME', $name);
@@ -121,28 +74,26 @@ class Database
 
             if (!self::$connection || self::$connection->connect_error) {
                 $err = mysqli_connect_error();
-                die("Database connection failed: " . ($err !== '' ? $err : 'Unknown connection error.'));
+                die('Database connection failed: ' . ($err !== '' ? $err : 'Unknown connection error.'));
             }
 
             self::$connection->set_charset('utf8mb4');
+
+            $tz = new DateTimeZone(date_default_timezone_get());
+            $offset = $tz->getOffset(new DateTime('now', $tz));
+            $sign = $offset < 0 ? '-' : '+';
+            $offset = abs($offset);
+            $hours = str_pad((string) intdiv($offset, 3600), 2, '0', STR_PAD_LEFT);
+            $minutes = str_pad((string) intdiv($offset % 3600, 60), 2, '0', STR_PAD_LEFT);
+            $mysqlOffset = $sign . $hours . ':' . $minutes;
+
+            $stmt = self::$connection->prepare("SET time_zone = ?");
+            if ($stmt) {
+                $stmt->bind_param('s', $mysqlOffset);
+                $stmt->execute();
+                $stmt->close();
+            }
         }
-    }
-
-    /**
-     * Execute INSERT, UPDATE, DELETE queries
-     */
-    public static function iud($q)
-    {
-        $rs = self::queryWithReconnect($q);
-        return (bool)$rs;
-    }
-
-    /**
-     * Execute SELECT queries — returns mysqli_result
-     */
-    public static function search($q)
-    {
-        return self::queryWithReconnect($q);
     }
 
     private static function normalizeTypes(string $types, array $params): string
@@ -150,10 +101,8 @@ class Database
         if ($types !== '') {
             return $types;
         }
-        if (empty($params)) {
-            return '';
-        }
-        return str_repeat('s', count($params));
+
+        return empty($params) ? '' : str_repeat('s', count($params));
     }
 
     private static function bindParams(mysqli_stmt $stmt, string $types, array $params): bool
@@ -167,54 +116,47 @@ class Database
             $refs[$k] = &$params[$k];
         }
         array_unshift($refs, $types);
-        return (bool)call_user_func_array([$stmt, 'bind_param'], $refs);
+        return (bool) call_user_func_array([$stmt, 'bind_param'], $refs);
     }
 
-    /**
-     * Execute prepared INSERT/UPDATE/DELETE.
-     */
-    public static function execute(string $sql, string $types = '', array $params = []): bool
+    private static function prepareStatement(string $sql, string $types, array $params): ?mysqli_stmt
     {
         self::setUpConnection();
         $stmt = self::$connection->prepare($sql);
         if (!$stmt) {
-            return false;
+            return null;
         }
 
-        $types = self::normalizeTypes($types, $params);
-        if (!self::bindParams($stmt, $types, $params)) {
+        if (!self::bindParams($stmt, self::normalizeTypes($types, $params), $params)) {
             $stmt->close();
+            return null;
+        }
+
+        return $stmt;
+    }
+
+    public static function execute(string $sql, string $types = '', array $params = []): bool
+    {
+        $stmt = self::prepareStatement($sql, $types, $params);
+        if (!$stmt) {
             return false;
         }
 
         $ok = $stmt->execute();
         $stmt->close();
-        return (bool)$ok;
+        return (bool) $ok;
     }
 
-    /**
-     * Execute prepared SELECT and return first row.
-     */
     public static function fetchOne(string $sql, string $types = '', array $params = []): ?array
     {
         $rows = self::fetchAll($sql, $types, $params);
         return $rows[0] ?? null;
     }
 
-    /**
-     * Execute prepared SELECT and return all rows.
-     */
     public static function fetchAll(string $sql, string $types = '', array $params = []): array
     {
-        self::setUpConnection();
-        $stmt = self::$connection->prepare($sql);
+        $stmt = self::prepareStatement($sql, $types, $params);
         if (!$stmt) {
-            return [];
-        }
-
-        $types = self::normalizeTypes($types, $params);
-        if (!self::bindParams($stmt, $types, $params)) {
-            $stmt->close();
             return [];
         }
 
@@ -240,27 +182,18 @@ class Database
     public static function beginTransaction(): bool
     {
         self::setUpConnection();
-        return (bool)self::$connection->begin_transaction();
+        return (bool) self::$connection->begin_transaction();
     }
 
     public static function commit(): bool
     {
         self::setUpConnection();
-        return (bool)self::$connection->commit();
+        return (bool) self::$connection->commit();
     }
 
     public static function rollback(): bool
     {
         self::setUpConnection();
-        return (bool)self::$connection->rollback();
-    }
-
-    /**
-     * Escape a value safely for SQL usage.
-     */
-    public static function escape(string $value): string
-    {
-        self::setUpConnection();
-        return self::$connection->real_escape_string($value);
+        return (bool) self::$connection->rollback();
     }
 }

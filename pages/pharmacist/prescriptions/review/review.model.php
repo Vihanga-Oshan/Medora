@@ -13,11 +13,6 @@ class ReviewModel
         return PharmacyContext::resolvePharmacistPharmacyId((int) ($auth['id'] ?? 0));
     }
 
-    private static function tableExists(string $name): bool
-    {
-        return in_array($name, ['patient', 'notifications', 'prescriptions'], true);
-    }
-
     public static function getPrescriptionById(int $id): ?array
     {
         $sql = "SELECT * FROM prescriptions WHERE id = ?";
@@ -55,10 +50,6 @@ class ReviewModel
 
     public static function createNotification(string $nic, string $message, string $type = 'PRESCRIPTION'): bool
     {
-        if (!self::tableExists('notifications')) {
-            return true;
-        }
-
         $pharmacyId = self::currentPharmacyId();
         if (PharmacyContext::tableHasPharmacyId('notifications') && $pharmacyId > 0) {
             return Database::execute(

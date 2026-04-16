@@ -54,6 +54,11 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
                             <input type="password" id="password" name="password" required placeholder="Enter your password">
                         </div>
 
+                        <div class="input-group">
+                            <label for="confirm_password">Confirm Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+                        </div>
+
                         <label class="checkbox">
                             <input type="checkbox" name="agree" value="1" <?= Request::post('agree') ? 'checked' : '' ?>>
                             I agree to the <a href="#">Privacy Policies</a>

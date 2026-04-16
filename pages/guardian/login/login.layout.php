@@ -48,7 +48,7 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
 
                     <div class="form-options">
                         <label>
-                            <input type="checkbox" id="keepSignedIn" name="rememberMe">
+                            <input type="checkbox" id="keepSignedIn" name="rememberMe" <?= Request::post('rememberMe') ? 'checked' : '' ?>>
                             Keep me signed in on this device
                         </label>
                         <a href="#" class="forgot-password">Forgot password?</a>

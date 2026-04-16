@@ -17,7 +17,7 @@ if (!$prescription) {
 $patient = ReviewModel::getPatientByNic($prescription['patient_nic']);
 
 // Handle POST actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'pharmacist_prescription_review_action')) {
         Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=csrf');
     }

@@ -6,30 +6,24 @@ require_once __DIR__ . '/../../common/admin.head.php';
 require_once __DIR__ . '/../../common/admin.activity.php';
 require_once __DIR__ . '/../pharmacists.model.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_pharmacists_delete')) {
-        $base = APP_BASE ?: '';
-        header('Location: ' . $base . '/admin/pharmacists?error=csrf');
-        exit;
+        Response::redirect('/admin/pharmacists?error=csrf');
     }
 
     $id = (int)$_POST['id'];
     if ($id) {
         $name = 'Pharmacist';
-        $rs = Database::search("SELECT name FROM pharmacist WHERE id = $id LIMIT 1");
-        if ($rs instanceof mysqli_result && $rs->num_rows > 0) {
-            $row = $rs->fetch_assoc();
+        $row = Database::fetchOne("SELECT name FROM pharmacist WHERE id = ? LIMIT 1", 'i', [$id]);
+        if ($row) {
             $name = trim((string)($row['name'] ?? 'Pharmacist'));
         }
 
         if (PharmacistsModel::softDelete($id)) {
             AdminActivityLog::log($user, "Suspended pharmacist account for {$name}", 'red', $user['name'] ?? 'Admin', 'pharmacist', $id);
         }
-        $base = APP_BASE ?: '';
-        header('Location: ' . $base . '/admin/pharmacists?msg=suspended');
+        Response::redirect('/admin/pharmacists?msg=suspended');
     }
 } else {
-    $base = APP_BASE ?: '';
-    header('Location: ' . $base . '/admin/pharmacists');
+    Response::redirect('/admin/pharmacists');
 }
-exit;

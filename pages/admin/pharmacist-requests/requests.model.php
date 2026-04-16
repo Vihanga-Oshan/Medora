@@ -18,15 +18,10 @@ class PharmacistRequestsModel
             );
             return $rows;
         }
-        $rs = Database::search("SELECT r.*, p.name AS pharmacy_name
+        return Database::fetchAll("SELECT r.*, p.name AS pharmacy_name
                                FROM pharmacist_requests r
                                LEFT JOIN pharmacies p ON p.id = r.requested_pharmacy_id
                                ORDER BY r.created_at DESC");
-        if ($rs instanceof mysqli_result) {
-            while ($r = $rs->fetch_assoc())
-                $rows[] = $r;
-        }
-        return $rows;
     }
 
     public static function approve(int $requestId, int $adminId): bool

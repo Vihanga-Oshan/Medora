@@ -1,5 +1,7 @@
 <?php
 
+require_once ROOT . '/core/AppLogger.php';
+
 /**
  * Pharmacist Login Model
  */
@@ -7,21 +9,7 @@ class LoginModel
 {
     private static function writeLog(string $file, string $level, string $message, array $context = []): void
     {
-        $rootDir = defined('ROOT') ? ROOT : dirname(__DIR__, 3);
-        $logDir = $rootDir . '/storage/logs';
-        if (!is_dir($logDir)) {
-            @mkdir($logDir, 0777, true);
-        }
-
-        $line = sprintf(
-            "[%s] [%s] %s %s%s",
-            date('Y-m-d H:i:s'),
-            $level,
-            $message,
-            json_encode($context, JSON_UNESCAPED_SLASHES),
-            PHP_EOL
-        );
-        @file_put_contents($logDir . '/' . $file, $line, FILE_APPEND | LOCK_EX);
+        AppLogger::write($file, $level, $message, $context);
     }
 
     private static function tableName(): string
@@ -29,17 +17,8 @@ class LoginModel
         return 'pharmacist';
     }
 
-    /**
-     * Check whether a column exists on the pharmacists table.
-     */
-    private static function hasColumn(string $column): bool
-    {
-        return in_array($column, ['id', 'name', 'email', 'password', 'created_at'], true);
-    }
-
     public static function findById(string $id): ?array
     {
-        Database::setUpConnection();
         $table = self::tableName();
         $cleanInput = trim($id);
         $safeId = (int) preg_replace('/\D+/', '', $cleanInput);

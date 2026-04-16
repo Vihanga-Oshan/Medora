@@ -6,21 +6,18 @@ class SettingsModel
 {
     public static function getCurrentAdmin(int $adminId): ?array
     {
-        Database::setUpConnection();
         if ($adminId <= 0) {
             return null;
         }
-        $rs = Database::search("
+        $row = Database::fetchOne("
             SELECT id, email, password AS password_hash, name AS full_name
             FROM admins
-            WHERE id = $adminId
+            WHERE id = ?
             LIMIT 1
-        ");
-        if (!($rs instanceof mysqli_result) || $rs->num_rows === 0) {
+        ", 'i', [$adminId]);
+        if (!$row) {
             return null;
         }
-
-        $row = $rs->fetch_assoc();
         return [
             'id' => (int)($row['id'] ?? 0),
             'email' => (string)($row['email'] ?? ''),
@@ -31,7 +28,6 @@ class SettingsModel
 
     public static function updateEmail(int $adminId, string $email, ?string &$error = null): bool
     {
-        Database::setUpConnection();
         if ($adminId <= 0) {
             $error = 'Admin account not found.';
             return false;
@@ -43,24 +39,23 @@ class SettingsModel
             return false;
         }
 
-        $safeEmail = Database::escape($email);
-        $rsExisting = Database::search("
+        $existing = Database::fetchOne("
             SELECT id
             FROM admins
-            WHERE email = '$safeEmail' AND id <> $adminId
+            WHERE email = ? AND id <> ?
             LIMIT 1
-        ");
-        if ($rsExisting instanceof mysqli_result && $rsExisting->num_rows > 0) {
+        ", 'si', [$email, $adminId]);
+        if ($existing) {
             $error = 'That email is already in use by another account.';
             return false;
         }
 
-        return Database::iud("
+        return Database::execute("
             UPDATE admins
-            SET email = '$safeEmail'
-            WHERE id = $adminId
+            SET email = ?
+            WHERE id = ?
             LIMIT 1
-        ");
+        ", 'si', [$email, $adminId]);
     }
 
     private static function verifyPassword(string $input, string $storedHash): bool
@@ -99,7 +94,6 @@ class SettingsModel
 
     public static function updatePassword(int $adminId, string $currentPassword, string $newPassword, string $confirmPassword, ?string &$error = null): bool
     {
-        Database::setUpConnection();
         $admin = self::getCurrentAdmin($adminId);
         if ($admin === null) {
             $error = 'Admin account not found.';
@@ -125,24 +119,22 @@ class SettingsModel
             return false;
         }
 
-        $hashed = Database::escape(password_hash($newPassword, PASSWORD_BCRYPT));
-        return Database::iud("
+        $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+        return Database::execute("
             UPDATE admins
-            SET password = '$hashed'
-            WHERE id = $adminId
+            SET password = ?
+            WHERE id = ?
             LIMIT 1
-        ");
+        ", 'si', [$hashed, $adminId]);
     }
 
     // Kept for backward compatibility where key-value settings are still used.
     public static function getAll(): array
     {
         $settings = [];
-        $rs = Database::search("SELECT * FROM settings");
-        if ($rs instanceof mysqli_result) {
-            while ($row = $rs->fetch_assoc()) {
-                $settings[$row['config_key']] = $row['config_value'];
-            }
+        $rows = Database::fetchAll("SELECT * FROM settings");
+        foreach ($rows as $row) {
+            $settings[$row['config_key']] = $row['config_value'];
         }
         return $settings;
     }

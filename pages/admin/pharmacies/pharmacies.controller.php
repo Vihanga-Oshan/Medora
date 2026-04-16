@@ -24,9 +24,8 @@ if (Request::isPost()) {
         $id = (int)(Request::post('id') ?? 0);
         $ok = PharmaciesModel::toggleStatus($id);
         if ($ok && $id > 0) {
-            $rs = Database::search("SELECT name, status FROM pharmacies WHERE id = $id LIMIT 1");
-            if ($rs instanceof mysqli_result && $rs->num_rows > 0) {
-                $row = $rs->fetch_assoc();
+            $row = Database::fetchOne("SELECT name, status FROM pharmacies WHERE id = ? LIMIT 1", 'i', [$id]);
+            if ($row) {
                 $name = trim((string)($row['name'] ?? 'Pharmacy'));
                 $status = strtoupper((string)($row['status'] ?? 'active'));
                 AdminActivityLog::log($user, "Changed {$name} status to {$status}", 'blue', $user['name'] ?? 'Admin', 'pharmacy', $id);

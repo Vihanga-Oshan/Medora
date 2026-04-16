@@ -3,6 +3,8 @@
 /**
  * Patient Register Controller
  */
+require_once ROOT . '/core/InputValidator.php';
+
 $error = null;
 
 if (Request::isPost()) {
@@ -10,7 +12,7 @@ if (Request::isPost()) {
     $gender = trim(Request::post('gender') ?? '');
     $emergencyContact = trim(Request::post('emergencyContact') ?? '');
     $nic = trim(Request::post('nic') ?? '');
-    $email = trim(Request::post('email') ?? '');
+    $email = InputValidator::normalizeEmail((string) (Request::post('email') ?? ''));
     $password = Request::post('password') ?? '';
     $confirmPassword = Request::post('confirmPassword') ?? '';
     $allergies = trim(Request::post('allergies') ?? '');
@@ -27,6 +29,16 @@ if (Request::isPost()) {
 
     if ($name === '' || $gender === '' || $emergencyContact === '' || $email === '' || $nic === '' || $password === '' || $confirmPassword === '') {
         $error = 'Please fill all required fields.';
+    } elseif (!InputValidator::isValidNic($nic)) {
+        $error = 'Please enter a valid NIC number.';
+    } elseif (!InputValidator::isValidPhone($emergencyContact)) {
+        $error = 'Please enter a valid emergency contact number.';
+    } elseif ($guardianNic !== '' && !InputValidator::isValidNic($guardianNic)) {
+        $error = 'Please enter a valid guardian NIC number.';
+    } elseif (!InputValidator::isValidEmail($email)) {
+        $error = 'Please enter a valid email address.';
+    } elseif (($passwordError = InputValidator::passwordError($password)) !== null) {
+        $error = $passwordError;
     } elseif ($password !== $confirmPassword) {
         $error = 'Passwords do not match!';
     } else {

@@ -7,6 +7,4 @@ if ($id > 0) {
     shopTrackRecentlyViewed($id);
 }
 
-header('Content-Type: application/json');
-echo json_encode(['ok' => true]);
-
+Response::json(['ok' => true]);

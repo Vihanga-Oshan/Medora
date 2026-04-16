@@ -10,14 +10,12 @@
  */
 $user = Auth::requireRole('patient');
 
-if (PharmacyContext::pharmaciesEnabled()) {
-    $path = Request::path();
-    $isSelectionPath = str_starts_with($path, '/patient/pharmacy-select');
+$path = Request::path();
+$isSelectionPath = str_starts_with($path, '/patient/pharmacy-select');
 
-    $patientNic = (string)($user['nic'] ?? '');
-    $hasSelection = PharmacyContext::patientHasSelection($patientNic);
+$patientNic = (string)($user['nic'] ?? '');
+$hasSelection = PharmacyContext::patientHasSelection($patientNic);
 
-    if (!$isSelectionPath && !$hasSelection) {
-        Response::redirect('/patient/pharmacy-select');
-    }
+if (!$isSelectionPath && !$hasSelection) {
+    Response::redirect('/patient/pharmacy-select');
 }

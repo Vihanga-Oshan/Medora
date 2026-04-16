@@ -11,7 +11,6 @@ class LoginModel
      */
     public static function findByEmail(string $email): ?array
     {
-        Database::setUpConnection();
         return Database::fetchOne(
             "SELECT id AS user_id,
                     email,

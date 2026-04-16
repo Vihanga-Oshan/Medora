@@ -31,12 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             PatientsModel::sendLinkRequest($patientNic, $guardianNic);
             header("Location: /guardian/patients?nic=$patientNic&msg=request_sent");
         } else {
-            header("Location: /guardian/patients?error=not_found");
+            Response::redirect('/guardian/patients?error=not_found');
         }
     } else {
-        header("Location: /guardian/patients?error=empty");
+        Response::redirect('/guardian/patients?error=empty');
     }
 } else {
-    header("Location: /guardian/patients");
+    Response::redirect('/guardian/patients');
 }
-exit;

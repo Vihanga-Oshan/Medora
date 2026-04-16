@@ -4,14 +4,19 @@
  * Patient Login Controller
  * GET: show form, POST: authenticate NIC + password.
  */
+require_once ROOT . '/core/InputValidator.php';
+
 $error = null;
 
 if (Request::isPost()) {
     $nic = trim(Request::post('nic') ?? '');
     $password = Request::post('password') ?? '';
+    $rememberMe = InputValidator::isTruthyRememberMe(Request::post('rememberMe'));
 
     if ($nic === '' || $password === '') {
         $error = 'NIC and password are required.';
+    } elseif (!InputValidator::isValidNic($nic)) {
+        $error = 'Please enter a valid NIC number.';
     } else {
         require_once __DIR__ . '/login.model.php';
         $user = LoginModel::findByNic($nic);
@@ -60,7 +65,7 @@ if (Request::isPost()) {
                 'role' => 'patient',
             ]);
 
-            Auth::setTokenCookie($token, 86400, 'patient');
+            Auth::setTokenCookie($token, $rememberMe ? 2592000 : 0, 'patient');
             PharmacyContext::clearSelectedPharmacy();
             PharmacyContext::patientHasSelection((string)$user['nic']);
             if (PharmacyContext::selectedPharmacyId() > 0) {

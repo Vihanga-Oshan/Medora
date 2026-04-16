@@ -10,15 +10,6 @@ class PharmacistRegisterModel
         return $digits;
     }
 
-    private static function pharmacistTable(): ?string
-    {
-        if (PharmacyContext::tableExists('pharmacists'))
-            return 'pharmacists';
-        if (PharmacyContext::tableExists('pharmacist'))
-            return 'pharmacist';
-        return null;
-    }
-
     public static function existsInSystem(string $email, string $license): bool
     {
         $normalizedLicense = self::normalizeLicenseDigits($license);
@@ -26,17 +17,11 @@ class PharmacistRegisterModel
             return false;
         }
 
-        if (PharmacyContext::tableExists('pharmacist_requests')) {
-            $row = Database::fetchOne("SELECT 1 FROM pharmacist_requests WHERE (email = ? OR license_no = ?) AND status IN ('pending','approved') LIMIT 1", 'ss', [$email, $normalizedLicense]);
-            if ($row)
-                return true;
-        }
+        $row = Database::fetchOne("SELECT 1 FROM pharmacist_requests WHERE (email = ? OR license_no = ?) AND status IN ('pending','approved') LIMIT 1", 'ss', [$email, $normalizedLicense]);
+        if ($row)
+            return true;
 
-        $table = self::pharmacistTable();
-        if ($table === null)
-            return false;
-
-        $row2 = Database::fetchOne("SELECT 1 FROM `$table` WHERE (email = ? OR license_no = ?) LIMIT 1", 'ss', [$email, $normalizedLicense]);
+        $row2 = Database::fetchOne("SELECT 1 FROM `pharmacist` WHERE (email = ? OR license_no = ?) LIMIT 1", 'ss', [$email, $normalizedLicense]);
         return $row2 !== null;
     }
 
@@ -50,10 +35,6 @@ class PharmacistRegisterModel
         $pharmacyId = (int) ($input['requested_pharmacy_id'] ?? 0);
 
         if ($name === '' || $email === '' || $normalizedLicense === '' || $pass === '' || $pharmacyId <= 0) {
-            return 0;
-        }
-
-        if (!PharmacyContext::tableExists('pharmacies')) {
             return 0;
         }
 
@@ -80,7 +61,7 @@ class PharmacistRegisterModel
     public static function getRequestById(int $id): ?array
     {
         $id = (int) $id;
-        if ($id <= 0 || !PharmacyContext::tableExists('pharmacist_requests')) {
+        if ($id <= 0) {
             return null;
         }
 

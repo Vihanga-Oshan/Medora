@@ -3,41 +3,30 @@
 $patientNic = (string)($user['nic'] ?? '');
 $flash = '';
 
-$acceptHeader = strtolower((string)($_SERVER['HTTP_ACCEPT'] ?? ''));
-$requestedWith = strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? ''));
-$isAjax = $requestedWith === 'xmlhttprequest'
-    || str_contains($acceptHeader, 'application/json')
-    || (string)($_POST['ajax'] ?? '') === '1';
+$isAjax = Request::expectsJson();
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && (string)($_GET['action'] ?? '') === 'fetch') {
-    header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-
+if (Request::isGet() && (string)($_GET['action'] ?? '') === 'fetch') {
     $messages = PatientMessagesModel::getMessages($patientNic);
     PatientMessagesModel::markPharmacistMessagesRead($patientNic);
 
-    echo json_encode([
+    Response::json([
         'ok' => true,
         'messages' => $messages,
         'count' => count($messages),
         'timestamp' => time(),
     ]);
-    exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (Request::isPost()) {
     $msg = trim((string)($_POST['message'] ?? ''));
     $sent = PatientMessagesModel::sendMessage($patientNic, $msg);
 
     if ($isAjax) {
-        header('Content-Type: application/json; charset=utf-8');
-        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-        echo json_encode([
+        Response::json([
             'ok' => (bool)$sent,
             'messages' => PatientMessagesModel::getMessages($patientNic),
             'timestamp' => time(),
         ]);
-        exit;
     }
 
     Response::redirect('/patient/messages?msg=' . ($sent ? 'sent' : 'failed'));
@@ -52,5 +41,5 @@ $data = [
     'messages' => $messages,
     'activeMeds' => $activeMeds,
     'flash' => $flash,
-    'hasChatTable' => PatientMessagesModel::canUseMessages(),
+    'hasChatTable' => true,
 ];

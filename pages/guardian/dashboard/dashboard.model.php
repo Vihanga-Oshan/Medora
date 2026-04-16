@@ -83,8 +83,7 @@ class DashboardModel
                    OR UPPER(COALESCE(n.message, '')) LIKE '%MISSED%'
                )
              ORDER BY n.created_at DESC
-             LIMIT " . $limit
-            ,
+             LIMIT " . $limit,
             's',
             [$normalizedNic]
         );

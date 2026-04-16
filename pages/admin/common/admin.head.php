@@ -21,9 +21,8 @@ $adminEmail = trim((string)($user['email'] ?? ''));
 
 $adminId = (int)($user['id'] ?? 0);
 if ($adminId > 0) {
-    $rowRs = Database::search("SELECT email AS admin_email, name AS admin_name FROM admins WHERE id = $adminId LIMIT 1");
-    if ($rowRs instanceof mysqli_result && $rowRs->num_rows > 0) {
-        $row = $rowRs->fetch_assoc();
+    $row = Database::fetchOne("SELECT email AS admin_email, name AS admin_name FROM admins WHERE id = ? LIMIT 1", 'i', [$adminId]);
+    if ($row) {
         $dbEmail = trim((string)($row['admin_email'] ?? ''));
         $dbName = trim((string)($row['admin_name'] ?? ''));
         if ($dbEmail !== '') {

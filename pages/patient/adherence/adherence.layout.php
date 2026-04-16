@@ -82,7 +82,8 @@ $cssVer            = time();
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Medicine &amp; Slot</th>
+                        <th>Medicine</th>
+                        <th>Time Slot</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -92,8 +93,9 @@ $cssVer            = time();
                         $pillClass = $s === 'taken' ? 'status-taken' : 'status-missed';
                     ?>
                         <tr>
-                            <td><?= htmlspecialchars($log['date']) ?></td>
+                            <td><?= htmlspecialchars((string)($log['displayDate'] ?? $log['date'])) ?></td>
                             <td><?= htmlspecialchars($log['medicine']) ?></td>
+                            <td><span class="slot-badge"><?= htmlspecialchars((string)($log['timeSlot'] ?? 'General')) ?></span></td>
                             <td><span class="status-badge <?= $pillClass ?>"><?= strtoupper($log['status']) ?></span></td>
                         </tr>
                     <?php endforeach; ?>
@@ -144,8 +146,9 @@ $cssVer            = time();
             const cls = status === 'TAKEN' ? 'status-taken' : 'status-missed';
             return `
                 <tr>
-                    <td>${String(log.date ?? '')}</td>
+                    <td>${String(log.displayDate ?? log.date ?? '')}</td>
                     <td>${String(log.medicine ?? '')}</td>
+                    <td><span class="slot-badge">${String(log.timeSlot ?? 'General')}</span></td>
                     <td><span class="status-badge ${cls}">${status}</span></td>
                 </tr>
             `;

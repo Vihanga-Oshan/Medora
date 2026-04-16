@@ -55,76 +55,30 @@ class PatientsModel
 
     public static function getScheduleByDate(string $nic, string $date): array
     {
-        Database::setUpConnection();
-        $nic = Database::$connection->real_escape_string($nic);
-        $date = Database::$connection->real_escape_string($date);
-
-        if (PharmacyContext::tableExists('medication_schedules')) {
-            $rs = Database::search("
-                SELECT
-                    s.id,
-                    m.name AS medicine_name,
-                    COALESCE(s.dosage, '-') AS dosage,
-                    COALESCE(s.frequency, '-') AS frequency,
-                    COALESCE(s.meal_timing, '') AS meal_timing,
-                    COALESCE(s.instructions, '') AS instructions,
-                    COALESCE(UPPER(s.status), 'PENDING') AS status
-                FROM medication_schedules s
-                JOIN medicines m ON s.medicine_id = m.id
-                WHERE s.patient_nic = '$nic' AND s.schedule_date = '$date'
-            ");
-
-            if ($rs instanceof mysqli_result) {
-                $rows = [];
-                while ($row = $rs->fetch_assoc())
-                    $rows[] = $row;
-                return $rows;
-            }
-        }
-
-        if (PharmacyContext::tableExists('medication_schedule') && PharmacyContext::tableExists('schedule_master')) {
-            $statusExpr = PharmacyContext::tableExists('medication_log')
-                ? "COALESCE(UPPER(ml.status), 'PENDING')"
-                : "'PENDING'";
-
-            $joinLog = PharmacyContext::tableExists('medication_log')
-                ? "LEFT JOIN medication_log ml
-                    ON ml.medication_schedule_id = ms.id
-                   AND ml.patient_nic = sm.patient_nic
-                   AND ml.dose_date = '$date'"
-                : '';
-
-            $rs = Database::search("
-                SELECT
-                    ms.id,
-                    COALESCE(m.name, 'Medication') AS medicine_name,
-                    COALESCE(dc.label, '-') AS dosage,
-                    COALESCE(f.label, '-') AS frequency,
-                    COALESCE(mt.label, '') AS meal_timing,
-                    COALESCE(ms.instructions, '') AS instructions,
-                    $statusExpr AS status
-                FROM medication_schedule ms
-                JOIN schedule_master sm ON sm.id = ms.schedule_master_id
-                LEFT JOIN medicines m ON ms.medicine_id = m.id
-                LEFT JOIN dosage_categories dc ON ms.dosage_id = dc.id
-                LEFT JOIN frequencies f ON ms.frequency_id = f.id
-                LEFT JOIN meal_timing mt ON ms.meal_timing_id = mt.id
-                $joinLog
-                WHERE sm.patient_nic = '$nic'
-                  AND '$date' BETWEEN ms.start_date
-                                  AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
-                ORDER BY ms.id ASC
-            ");
-
-            if ($rs instanceof mysqli_result) {
-                $rows = [];
-                while ($row = $rs->fetch_assoc())
-                    $rows[] = $row;
-                return $rows;
-            }
-        }
-
-        return [];
+        return Database::fetchAll("
+            SELECT
+                ms.id,
+                COALESCE(m.name, 'Medication') AS medicine_name,
+                COALESCE(dc.label, '-') AS dosage,
+                COALESCE(f.label, '-') AS frequency,
+                COALESCE(mt.label, '') AS meal_timing,
+                COALESCE(ms.instructions, '') AS instructions,
+                COALESCE(UPPER(ml.status), 'PENDING') AS status
+            FROM medication_schedule ms
+            JOIN schedule_master sm ON sm.id = ms.schedule_master_id
+            LEFT JOIN medicines m ON ms.medicine_id = m.id
+            LEFT JOIN dosage_categories dc ON ms.dosage_id = dc.id
+            LEFT JOIN frequencies f ON ms.frequency_id = f.id
+            LEFT JOIN meal_timing mt ON ms.meal_timing_id = mt.id
+            LEFT JOIN medication_log ml
+                ON ml.medication_schedule_id = ms.id
+               AND ml.patient_nic = sm.patient_nic
+               AND ml.dose_date = ?
+            WHERE sm.patient_nic = ?
+              AND ? BETWEEN ms.start_date
+                              AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+            ORDER BY ms.id ASC
+        ", 'sss', [$date, $nic, $date]);
     }
 
     public static function linkPatient(string $patientNic, string $guardianNic): bool
@@ -151,7 +105,6 @@ class PatientsModel
         $patientNic = self::normalizeNic($patientNic);
         $guardianNic = self::normalizeNic($guardianNic);
 
-        // Reset previous pending request for same pair to avoid duplicates.
         Database::execute(
             "UPDATE `" . self::REQUEST_TABLE . "`
              SET status = 'CANCELLED', guardian_seen = 1, updated_at = NOW()

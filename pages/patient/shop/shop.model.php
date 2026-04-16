@@ -7,13 +7,7 @@ class ShopModel
 {
     private static function medicinePriceExpr(string $alias = 'm'): string
     {
-        if (self::columnExists('medicines', 'pricing')) {
-            return "$alias.pricing";
-        }
-        if (self::columnExists('medicines', 'price')) {
-            return "$alias.price";
-        }
-        return "0";
+        return "$alias.pricing";
     }
 
     private static function pharmacyIndex(): array
@@ -107,177 +101,43 @@ class ShopModel
         return PharmacyContext::sqlFilter($alias, $pid);
     }
 
-    private static function tableExists(string $table): bool
-    {
-        return in_array($table, ['medicines', 'prescriptions', 'patient', 'pharmacies', 'patient_pharmacy_selection', 'dosage_categories', 'frequencies', 'meal_timing', 'selling_units', 'medicine_brands', 'medicine_manufacturers'], true);
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        $schema = [
-            'medicines' => ['id', 'name', 'med_name', 'generic_name', 'category', 'description', 'dosage_form', 'strength', 'quantity_in_stock', 'pricing', 'manufacturer', 'expiry_date', 'added_by', 'created_at'],
-            'prescriptions' => ['id', 'patient_nic', 'file_name', 'file_path', 'upload_date', 'status'],
-            'patient' => ['nic', 'name', 'gender', 'emergency_contact', 'email', 'password', 'allergies', 'chronic_issues', 'created_at', 'guardian_nic'],
-            'pharmacies' => ['id', 'name', 'address_line1', 'address_line2', 'city', 'district', 'postal_code', 'latitude', 'longitude', 'phone', 'email', 'is_demo', 'status', 'created_at', 'updated_at'],
-            'patient_pharmacy_selection' => ['id', 'patient_nic', 'pharmacy_id', 'selected_at', 'is_active'],
-            'dosage_categories' => ['id', 'label'],
-            'frequencies' => ['id', 'label', 'times_of_day'],
-            'meal_timing' => ['id', 'label'],
-            'selling_units' => ['id', 'label'],
-            'medicine_brands' => ['id', 'name'],
-            'medicine_manufacturers' => ['id', 'name'],
-        ];
-
-        return in_array($column, $schema[$table] ?? [], true);
-    }
-
-    private static function findCategoryTable(): ?array
-    {
-        $candidates = [
-            ['table' => 'categories', 'id' => 'id', 'name' => 'name'],
-            ['table' => 'categories', 'id' => 'category_id', 'name' => 'category_name'],
-            ['table' => 'category', 'id' => 'id', 'name' => 'name'],
-            ['table' => 'category', 'id' => 'category_id', 'name' => 'category_name'],
-        ];
-
-        foreach ($candidates as $c) {
-            if (
-                self::tableExists($c['table']) &&
-                self::columnExists($c['table'], $c['id']) &&
-                self::columnExists($c['table'], $c['name'])
-            ) {
-                return $c;
-            }
-        }
-
-        return null;
-    }
-
     public static function getCategories(): array
     {
-        $catTable = self::findCategoryTable();
-        if ($catTable) {
-            $table = $catTable['table'];
-            $idCol = $catTable['id'];
-            $nameCol = $catTable['name'];
-
-            $rs = Database::search("
-                SELECT DISTINCT `$nameCol` AS category
-                FROM `$table`
-                WHERE `$nameCol` IS NOT NULL AND `$nameCol` <> ''
-                ORDER BY `$nameCol` ASC
-            ");
-
-            if ($rs) {
-                $rows = [];
-                while ($row = $rs->fetch_assoc()) {
-                    $rows[] = (string) $row['category'];
-                }
-                return $rows;
-            }
-        }
-
-        if (!self::tableExists('medicines')) {
-            return [];
-        }
-
-        if (!self::columnExists('medicines', 'category')) {
-            return [];
-        }
-
-        $rs = Database::search("
-            SELECT DISTINCT category
-            FROM medicines
-            WHERE category IS NOT NULL AND category <> ''
-            ORDER BY category ASC
+        $rows = Database::fetchAll("
+            SELECT name
+            FROM categories
+            WHERE is_active = 1
+            ORDER BY name ASC
         ");
-        if (!$rs) {
+        if (empty($rows)) {
             return [];
         }
 
-        $rows = [];
-        while ($row = $rs->fetch_assoc()) {
-            $rows[] = $row['category'];
+        $categories = [];
+        foreach ($rows as $row) {
+            $categories[] = (string) ($row['name'] ?? '');
         }
-        return $rows;
+        return $categories;
     }
 
     public static function getMedicines(string $category = '', string $q = ''): array
     {
-        if (!self::tableExists('medicines')) {
-            return [];
-        }
-
-        $hasId = self::columnExists('medicines', 'id');
-        $hasName = self::columnExists('medicines', 'name');
-        if (!$hasName) {
-            return [];
-        }
-
-        $hasCategoryText = self::columnExists('medicines', 'category');
-        $hasCategoryId = self::columnExists('medicines', 'category_id');
-        $hasMedName = self::columnExists('medicines', 'med_name');
-        $hasGeneric = self::columnExists('medicines', 'generic_name');
-        $hasDosage = self::columnExists('medicines', 'dosage_form');
-        $hasStrength = self::columnExists('medicines', 'strength');
-        $hasQty = self::columnExists('medicines', 'quantity_in_stock');
         $priceExpr = self::medicinePriceExpr('m');
-        $imageExpr = "NULL";
-        foreach (['image_path', 'image', 'image_url', 'medicine_image', 'photo'] as $imageCol) {
-            if (self::columnExists('medicines', $imageCol)) {
-                $imageExpr = "m.$imageCol";
-                break;
-            }
-        }
-        $hasDescription = self::columnExists('medicines', 'description');
-        $hasManufacturer = self::columnExists('medicines', 'manufacturer');
-        $hasSellingUnit = self::columnExists('medicines', 'selling_unit');
-        $hasUnitQty = self::columnExists('medicines', 'unit_quantity');
-
-        $catTable = self::findCategoryTable();
-        $joinCategory = '';
-        $categoryLabelExpr = "'General'";
-        if ($hasCategoryId && $catTable) {
-            $table = $catTable['table'];
-            $idCol = $catTable['id'];
-            $nameCol = $catTable['name'];
-            $joinCategory = "LEFT JOIN `$table` c ON m.category_id = c.`$idCol`";
-            if ($hasCategoryText) {
-                $categoryLabelExpr = "COALESCE(NULLIF(m.category, ''), c.`$nameCol`, 'General')";
-            } else {
-                $categoryLabelExpr = "COALESCE(c.`$nameCol`, 'General')";
-            }
-        } elseif ($hasCategoryText) {
-            $categoryLabelExpr = "COALESCE(NULLIF(m.category, ''), 'General')";
-        }
 
         $where = [];
+        $types = '';
+        $params = [];
         if ($category !== '') {
-            $safeCategory = Database::escape($category);
-            if ($hasCategoryText && $joinCategory !== '') {
-                $where[] = "(m.category = '$safeCategory' OR c.`{$catTable['name']}` = '$safeCategory')";
-            } elseif ($hasCategoryText) {
-                $where[] = "m.category = '$safeCategory'";
-            } elseif ($joinCategory !== '') {
-                $where[] = "c.`{$catTable['name']}` = '$safeCategory'";
-            }
+            $where[] = "m.category = ?";
+            $types .= 's';
+            $params[] = $category;
         }
 
         if ($q !== '') {
-            $safeQ = Database::escape($q);
-            $parts = [];
-            $parts[] = "m.name LIKE '%$safeQ%'";
-            if ($hasMedName)
-                $parts[] = "m.med_name LIKE '%$safeQ%'";
-            if ($hasGeneric)
-                $parts[] = "m.generic_name LIKE '%$safeQ%'";
-            if ($hasCategoryText)
-                $parts[] = "m.category LIKE '%$safeQ%'";
-            if ($joinCategory !== '')
-                $parts[] = "c.`{$catTable['name']}` LIKE '%$safeQ%'";
-            if (!empty($parts)) {
-                $where[] = '(' . implode(' OR ', $parts) . ')';
-            }
+            $like = '%' . $q . '%';
+            $where[] = "(m.name LIKE ? OR m.med_name LIKE ? OR m.generic_name LIKE ? OR m.category LIKE ?)";
+            $types .= 'ssss';
+            array_push($params, $like, $like, $like, $like);
         }
 
         $whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where));
@@ -286,35 +146,35 @@ class ShopModel
         $pharmacyIndex = self::pharmacyIndex();
         $selectedPharmacyName = (string) ($pharmacyIndex[$selectedPharmacyId]['name'] ?? '');
 
-        $rs = Database::search("
+        $rs = Database::fetchAll("
             SELECT
-                " . ($hasId ? "m.id" : "0") . " AS id,
-                " . (self::columnExists('medicines', 'pharmacy_id') ? "m.pharmacy_id" : "0") . " AS pharmacy_id,
+                m.id AS id,
+                m.pharmacy_id AS pharmacy_id,
                 m.name,
-                " . ($hasMedName ? "m.med_name" : "NULL") . " AS med_name,
-                " . ($hasGeneric ? "m.generic_name" : "NULL") . " AS generic_name,
-                $categoryLabelExpr AS category,
-                " . ($hasDosage ? "m.dosage_form" : "NULL") . " AS dosage_form,
-                " . ($hasStrength ? "m.strength" : "NULL") . " AS strength,
-                " . ($hasQty ? "m.quantity_in_stock" : "NULL") . " AS quantity_in_stock,
+                m.med_name AS med_name,
+                m.generic_name AS generic_name,
+                COALESCE(NULLIF(c.name, ''), NULLIF(m.category, ''), 'General') AS category,
+                m.dosage_form AS dosage_form,
+                m.strength AS strength,
+                m.quantity_in_stock AS quantity_in_stock,
                 $priceExpr AS price,
-                $imageExpr AS image_path,
-                " . ($hasDescription ? "m.description" : "NULL") . " AS description,
-                " . ($hasManufacturer ? "m.manufacturer" : "NULL") . " AS manufacturer,
-                " . ($hasSellingUnit ? "m.selling_unit" : "'Item'") . " AS selling_unit,
-                " . ($hasUnitQty ? "m.unit_quantity" : "1") . " AS unit_quantity
+                COALESCE(m.image_path, '') AS image_path,
+                m.description AS description,
+                m.manufacturer AS manufacturer,
+                'Item' AS selling_unit,
+                1 AS unit_quantity
             FROM medicines m
-            $joinCategory
+            LEFT JOIN categories c ON c.id = m.category_id
             $whereSql
             ORDER BY m.name ASC
-        ");
+        ", $types, $params);
 
-        if (!$rs) {
+        if (empty($rs)) {
             return [];
         }
 
         $groups = [];
-        while ($row = $rs->fetch_assoc()) {
+        foreach ($rs as $row) {
             $name = trim((string) ($row['name'] ?? ''));
             $medName = trim((string) ($row['med_name'] ?? ''));
             if ($name === '' && $medName === '') {
@@ -406,32 +266,22 @@ class ShopModel
     public static function getSelectedBranchMedicineById(int $id): ?array
     {
         $id = (int) $id;
-        if ($id <= 0 || !self::tableExists('medicines')) {
+        if ($id <= 0) {
             return null;
         }
 
         $selectedPharmacyId = self::currentPharmacyId();
-        if ($selectedPharmacyId <= 0 || !self::columnExists('medicines', 'pharmacy_id')) {
+        if ($selectedPharmacyId <= 0) {
             return null;
         }
 
-        $priceExpr = self::columnExists('medicines', 'pricing')
-            ? 'pricing AS price'
-            : (self::columnExists('medicines', 'price') ? 'price' : '0 AS price');
-        $rs = Database::search("
-            SELECT id, name, quantity_in_stock, $priceExpr
+        return Database::fetchOne("
+            SELECT id, name, quantity_in_stock, pricing AS price
             FROM medicines
-            WHERE id = $id
-              AND pharmacy_id = $selectedPharmacyId
+            WHERE id = ?
+              AND pharmacy_id = ?
             LIMIT 1
-        ");
-
-        if (!$rs instanceof mysqli_result) {
-            return null;
-        }
-
-        $row = $rs->fetch_assoc();
-        return is_array($row) ? $row : null;
+        ", 'ii', [$id, $selectedPharmacyId]);
     }
 
     public static function getMedicinesByIds(array $ids): array
@@ -498,27 +348,12 @@ class ShopModel
 
     public static function getOrderHistory(string $patientNic): array
     {
-        if (!self::tableExists('prescriptions')) {
-            return [];
-        }
-
-        $nic = Database::escape($patientNic);
-        $rs = Database::search("
-            SELECT id, file_name, status, uploaded_at
+        return Database::fetchAll("
+            SELECT id, file_name, status, upload_date
             FROM prescriptions
-            WHERE patient_nic = '$nic'
+            WHERE patient_nic = ?
               AND " . self::pharmacyCondition('prescriptions', 'prescriptions') . "
-            ORDER BY uploaded_at DESC
-        ");
-
-        if (!$rs) {
-            return [];
-        }
-
-        $rows = [];
-        while ($row = $rs->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return $rows;
+            ORDER BY upload_date DESC
+        ", 's', [$patientNic]);
     }
 }

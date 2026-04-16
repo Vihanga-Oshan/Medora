@@ -1,5 +1,7 @@
 <?php
 
+require_once ROOT . '/core/AppLogger.php';
+
 /**
  * Guardian Login Model
  */
@@ -17,37 +19,12 @@ class LoginModel
 
     private static function writeLog(string $file, string $level, string $message, array $context): void
     {
-        $rootDir = defined('ROOT') ? ROOT : dirname(__DIR__, 3);
-        $logDir = $rootDir . '/storage/logs';
-        if (!is_dir($logDir)) {
-            @mkdir($logDir, 0777, true);
-        }
-
-        $safeContext = [];
-        foreach ($context as $k => $v) {
-            if (is_scalar($v) || $v === null) {
-                $safeContext[$k] = $v;
-            } else {
-                $safeContext[$k] = json_encode($v);
-            }
-        }
-
-        $line = sprintf(
-            "[%s] [%s] %s %s%s",
-            date('Y-m-d H:i:s'),
-            $level,
-            $message,
-            json_encode($safeContext, JSON_UNESCAPED_SLASHES),
-            PHP_EOL
-        );
-        @file_put_contents($logDir . '/' . $file, $line, FILE_APPEND | LOCK_EX);
+        AppLogger::write($file, $level, $message, $context);
     }
 
     public static function findByNic(string $nic): ?array
     {
         try {
-            Database::setUpConnection();
-
             $normalizedNic = strtoupper(preg_replace('/[\s\-]+/', '', $nic) ?? $nic);
             $row = Database::fetchOne("
             SELECT nic, g_name AS guardian_name, password AS password_value, NULL AS password_hash_value

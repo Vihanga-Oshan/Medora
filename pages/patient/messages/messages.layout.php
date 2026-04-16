@@ -202,5 +202,7 @@ $cssVer = time();
     })();
 </script>
 
+<?php require_once __DIR__ . '/../common/browser-notifications.php'; ?>
+
 </body>
 </html>

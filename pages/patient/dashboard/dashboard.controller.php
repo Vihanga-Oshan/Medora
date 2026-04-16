@@ -18,8 +18,25 @@ $todaysMeds  = ($selectedDate === $today)
     ? $medications
     : DashboardModel::getMedicationsByDate($nic, $today);
 
-// Today's pending meds for the schedule list
-$pendingMedications = array_filter($todaysMeds, fn($m) => strtoupper($m['status']) === 'PENDING');
+// Today's pending meds for the schedule list, limited to doses already due.
+$nowTs = time();
+$pendingMedications = array_filter($todaysMeds, static function ($m) use ($today, $nowTs) {
+    if (strtoupper((string)($m['status'] ?? '')) !== 'PENDING') {
+        return false;
+    }
+
+    $scheduleDate = (string)($m['schedule_date'] ?? $today);
+    if ($scheduleDate !== $today) {
+        return false;
+    }
+
+    $scheduledAt = strtotime((string)($m['scheduled_at'] ?? ''));
+    if ($scheduledAt === false) {
+        return true;
+    }
+
+    return $scheduledAt <= $nowTs;
+});
 
 // Stats (based on selected date)
 $totalCount   = count($medications);

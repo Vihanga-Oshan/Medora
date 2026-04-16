@@ -15,18 +15,24 @@ if ($id <= 0) {
 }
 
 $role = (string)($auth['role'] ?? '');
-$where = ["id = $id"];
+$where = ["id = ?"];
+$types = 'i';
+$params = [$id];
 
 if ($role === 'patient') {
-    $nic = Database::escape((string)($auth['nic'] ?? ''));
+    $nic = (string)($auth['nic'] ?? '');
     if ($nic === '') {
         Response::abort(403, 'Forbidden');
     }
-    $where[] = "patient_nic = '$nic'";
+    $where[] = "patient_nic = ?";
+    $types .= 's';
+    $params[] = $nic;
 
     $selectedPharmacyId = PharmacyContext::selectedPharmacyId();
     if ($selectedPharmacyId > 0 && PharmacyContext::tableHasPharmacyId('prescriptions')) {
-        $where[] = "pharmacy_id = " . (int)$selectedPharmacyId;
+        $where[] = "pharmacy_id = ?";
+        $types .= 'i';
+        $params[] = (int) $selectedPharmacyId;
     }
 } elseif ($role === 'pharmacist') {
     $pharmacyId = (int)($auth['pharmacy_id'] ?? 0);
@@ -34,18 +40,18 @@ if ($role === 'patient') {
         $pharmacyId = PharmacyContext::resolvePharmacistPharmacyId((int)($auth['id'] ?? 0));
     }
     if ($pharmacyId > 0 && PharmacyContext::tableHasPharmacyId('prescriptions')) {
-        $where[] = "pharmacy_id = " . (int)$pharmacyId;
+        $where[] = "pharmacy_id = ?";
+        $types .= 'i';
+        $params[] = (int) $pharmacyId;
     }
 } elseif ($role !== 'admin') {
     Response::abort(403, 'Forbidden');
 }
 
-$rs = Database::search("SELECT id, file_name, file_path FROM prescriptions WHERE " . implode(' AND ', $where) . " LIMIT 1");
-if (!($rs instanceof mysqli_result) || $rs->num_rows === 0) {
+$row = Database::fetchOne("SELECT id, file_name, file_path FROM prescriptions WHERE " . implode(' AND ', $where) . " LIMIT 1", $types, $params);
+if (!$row) {
     Response::abort(404, 'File not found');
 }
-
-$row = $rs->fetch_assoc();
 $stored = basename((string)($row['file_path'] ?? ''));
 if ($stored === '' || $stored === '.' || $stored === '..') {
     Response::abort(404, 'File not found');

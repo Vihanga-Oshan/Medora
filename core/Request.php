@@ -32,6 +32,18 @@ class Request
         return $_SERVER['REQUEST_METHOD'] === 'GET';
     }
 
+    /** True when the request was made as AJAX or explicitly expects JSON */
+    public static function expectsJson(): bool
+    {
+        $acceptHeader = strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? ''));
+        $requestedWith = strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? ''));
+
+        return $requestedWith === 'xmlhttprequest'
+            || str_contains($acceptHeader, 'application/json')
+            || (string) ($_POST['ajax'] ?? '') === '1'
+            || (string) ($_GET['ajax'] ?? '') === '1';
+    }
+
     /** The current request URI path, without query string and base prefix */
     public static function path(): string
     {

@@ -10,6 +10,7 @@ $error = null;
 $success = null;
 $showPasswordCard = false;
 
+// Handle Update POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_profile_update')) {
         $error = 'Security validation failed. Please refresh and try again.';

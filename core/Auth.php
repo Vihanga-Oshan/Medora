@@ -124,24 +124,22 @@ class Auth
             }
         }
 
-        if ($role !== null) {
-            setcookie(self::cookieNameForRole($role), $token, [
-                'expires' => time() + $ttlSeconds,
-                'path' => '/',
-                'httponly' => true,
-                'samesite' => 'Strict',
-                'secure' => self::isHttps(),
-            ]);
-        }
-
-        // keep legacy cookie for existing flows that still expect `jwt`
-        setcookie(self::LEGACY_COOKIE_NAME, $token, [
-            'expires' => time() + $ttlSeconds,
+        $cookieOptions = [
             'path' => '/',
             'httponly' => true,
             'samesite' => 'Strict',
-            'secure' => self::isHttps(),   // true on HTTPS, false on local HTTP
-        ]);
+            'secure' => self::isHttps(),
+        ];
+        if ($ttlSeconds > 0) {
+            $cookieOptions['expires'] = time() + $ttlSeconds;
+        }
+
+        if ($role !== null) {
+            setcookie(self::cookieNameForRole($role), $token, $cookieOptions);
+        }
+
+        // keep legacy cookie for existing flows that still expect `jwt`
+        setcookie(self::LEGACY_COOKIE_NAME, $token, $cookieOptions);
     }
 
     // -------------------------------------------------------------------------

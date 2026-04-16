@@ -8,7 +8,6 @@ class LoginModel
 {
     public static function findByNic(string $nic): ?array
     {
-        Database::setUpConnection();
         return Database::fetchOne("
             SELECT nic, name AS patient_name, password AS password_value, '' AS password_hash_value
             FROM patient

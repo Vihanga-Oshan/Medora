@@ -18,7 +18,7 @@ if (!$prescription || $prescriptionNic === '' || $prescriptionNic !== $patientNi
 }
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['medicineId']) && is_array($_POST['medicineId'])) {
+if (Request::isPost() && isset($_POST['medicineId']) && is_array($_POST['medicineId'])) {
     if (!Csrf::verify($_POST['csrf_token'] ?? null, 'pharmacist_schedule_submit')) {
         Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=csrf');
     }

@@ -3,41 +3,15 @@
 /**
  * Guardian Login Controller
  */
+require_once ROOT . '/core/InputValidator.php';
+require_once ROOT . '/core/AppLogger.php';
+
 $error = null;
-
-if (!function_exists('guardianLoginWriteLog')) {
-    function guardianLoginWriteLog(string $file, string $level, string $message, array $context = []): void
-    {
-        $rootDir = defined('ROOT') ? ROOT : dirname(__DIR__, 3);
-        $logDir = $rootDir . '/storage/logs';
-        if (!is_dir($logDir)) {
-            @mkdir($logDir, 0777, true);
-        }
-
-        $safeContext = [];
-        foreach ($context as $k => $v) {
-            if (is_scalar($v) || $v === null) {
-                $safeContext[$k] = $v;
-            } else {
-                $safeContext[$k] = json_encode($v);
-            }
-        }
-
-        $line = sprintf(
-            "[%s] [%s] %s %s%s",
-            date('Y-m-d H:i:s'),
-            $level,
-            $message,
-            json_encode($safeContext, JSON_UNESCAPED_SLASHES),
-            PHP_EOL
-        );
-        @file_put_contents($logDir . '/' . $file, $line, FILE_APPEND | LOCK_EX);
-    }
-}
 
 if (Request::isPost()) {
     $nic = trim(Request::post('nic') ?? '');
     $password = Request::post('password') ?? '';
+    $rememberMe = InputValidator::isTruthyRememberMe(Request::post('rememberMe'));
 
     $normalizeNic = static function (string $value): string {
         $value = strtoupper(trim($value));
@@ -45,7 +19,7 @@ if (Request::isPost()) {
     };
 
     $nic = $normalizeNic($nic);
-    guardianLoginWriteLog('guardian-login-debug.log', 'DEBUG', 'Guardian login request received.', [
+    AppLogger::write('guardian-login-debug.log', 'DEBUG', 'Guardian login request received.', [
         'nic_suffix' => substr($nic, -4),
         'password_length' => strlen($password),
         'method' => $_SERVER['REQUEST_METHOD'] ?? '',
@@ -53,9 +27,14 @@ if (Request::isPost()) {
 
     if ($nic === '' || $password === '') {
         $error = 'NIC and password are required.';
-        guardianLoginWriteLog('guardian-login-error.log', 'ERROR', 'Validation failed: missing NIC or password.', [
+        AppLogger::write('guardian-login-error.log', 'ERROR', 'Validation failed: missing NIC or password.', [
             'nic_empty' => $nic === '' ? 1 : 0,
             'password_empty' => $password === '' ? 1 : 0,
+        ]);
+    } elseif (!InputValidator::isValidNic($nic)) {
+        $error = 'Please enter a valid NIC number.';
+        AppLogger::write('guardian-login-error.log', 'ERROR', 'Validation failed: invalid NIC format.', [
+            'nic_suffix' => substr($nic, -4),
         ]);
     } else {
         require_once __DIR__ . '/login.model.php';
@@ -88,7 +67,7 @@ if (Request::isPost()) {
                     $valid = hash_equals((string)$stored, (string)$password);
                 }
 
-                guardianLoginWriteLog('guardian-login-debug.log', 'DEBUG', 'Password candidate checked.', [
+                AppLogger::write('guardian-login-debug.log', 'DEBUG', 'Password candidate checked.', [
                     'nic_suffix' => substr($nic, -4),
                     'strategy' => $strategy,
                     'candidate_length' => strlen((string)$stored),
@@ -100,14 +79,14 @@ if (Request::isPost()) {
                 }
             }
         } else {
-            guardianLoginWriteLog('guardian-login-error.log', 'ERROR', 'Guardian account not found for NIC.', [
+            AppLogger::write('guardian-login-error.log', 'ERROR', 'Guardian account not found for NIC.', [
                 'nic_suffix' => substr($nic, -4),
             ]);
         }
 
         if (!$valid) {
             $error = 'Invalid NIC or password.';
-            guardianLoginWriteLog('guardian-login-error.log', 'ERROR', 'Guardian login failed.', [
+            AppLogger::write('guardian-login-error.log', 'ERROR', 'Guardian login failed.', [
                 'nic_suffix' => substr($nic, -4),
                 'reason' => $guardian === null ? 'guardian_not_found' : 'password_mismatch',
             ]);
@@ -123,8 +102,8 @@ if (Request::isPost()) {
                 'role' => 'guardian',
             ]);
 
-            Auth::setTokenCookie($token, 86400, 'guardian');
-            guardianLoginWriteLog('guardian-login-debug.log', 'DEBUG', 'Guardian login successful.', [
+            Auth::setTokenCookie($token, $rememberMe ? 2592000 : 0, 'guardian');
+            AppLogger::write('guardian-login-debug.log', 'DEBUG', 'Guardian login successful.', [
                 'nic_suffix' => substr((string)$guardian['nic'], -4),
                 'display_name' => $displayName,
             ]);

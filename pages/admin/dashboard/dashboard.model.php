@@ -6,74 +6,39 @@ require_once __DIR__ . '/../common/admin.activity.php';
 
 class DashboardModel
 {
-    private static function safeTable(string $table): string
+    private static function countRows(string $table, ?string $where = null): int
     {
-        return preg_replace('/[^a-zA-Z0-9_]/', '', $table);
-    }
-
-    private static function tableExists(string $table): bool
-    {
-        return true;
-    }
-
-    private static function columnExists(string $table, string $column): bool
-    {
-        return true;
-    }
-
-    private static function resolveTable(array $candidates): ?string
-    {
-        return $candidates[0] ?? null;
-    }
-
-    private static function safeCount(string $table, ?string $where = null): int
-    {
-        $safeTable = self::safeTable($table);
-        $sql = "SELECT COUNT(*) AS cnt FROM `$safeTable`";
+        $sql = "SELECT COUNT(*) AS cnt FROM `$table`";
         if ($where) {
             $sql .= " WHERE $where";
         }
-        $rs = Database::search($sql);
-        if (!($rs instanceof mysqli_result)) {
-            return 0;
-        }
-        $row = $rs->fetch_assoc();
+        $row = Database::fetchOne($sql);
         return (int) ($row['cnt'] ?? 0);
     }
 
-    private static function safeCountToday(string $table, string $dateTimeColumn): int
+    private static function countRowsCreatedToday(string $table, string $dateTimeColumn): int
     {
-        $safeTable = self::safeTable($table);
-        $safeCol = preg_replace('/[^a-zA-Z0-9_]/', '', $dateTimeColumn);
-        if ($safeCol === '') {
-            return 0;
-        }
-
-        $rs = Database::search("
+        $row = Database::fetchOne("
             SELECT COUNT(*) AS cnt
-            FROM `$safeTable`
-            WHERE DATE(`$safeCol`) = CURDATE()
+            FROM `$table`
+            WHERE DATE(`$dateTimeColumn`) = CURDATE()
         ");
-        if (!($rs instanceof mysqli_result)) {
-            return 0;
-        }
-        $row = $rs->fetch_assoc();
         return (int) ($row['cnt'] ?? 0);
     }
 
     public static function getSummary(): array
     {
-        $activePharmacists = self::safeCount('pharmacist');
+        $activePharmacists = self::countRows('pharmacist');
 
         // Patient counts
-        $totalPatients = self::safeCount('patient');
-        $patientsToday = self::safeCountToday('patient', 'created_at');
+        $totalPatients = self::countRows('patient');
+        $patientsToday = self::countRowsCreatedToday('patient', 'created_at');
 
         // Guardian counts
-        $totalGuardians = self::safeCount('guardian');
+        $totalGuardians = self::countRows('guardian');
 
         // Prescription Review Status
-        $pendingReviews = self::safeCount('prescriptions', "status = 'PENDING'");
+        $pendingReviews = self::countRows('prescriptions', "status = 'PENDING'");
 
         return [
             'activePharmacists' => $activePharmacists,
@@ -143,144 +108,93 @@ class DashboardModel
             }
         }
 
-        Database::setUpConnection();
         $events = [];
 
         // 1) Pharmacist requests: submitted / approved / rejected
-        if (self::tableExists('pharmacist_requests') && self::columnExists('pharmacist_requests', 'created_at')) {
-            $hasName = self::columnExists('pharmacist_requests', 'full_name');
-            $hasStatus = self::columnExists('pharmacist_requests', 'status');
-            $hasReviewedAt = self::columnExists('pharmacist_requests', 'reviewed_at');
+        foreach (Database::fetchAll("
+            SELECT full_name, status, created_at, reviewed_at
+            FROM pharmacist_requests
+            ORDER BY COALESCE(reviewed_at, created_at) DESC
+            LIMIT 20
+        ") as $row) {
+            $name = trim((string) ($row['full_name'] ?? 'Pharmacist'));
+            $status = strtolower((string) ($row['status'] ?? 'pending'));
+            $createdAt = (string) ($row['created_at'] ?? '');
+            $reviewedAt = (string) ($row['reviewed_at'] ?? '');
 
-            $nameSelect = $hasName ? 'full_name' : "'Pharmacist' AS full_name";
-            $statusSelect = $hasStatus ? 'status' : "'pending' AS status";
-            $reviewedAtSelect = $hasReviewedAt ? 'reviewed_at' : 'NULL AS reviewed_at';
-            $orderExpr = $hasReviewedAt ? 'COALESCE(reviewed_at, created_at)' : 'created_at';
-
-            $rs = Database::search("
-                SELECT $nameSelect, $statusSelect, created_at, $reviewedAtSelect
-                FROM pharmacist_requests
-                ORDER BY $orderExpr DESC
-                LIMIT 20
-            ");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string) ($row['full_name'] ?? 'Pharmacist'));
-                    $status = strtolower((string) ($row['status'] ?? 'pending'));
-                    $createdAt = (string) ($row['created_at'] ?? '');
-                    $reviewedAt = (string) ($row['reviewed_at'] ?? '');
-
-                    if ($status === 'approved' && $reviewedAt !== '') {
-                        self::addEvent($events, $name, 'Pharmacist request approved', $reviewedAt, 'green');
-                    } elseif ($status === 'rejected' && $reviewedAt !== '') {
-                        self::addEvent($events, $name, 'Pharmacist request rejected', $reviewedAt, 'red');
-                    } elseif ($createdAt !== '') {
-                        self::addEvent($events, $name, 'Submitted pharmacist account request', $createdAt, 'blue');
-                    }
-                }
+            if ($status === 'approved' && $reviewedAt !== '') {
+                self::addEvent($events, $name, 'Pharmacist request approved', $reviewedAt, 'green');
+            } elseif ($status === 'rejected' && $reviewedAt !== '') {
+                self::addEvent($events, $name, 'Pharmacist request rejected', $reviewedAt, 'red');
+            } elseif ($createdAt !== '') {
+                self::addEvent($events, $name, 'Submitted pharmacist account request', $createdAt, 'blue');
             }
         }
 
         // 2) New pharmacist accounts
-        $pharmacistTable = self::resolveTable(['pharmacists', 'pharmacist']);
-        if ($pharmacistTable !== null && self::columnExists($pharmacistTable, 'created_at')) {
-            $safeTable = self::safeTable($pharmacistTable);
-            $rs = Database::search("
-                SELECT name, created_at
-                FROM `$safeTable`
-                ORDER BY created_at DESC
-                LIMIT 12
-            ");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string) ($row['name'] ?? 'Pharmacist'));
-                    $createdAt = (string) ($row['created_at'] ?? '');
-                    if ($createdAt !== '') {
-                        self::addEvent($events, $name, 'Created pharmacist account', $createdAt, 'green');
-                    }
-                }
+        foreach (Database::fetchAll("
+            SELECT name, created_at
+            FROM `pharmacist`
+            ORDER BY created_at DESC
+            LIMIT 12
+        ") as $row) {
+            $name = trim((string) ($row['name'] ?? 'Pharmacist'));
+            $createdAt = (string) ($row['created_at'] ?? '');
+            if ($createdAt !== '') {
+                self::addEvent($events, $name, 'Created pharmacist account', $createdAt, 'green');
             }
         }
 
         // 3) Pharmacies created / updated
-        if (self::tableExists('pharmacies') && self::columnExists('pharmacies', 'created_at')) {
-            $hasUpdatedAt = self::columnExists('pharmacies', 'updated_at');
-            $rs = Database::search("
-                SELECT name, status, created_at" . ($hasUpdatedAt ? ", updated_at" : "") . "
-                FROM pharmacies
-                ORDER BY created_at DESC
-                LIMIT 12
-            ");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string) ($row['name'] ?? 'Pharmacy'));
-                    $createdAt = (string) ($row['created_at'] ?? '');
-                    if ($createdAt !== '') {
-                        self::addEvent($events, $name, 'Registered pharmacy', $createdAt, 'blue');
-                    }
+        foreach (Database::fetchAll("
+            SELECT name, status, created_at, updated_at
+            FROM pharmacies
+            ORDER BY created_at DESC
+            LIMIT 12
+        ") as $row) {
+            $name = trim((string) ($row['name'] ?? 'Pharmacy'));
+            $createdAt = (string) ($row['created_at'] ?? '');
+            if ($createdAt !== '') {
+                self::addEvent($events, $name, 'Registered pharmacy', $createdAt, 'blue');
+            }
 
-                    if ($hasUpdatedAt) {
-                        $updatedAt = (string) ($row['updated_at'] ?? '');
-                        $status = strtolower((string) ($row['status'] ?? 'active'));
-                        $createdTs = strtotime($createdAt);
-                        $updatedTs = strtotime($updatedAt);
-                        if ($updatedAt !== '' && $updatedTs !== false && $createdTs !== false && $updatedTs > ($createdTs + 2)) {
-                            self::addEvent($events, $name, 'Updated pharmacy status to ' . strtoupper($status), $updatedAt, 'blue');
-                        }
-                    }
-                }
+            $updatedAt = (string) ($row['updated_at'] ?? '');
+            $status = strtolower((string) ($row['status'] ?? 'active'));
+            $createdTs = strtotime($createdAt);
+            $updatedTs = strtotime($updatedAt);
+            if ($updatedAt !== '' && $updatedTs !== false && $createdTs !== false && $updatedTs > ($createdTs + 2)) {
+                self::addEvent($events, $name, 'Updated pharmacy status to ' . strtoupper($status), $updatedAt, 'blue');
             }
         }
 
         // 4) Pharmacy assignments
-        if (self::tableExists('pharmacy_users') && self::columnExists('pharmacy_users', 'created_at')) {
-            $joinPharmacy = self::tableExists('pharmacies')
-                ? "LEFT JOIN pharmacies ph ON ph.id = pu.pharmacy_id"
-                : "";
-
-            $pharmacistTable = self::resolveTable(['pharmacists', 'pharmacist']);
-            $joinPharmacist = $pharmacistTable !== null
-                ? "LEFT JOIN `" . self::safeTable($pharmacistTable) . "` pr ON pr.id = pu.pharmacist_id"
-                : "";
-
-            $rs = Database::search("
-                SELECT pu.created_at, COALESCE(pr.name, 'Pharmacist') AS pharmacist_name, COALESCE(ph.name, 'Pharmacy') AS pharmacy_name
-                FROM pharmacy_users pu
-                $joinPharmacy
-                $joinPharmacist
-                ORDER BY pu.created_at DESC
-                LIMIT 12
-            ");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $pharmacistName = trim((string) ($row['pharmacist_name'] ?? 'Pharmacist'));
-                    $pharmacyName = trim((string) ($row['pharmacy_name'] ?? 'Pharmacy'));
-                    $createdAt = (string) ($row['created_at'] ?? '');
-                    if ($createdAt !== '') {
-                        self::addEvent($events, $pharmacistName, 'Assigned to ' . $pharmacyName, $createdAt, 'blue');
-                    }
-                }
+        foreach (Database::fetchAll("
+            SELECT pu.created_at, COALESCE(pr.name, 'Pharmacist') AS pharmacist_name, COALESCE(ph.name, 'Pharmacy') AS pharmacy_name
+            FROM pharmacy_users pu
+            LEFT JOIN pharmacies ph ON ph.id = pu.pharmacy_id
+            LEFT JOIN pharmacist pr ON pr.id = pu.pharmacist_id
+            ORDER BY pu.created_at DESC
+            LIMIT 12
+        ") as $row) {
+            $pharmacistName = trim((string) ($row['pharmacist_name'] ?? 'Pharmacist'));
+            $pharmacyName = trim((string) ($row['pharmacy_name'] ?? 'Pharmacy'));
+            $createdAt = (string) ($row['created_at'] ?? '');
+            if ($createdAt !== '') {
+                self::addEvent($events, $pharmacistName, 'Assigned to ' . $pharmacyName, $createdAt, 'blue');
             }
         }
 
         // 5) New patient registrations
-        $patientTable = self::resolveTable(['patients', 'patient']);
-        if ($patientTable !== null && self::columnExists($patientTable, 'created_at') && self::columnExists($patientTable, 'name')) {
-            $safeTable = self::safeTable($patientTable);
-            $rs = Database::search("
-                SELECT name, created_at
-                FROM `$safeTable`
-                ORDER BY created_at DESC
-                LIMIT 12
-            ");
-            if ($rs instanceof mysqli_result) {
-                while ($row = $rs->fetch_assoc()) {
-                    $name = trim((string) ($row['name'] ?? 'Patient'));
-                    $createdAt = (string) ($row['created_at'] ?? '');
-                    if ($createdAt !== '') {
-                        self::addEvent($events, $name, 'Registered as patient', $createdAt, 'green');
-                    }
-                }
+        foreach (Database::fetchAll("
+            SELECT name, created_at
+            FROM `patient`
+            ORDER BY created_at DESC
+            LIMIT 12
+        ") as $row) {
+            $name = trim((string) ($row['name'] ?? 'Patient'));
+            $createdAt = (string) ($row['created_at'] ?? '');
+            if ($createdAt !== '') {
+                self::addEvent($events, $name, 'Registered as patient', $createdAt, 'green');
             }
         }
 

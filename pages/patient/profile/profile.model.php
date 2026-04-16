@@ -9,17 +9,12 @@ class ProfileModel
 
     public static function getByNic(string $nic): ?array
     {
-        $nic = Database::escape($nic);
-        $rs  = Database::search("
+        $row = Database::fetchOne("
             SELECT nic, name, email, gender, emergency_contact, allergies, chronic_issues, guardian_nic
             FROM " . self::TABLE . "
-            WHERE nic = '$nic'
+            WHERE nic = ?
             LIMIT 1
-        ");
-        if (!($rs instanceof mysqli_result)) {
-            return null;
-        }
-        $row = $rs->fetch_assoc();
+        ", 's', [$nic]);
         if (!$row) {
             return null;
         }
@@ -31,19 +26,19 @@ class ProfileModel
 
     public static function update(string $nic, array $fields): void
     {
-        $nic    = Database::escape($nic);
-        $name   = Database::escape($fields['name'] ?? '');
-        $phone  = Database::escape($fields['phone'] ?? '');
-        $allerg = Database::escape($fields['allergies'] ?? '');
-        $chronic= Database::escape($fields['chronic_issues'] ?? '');
-
-        Database::iud("
+        Database::execute("
             UPDATE " . self::TABLE . "
-            SET name = '$name',
-                emergency_contact = '$phone',
-                allergies = '$allerg',
-                chronic_issues = '$chronic'
-            WHERE nic = '$nic'
-        ");
+            SET name = ?,
+                emergency_contact = ?,
+                allergies = ?,
+                chronic_issues = ?
+            WHERE nic = ?
+        ", 'sssss', [
+            (string) ($fields['name'] ?? ''),
+            (string) ($fields['phone'] ?? ''),
+            (string) ($fields['allergies'] ?? ''),
+            (string) ($fields['chronic_issues'] ?? ''),
+            $nic,
+        ]);
     }
 }

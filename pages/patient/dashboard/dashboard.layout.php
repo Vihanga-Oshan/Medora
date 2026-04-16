@@ -100,6 +100,51 @@ $cssVer             = time();
             background-color: rgba(255, 255, 255, 0.25);
             border-color: rgba(255, 255, 255, 0.6);
         }
+
+        .hero-info-glass {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 10px 24px rgba(5, 32, 56, 0.12);
+        }
+
+        .hero-inline-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 78px;
+            height: 34px;
+            margin-left: 10px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.38);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            vertical-align: middle;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .hero-inline-button:hover {
+            background: rgba(255, 255, 255, 0.22);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .dashboard-hero .hero-subtitle,
+        .dashboard-hero .hero-subtitle strong {
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -114,10 +159,12 @@ $cssVer             = time();
             <h1 class="hero-title">Welcome back, <span class="highlight-text"><?= $patientName ?></span></h1>
             <p class="hero-subtitle">Manage your health with precision and ease.</p>
             <?php if (!empty($selectedPharmacy)): ?>
-                <p class="hero-subtitle" style="margin-top:8px;">
-                    Pharmacy: <strong><?= htmlspecialchars((string)$selectedPharmacy['name']) ?></strong>
-                    &nbsp; <a href="<?= htmlspecialchars($base) ?>/patient/pharmacy-select" style="color:#fff; text-decoration:underline;">Change</a>
-                </p>
+                <div class="hero-info-glass">
+                    <span class="hero-subtitle" style="margin:0;">
+                        Pharmacy: <strong><?= htmlspecialchars((string)$selectedPharmacy['name']) ?></strong>
+                    </span>
+                    <a href="<?= htmlspecialchars($base) ?>/patient/pharmacy-select" class="hero-inline-button">Change</a>
+                </div>
             <?php endif; ?>
         </div>
         <div class="hero-actions">

@@ -3,13 +3,7 @@ class PharmaciesModel
 {
     public static function all(): array
     {
-        $rows = [];
-        $rs = Database::search("SELECT * FROM pharmacies ORDER BY created_at DESC, id DESC");
-        if ($rs instanceof mysqli_result) {
-            while ($r = $rs->fetch_assoc())
-                $rows[] = $r;
-        }
-        return $rows;
+        return Database::fetchAll("SELECT * FROM pharmacies ORDER BY created_at DESC, id DESC");
     }
 
     public static function create(array $in): bool

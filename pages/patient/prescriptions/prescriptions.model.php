@@ -4,6 +4,50 @@
  */
 class PrescriptionsModel
 {
+    private static function patientExists(string $nic): bool
+    {
+        if ($nic === '') {
+            return false;
+        }
+
+        $row = Database::fetchOne(
+            "SELECT nic FROM patient WHERE nic = ? LIMIT 1",
+            's',
+            [$nic]
+        );
+
+        return $row !== null;
+    }
+
+    private static function ensurePatientRecord(string $nic, string $name = 'Patient'): bool
+    {
+        if (self::patientExists($nic)) {
+            return true;
+        }
+
+        $displayName = trim($name) !== '' ? trim($name) : 'Patient';
+        $emailBase = preg_replace('/[^a-zA-Z0-9]/', '', $nic) ?: 'patient';
+        $email = strtolower($emailBase) . '@medora.local';
+
+        if (Database::fetchOne("SELECT nic FROM patient WHERE email = ? LIMIT 1", 's', [$email])) {
+            $email = strtolower($emailBase) . '+' . substr(md5($nic), 0, 8) . '@medora.local';
+        }
+
+        $created = Database::execute(
+            "INSERT INTO patient (nic, name, gender, emergency_contact, email, password, allergies, chronic_issues, guardian_nic)
+             VALUES (?, ?, 'Other', NULL, ?, ?, NULL, NULL, NULL)",
+            'ssss',
+            [
+                $nic,
+                $displayName,
+                $email,
+                password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
+            ]
+        );
+
+        return $created || self::patientExists($nic);
+    }
+
     private static function currentPharmacyId(): int
     {
         return PharmacyContext::selectedPharmacyId();
@@ -80,24 +124,46 @@ class PrescriptionsModel
         return null;
     }
 
-    public static function insert(string $nic, string $fileName, string $filePath): void
+    public static function insert(string $nic, string $fileName, string $filePath, string $patientName = 'Patient'): bool
     {
         $pid = (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0)
             ? self::currentPharmacyId()
             : 0;
 
         if ($pid > 0) {
-            Database::execute(
+            $ok = Database::execute(
                 "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
                 'sssi',
                 [$nic, $fileName, $filePath, $pid]
             );
         } else {
-            Database::execute(
+            $ok = Database::execute(
                 "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date) VALUES (?, ?, ?, 'PENDING', NOW())",
                 'sss',
                 [$nic, $fileName, $filePath]
             );
         }
+
+        if ($ok) {
+            return true;
+        }
+
+        if (!self::ensurePatientRecord($nic, $patientName)) {
+            return false;
+        }
+
+        if ($pid > 0) {
+            return Database::execute(
+                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
+                'sssi',
+                [$nic, $fileName, $filePath, $pid]
+            );
+        }
+
+        return Database::execute(
+            "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date) VALUES (?, ?, ?, 'PENDING', NOW())",
+            'sss',
+            [$nic, $fileName, $filePath]
+        );
     }
 }

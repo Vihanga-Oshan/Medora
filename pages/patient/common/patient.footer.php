@@ -19,3 +19,5 @@ $base = APP_BASE ?: '';
         <p>&copy; 2025 Medora. All rights reserved.</p>
     </div>
 </footer>
+
+<?php require_once __DIR__ . '/browser-notifications.php'; ?>
