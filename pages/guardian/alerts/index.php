@@ -4,4 +4,4 @@
  */
 require_once __DIR__ . '/../common/guardian.head.php';
 require_once __DIR__ . '/alerts.controller.php';
-require_once __DIR__ . '/alerts.layout.php';
+require_once __DIR__ . '/alerts.modern.layout.php';

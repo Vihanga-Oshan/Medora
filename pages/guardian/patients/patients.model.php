@@ -35,6 +35,30 @@ class PatientsModel
         return Database::fetchOne("SELECT * FROM `" . self::PATIENT_TABLE . "` WHERE nic = ? LIMIT 1", 's', [$nic]);
     }
 
+    public static function getTodayMedicationSummary(string $nic, string $date): array
+    {
+        $rows = self::getScheduleByDate($nic, $date);
+        $summary = [
+            'total' => count($rows),
+            'taken' => 0,
+            'pending' => 0,
+            'missed' => 0,
+        ];
+
+        foreach ($rows as $row) {
+            $status = strtoupper((string)($row['status'] ?? 'PENDING'));
+            if ($status === 'TAKEN') {
+                $summary['taken']++;
+            } elseif ($status === 'MISSED') {
+                $summary['missed']++;
+            } else {
+                $summary['pending']++;
+            }
+        }
+
+        return $summary;
+    }
+
     public static function getScheduleByDate(string $nic, string $date): array
     {
         return Database::fetchAll("
@@ -66,7 +90,9 @@ class PatientsModel
     public static function linkPatient(string $patientNic, string $guardianNic): bool
     {
         return Database::execute(
-            "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = ? WHERE nic = ?",
+            "UPDATE `" . self::PATIENT_TABLE . "`
+             SET guardian_nic = ?, link_status = 'LINKED'
+             WHERE nic = ?",
             'ss',
             [self::normalizeNic($guardianNic), self::normalizeNic($patientNic)]
         );
@@ -75,7 +101,9 @@ class PatientsModel
     public static function unlinkPatient(string $patientNic): bool
     {
         return Database::execute(
-            "UPDATE `" . self::PATIENT_TABLE . "` SET guardian_nic = NULL WHERE nic = ?",
+            "UPDATE `" . self::PATIENT_TABLE . "`
+             SET guardian_nic = NULL, link_status = NULL
+             WHERE nic = ?",
             's',
             [self::normalizeNic($patientNic)]
         );

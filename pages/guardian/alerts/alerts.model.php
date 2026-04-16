@@ -17,7 +17,7 @@ class AlertsModel
     {
         $guardianNic = self::normalizeNic($guardianNic);
         return Database::fetchAll("
-            SELECT n.*, p.name AS patient_name, '' AS patient_phone
+            SELECT n.*, p.name AS patient_name, COALESCE(p.emergency_contact, '') AS patient_phone
             FROM notifications n
             JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic
             WHERE p.guardian_nic = ?
@@ -25,9 +25,14 @@ class AlertsModel
         ", 's', [$guardianNic]);
     }
 
-    public static function markAsRead(int $id): bool
+    public static function markAsReadForGuardian(int $id, string $guardianNic): bool
     {
-        return Database::execute("UPDATE notifications SET is_read = 1 WHERE id = ?", 'i', [$id]);
+        return Database::execute("
+            UPDATE notifications n
+            JOIN `" . self::PATIENT_TABLE . "` p ON n.patient_nic = p.nic
+            SET n.is_read = 1
+            WHERE n.id = ? AND p.guardian_nic = ?
+        ", 'is', [$id, $guardianNic]);
     }
 
     public static function markAllRead(string $guardianNic): bool

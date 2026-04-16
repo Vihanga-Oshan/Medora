@@ -5,37 +5,46 @@
 require_once __DIR__ . '/../../common/guardian.head.php';
 require_once __DIR__ . '/../patients.model.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $patientNic = strtoupper(trim((string)($_POST['nic'] ?? '')));
-    $patientNic = preg_replace('/[\s\-]+/', '', $patientNic) ?? $patientNic;
-    $guardianNic = strtoupper(trim((string)$user['id']));
-    $guardianNic = preg_replace('/[\s\-]+/', '', $guardianNic) ?? $guardianNic;
-
-    if ($patientNic) {
-        // Validation: Verify patient exists first
-        $patient = PatientsModel::getPatientProfile($patientNic);
-        if ($patient) {
-            $existingGuardian = strtoupper(trim((string)($patient['guardian_nic'] ?? '')));
-            $existingGuardian = preg_replace('/[\s\-]+/', '', $existingGuardian) ?? $existingGuardian;
-
-            if ($existingGuardian !== '' && $existingGuardian !== $guardianNic) {
-                header("Location: /guardian/patients?error=already_linked");
-                exit;
-            }
-
-            if ($existingGuardian === $guardianNic) {
-                header("Location: /guardian/patients?nic=$patientNic&msg=already_linked");
-                exit;
-            }
-
-            PatientsModel::sendLinkRequest($patientNic, $guardianNic);
-            header("Location: /guardian/patients?nic=$patientNic&msg=request_sent");
-        } else {
-            Response::redirect('/guardian/patients?error=not_found');
-        }
-    } else {
-        Response::redirect('/guardian/patients?error=empty');
-    }
-} else {
-    Response::redirect('/guardian/patients');
+if (!Request::isPost()) {
+    header('Location: ' . (APP_BASE ?: '') . '/guardian/patients');
+    exit;
 }
+
+if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_patient_link')) {
+    header('Location: ' . (APP_BASE ?: '') . '/guardian/patients?error=csrf&modal=add');
+    exit;
+}
+
+$base = APP_BASE ?: '';
+$patientNic = GuardianLinkRequestSupport::normalizeNic((string)($_POST['nic'] ?? ''));
+$guardianNic = GuardianLinkRequestSupport::normalizeNic((string)($user['id'] ?? ''));
+
+if ($patientNic === '') {
+    header('Location: ' . $base . '/guardian/patients?error=empty&modal=add');
+    exit;
+}
+
+$patient = PatientsModel::getPatientProfile($patientNic);
+if (!$patient) {
+    header('Location: ' . $base . '/guardian/patients?error=not_found&modal=add');
+    exit;
+}
+
+$linkedGuardianNic = GuardianLinkRequestSupport::normalizeNic((string)($patient['guardian_nic'] ?? ''));
+if ($linkedGuardianNic !== '' && $linkedGuardianNic !== $guardianNic) {
+    header('Location: ' . $base . '/guardian/patients?error=already_linked&modal=add');
+    exit;
+}
+
+if ($linkedGuardianNic === $guardianNic) {
+    header('Location: ' . $base . '/guardian/patients?nic=' . urlencode($patientNic) . '&msg=already_linked');
+    exit;
+}
+
+if (!PatientsModel::sendLinkRequest($patientNic, $guardianNic)) {
+    header('Location: ' . $base . '/guardian/patients?error=link_failed&modal=add');
+    exit;
+}
+
+header('Location: ' . $base . '/guardian/patients?nic=' . urlencode($patientNic) . '&msg=request_sent');
+exit;
