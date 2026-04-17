@@ -1,0 +1,2 @@
+[2026-04-17 11:46:31] [DEBUG] Pharmacist register request received. {"email":"pharmacist@gmail.com","license":"1234","requested_pharmacy_id":1}
+[2026-04-17 11:46:31] [DEBUG] Pharmacist request created. {"request_id":1,"email":"pharmacist@gmail.com","license":"1234"}

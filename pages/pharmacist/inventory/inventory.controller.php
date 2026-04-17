@@ -21,16 +21,51 @@ if (Request::isPost() && (string) ($_POST['action'] ?? '') === 'adjust_stock') {
 
 $search = trim((string) ($_GET['search'] ?? ''));
 $status = trim((string) ($_GET['status_filter'] ?? 'all'));
-$medicines = InventoryModel::getAll($search, $status);
+$supplierId = max(0, (int) ($_GET['supplier_id'] ?? 0));
+$categoryId = max(0, (int) ($_GET['category_id'] ?? 0));
+$sortBy = trim((string) ($_GET['sort_by'] ?? 'stock'));
+$sortDir = trim((string) ($_GET['sort_dir'] ?? 'asc'));
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = (int) ($_GET['per_page'] ?? 15);
+
+$queryOptions = [
+    'search' => $search,
+    'status' => $status,
+    'supplier_id' => $supplierId,
+    'category_id' => $categoryId,
+    'sort_by' => $sortBy,
+    'sort_dir' => $sortDir,
+    'page' => $page,
+    'per_page' => $perPage,
+];
+
+$listResult = InventoryModel::getInventoryList($queryOptions);
+$medicines = $listResult['rows'] ?? [];
 $summary = InventoryModel::getSummary();
 $suppliers = InventoryModel::getSupplierOverview();
 $movements = InventoryModel::getRecentMovements();
+$reorders = InventoryModel::getReorderRecommendations(8);
+$supplierFilters = InventoryModel::getSuppliers();
+$categoryFilters = InventoryModel::getCategories();
 
 $data = [
     'medicines' => $medicines,
-    'search'    => $search,
-    'status'    => $status,
-    'summary'   => $summary,
+    'search' => $search,
+    'status' => $status,
+    'supplier_id' => $supplierId,
+    'category_id' => $categoryId,
+    'sort_by' => $sortBy,
+    'sort_dir' => $sortDir,
+    'page' => (int) ($listResult['page'] ?? 1),
+    'per_page' => (int) ($listResult['per_page'] ?? 15),
+    'total' => (int) ($listResult['total'] ?? 0),
+    'total_pages' => (int) ($listResult['total_pages'] ?? 1),
+    'from' => (int) ($listResult['from'] ?? 0),
+    'to' => (int) ($listResult['to'] ?? 0),
+    'summary' => $summary,
     'suppliers' => $suppliers,
+    'supplier_filters' => $supplierFilters,
+    'category_filters' => $categoryFilters,
+    'reorders' => $reorders,
     'movements' => $movements,
 ];

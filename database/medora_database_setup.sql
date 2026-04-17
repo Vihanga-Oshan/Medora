@@ -215,7 +215,11 @@ CREATE TABLE `medicines` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pharmacy_id` int DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_medicines_pharmacy_stock` (`pharmacy_id`,`quantity_in_stock`),
+  KEY `idx_medicines_pharmacy_expiry` (`pharmacy_id`,`expiry_date`),
+  KEY `idx_medicines_supplier` (`supplier_id`),
+  KEY `idx_medicines_name` (`name`,`med_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -661,7 +665,8 @@ CREATE TABLE IF NOT EXISTS medicine_suppliers (
   lead_time_days INT NOT NULL DEFAULT 0,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_medicine_suppliers_active_name (is_active, name)
 );
 
 CREATE TABLE IF NOT EXISTS medicine_stock_movements (

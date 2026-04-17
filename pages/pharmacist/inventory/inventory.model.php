@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Medicine Inventory Model
@@ -7,6 +6,15 @@ class InventoryModel
 {
     private static ?array $medicineColumnsCache = null;
     private static ?int $pharmacyIdCache = null;
+
+    private const ALLOWED_SORTS = [
+        'name',
+        'stock',
+        'value',
+        'expiry',
+        'updated',
+        'supplier',
+    ];
 
     private static function medicinePriceColumn(): string
     {
@@ -26,12 +34,32 @@ class InventoryModel
         }
 
         $cols = array_fill_keys([
-            'id', 'name', 'med_name', 'generic_name', 'category', 'category_id',
-            'description', 'dosage_form', 'strength', 'quantity_in_stock',
-            'low_stock_threshold', 'reorder_quantity', 'pricing', 'price', 'unit_cost',
-            'manufacturer', 'supplier_id', 'batch_number', 'expiry_date',
-            'last_restocked_at', 'added_by', 'created_at', 'updated_at',
-            'pharmacy_id', 'selling_unit', 'unit_quantity',
+            'id',
+            'name',
+            'med_name',
+            'generic_name',
+            'category',
+            'category_id',
+            'description',
+            'dosage_form',
+            'strength',
+            'quantity_in_stock',
+            'low_stock_threshold',
+            'reorder_quantity',
+            'pricing',
+            'price',
+            'unit_cost',
+            'manufacturer',
+            'supplier_id',
+            'batch_number',
+            'expiry_date',
+            'last_restocked_at',
+            'added_by',
+            'created_at',
+            'updated_at',
+            'pharmacy_id',
+            'selling_unit',
+            'unit_quantity',
         ], true);
 
         self::$medicineColumnsCache = $cols;
@@ -338,33 +366,89 @@ class InventoryModel
         return Database::fetchAll("SELECT id, name FROM categories ORDER BY name ASC");
     }
 
-    public static function getAll(string $search = '', string $status = 'all'): array
+    private static function sanitizeListOptions(array $options): array
     {
-        $pharmacyId = self::currentPharmacyId();
-        if (self::hasMedicineColumn('pharmacy_id') && $pharmacyId <= 0) {
-            return [];
+        $search = trim((string) ($options['search'] ?? ''));
+        $status = trim((string) ($options['status'] ?? 'all'));
+        if (!in_array($status, ['all', 'low', 'out', 'expiring', 'healthy'], true)) {
+            $status = 'all';
         }
 
-        $priceCol = self::medicinePriceColumn();
-        $search = trim($search);
-        $status = trim($status);
+        $supplierId = max(0, (int) ($options['supplier_id'] ?? 0));
+        $categoryId = max(0, (int) ($options['category_id'] ?? 0));
+
+        $sortBy = strtolower(trim((string) ($options['sort_by'] ?? 'stock')));
+        if (!in_array($sortBy, self::ALLOWED_SORTS, true)) {
+            $sortBy = 'stock';
+        }
+
+        $sortDir = strtolower(trim((string) ($options['sort_dir'] ?? 'asc')));
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'asc';
+        }
+
+        $page = max(1, (int) ($options['page'] ?? 1));
+        $perPage = (int) ($options['per_page'] ?? 15);
+        if (!in_array($perPage, [10, 15, 25, 50], true)) {
+            $perPage = 15;
+        }
+
+        return [
+            'search' => $search,
+            'status' => $status,
+            'supplier_id' => $supplierId,
+            'category_id' => $categoryId,
+            'sort_by' => $sortBy,
+            'sort_dir' => $sortDir,
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+    }
+
+    private static function buildInventoryWhere(array $options, string &$types, array &$params): array
+    {
         $where = [];
-        $types = '';
-        $params = [];
+        $pharmacyId = self::currentPharmacyId();
 
         if (self::hasMedicineColumn('pharmacy_id')) {
+            if ($pharmacyId <= 0) {
+                $where[] = '1 = 0';
+                return $where;
+            }
             $where[] = 'm.pharmacy_id = ?';
             $types .= 'i';
             $params[] = $pharmacyId;
         }
 
-        if ($search !== '') {
-            $like = '%' . $search . '%';
+        if ($options['search'] !== '') {
+            $like = '%' . $options['search'] . '%';
             $where[] = "(m.name LIKE ? OR m.med_name LIKE ? OR m.generic_name LIKE ? OR m.category LIKE ? OR COALESCE(s.name, '') LIKE ?)";
             $types .= 'sssss';
             array_push($params, $like, $like, $like, $like, $like);
         }
 
+        if ((int) $options['supplier_id'] > 0 && self::hasMedicineColumn('supplier_id')) {
+            $where[] = 'm.supplier_id = ?';
+            $types .= 'i';
+            $params[] = (int) $options['supplier_id'];
+        }
+
+        if ((int) $options['category_id'] > 0) {
+            if (self::hasMedicineColumn('category_id')) {
+                $where[] = 'm.category_id = ?';
+                $types .= 'i';
+                $params[] = (int) $options['category_id'];
+            } elseif (self::hasMedicineColumn('category')) {
+                $categoryName = self::resolveCategoryName((int) $options['category_id']);
+                if ($categoryName !== '') {
+                    $where[] = 'm.category = ?';
+                    $types .= 's';
+                    $params[] = $categoryName;
+                }
+            }
+        }
+
+        $status = (string) ($options['status'] ?? 'all');
         if ($status === 'low') {
             $where[] = 'm.quantity_in_stock > 0 AND m.quantity_in_stock <= COALESCE(m.low_stock_threshold, 0)';
         } elseif ($status === 'out') {
@@ -372,8 +456,57 @@ class InventoryModel
         } elseif ($status === 'expiring') {
             $where[] = "m.expiry_date IS NOT NULL AND m.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
         } elseif ($status === 'healthy') {
-            $where[] = '(m.quantity_in_stock > COALESCE(m.low_stock_threshold, 0))';
+            $where[] = 'm.quantity_in_stock > COALESCE(m.low_stock_threshold, 0)';
         }
+
+        return $where;
+    }
+
+    private static function buildInventoryOrderClause(string $sortBy, string $sortDir): string
+    {
+        $dir = strtoupper($sortDir) === 'DESC' ? 'DESC' : 'ASC';
+
+        if ($sortBy === 'name') {
+            return "ORDER BY COALESCE(NULLIF(m.med_name, ''), m.name) $dir, m.id DESC";
+        }
+        if ($sortBy === 'value') {
+            return "ORDER BY (COALESCE(m.unit_cost, 0) * COALESCE(m.quantity_in_stock, 0)) $dir, COALESCE(NULLIF(m.med_name, ''), m.name) ASC";
+        }
+        if ($sortBy === 'expiry') {
+            return "ORDER BY (m.expiry_date IS NULL) ASC, m.expiry_date $dir, COALESCE(NULLIF(m.med_name, ''), m.name) ASC";
+        }
+        if ($sortBy === 'updated') {
+            return "ORDER BY COALESCE(m.updated_at, m.created_at) $dir, m.id DESC";
+        }
+        if ($sortBy === 'supplier') {
+            return "ORDER BY COALESCE(s.name, '') $dir, COALESCE(NULLIF(m.med_name, ''), m.name) ASC";
+        }
+
+        return "ORDER BY m.quantity_in_stock $dir, COALESCE(NULLIF(m.med_name, ''), m.name) ASC";
+    }
+
+    public static function getInventoryList(array $options = []): array
+    {
+        $opts = self::sanitizeListOptions($options);
+
+        $priceCol = self::medicinePriceColumn();
+        $types = '';
+        $params = [];
+        $where = self::buildInventoryWhere($opts, $types, $params);
+
+        $fromSql = "FROM medicines m
+                    LEFT JOIN medicine_suppliers s ON s.id = m.supplier_id";
+        if (!empty($where)) {
+            $fromSql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        $countRow = Database::fetchOne("SELECT COUNT(*) AS c $fromSql", $types, $params);
+        $total = (int) ($countRow['c'] ?? 0);
+
+        $perPage = (int) $opts['per_page'];
+        $totalPages = max(1, (int) ceil($total / max(1, $perPage)));
+        $page = min((int) $opts['page'], $totalPages);
+        $offset = ($page - 1) * $perPage;
 
         $sql = "SELECT
                     m.*,
@@ -388,14 +521,35 @@ class InventoryModel
                     s.email AS supplier_email,
                     s.address AS supplier_address,
                     s.lead_time_days AS supplier_lead_time_days
-                FROM medicines m
-                LEFT JOIN medicine_suppliers s ON s.id = m.supplier_id";
-        if (!empty($where)) {
-            $sql .= ' WHERE ' . implode(' AND ', $where);
-        }
-        $sql .= ' ORDER BY m.quantity_in_stock ASC, m.name ASC';
+                $fromSql "
+            . self::buildInventoryOrderClause((string) $opts['sort_by'], (string) $opts['sort_dir'])
+            . ' LIMIT ' . max(1, $perPage) . ' OFFSET ' . max(0, $offset);
 
-        return self::decorateMedicineRows(Database::fetchAll($sql, $types, $params));
+        $rows = self::decorateMedicineRows(Database::fetchAll($sql, $types, $params));
+
+        return [
+            'rows' => $rows,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => $totalPages,
+            'from' => $total > 0 ? ($offset + 1) : 0,
+            'to' => $total > 0 ? min($offset + $perPage, $total) : 0,
+            'options' => $opts,
+        ];
+    }
+
+    public static function getAll(string $search = '', string $status = 'all'): array
+    {
+        $result = self::getInventoryList([
+            'search' => $search,
+            'status' => $status,
+            'page' => 1,
+            'per_page' => 1000,
+            'sort_by' => 'stock',
+            'sort_dir' => 'asc',
+        ]);
+        return $result['rows'] ?? [];
     }
 
     public static function getById(int $id): ?array
@@ -435,29 +589,82 @@ class InventoryModel
         return self::classifyMedicine($row);
     }
 
-    public static function getSummary(): array
+    public static function getSummary(array $options = []): array
     {
-        $rows = self::getAll();
-        $summary = [
-            'total_items' => count($rows),
-            'total_units' => 0,
-            'low_stock_count' => 0,
-            'out_of_stock_count' => 0,
-            'expiring_soon_count' => 0,
-            'total_stock_value' => 0.0,
-        ];
+        $opts = self::sanitizeListOptions($options);
+        $types = '';
+        $params = [];
+        $where = self::buildInventoryWhere($opts, $types, $params);
 
-        foreach ($rows as $row) {
-            $summary['total_units'] += (int) ($row['quantity_in_stock'] ?? 0);
-            $summary['total_stock_value'] += (float) ($row['total_stock_value'] ?? 0);
-            $summary['low_stock_count'] += !empty($row['is_low_stock']) ? 1 : 0;
-            $summary['out_of_stock_count'] += !empty($row['is_out_of_stock']) ? 1 : 0;
-            $summary['expiring_soon_count'] += !empty($row['is_expiring_soon']) ? 1 : 0;
+        $sql = "SELECT
+                    COUNT(*) AS total_items,
+                    COALESCE(SUM(m.quantity_in_stock), 0) AS total_units,
+                    COALESCE(SUM(CASE WHEN m.quantity_in_stock > 0 AND m.quantity_in_stock <= COALESCE(m.low_stock_threshold, 0) THEN 1 ELSE 0 END), 0) AS low_stock_count,
+                    COALESCE(SUM(CASE WHEN m.quantity_in_stock <= 0 THEN 1 ELSE 0 END), 0) AS out_of_stock_count,
+                    COALESCE(SUM(CASE WHEN m.expiry_date IS NOT NULL AND m.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 1 ELSE 0 END), 0) AS expiring_soon_count,
+                    COALESCE(SUM(COALESCE(m.unit_cost, 0) * COALESCE(m.quantity_in_stock, 0)), 0) AS total_stock_value,
+                    COUNT(DISTINCT CASE WHEN s.is_active = 1 THEN s.id END) AS supplier_count
+                FROM medicines m
+                LEFT JOIN medicine_suppliers s ON s.id = m.supplier_id";
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        $supplierCount = Database::fetchOne("SELECT COUNT(*) AS c FROM medicine_suppliers WHERE is_active = 1");
-        $summary['supplier_count'] = (int) ($supplierCount['c'] ?? 0);
-        return $summary;
+        $row = Database::fetchOne($sql, $types, $params) ?? [];
+        return [
+            'total_items' => (int) ($row['total_items'] ?? 0),
+            'total_units' => (int) ($row['total_units'] ?? 0),
+            'low_stock_count' => (int) ($row['low_stock_count'] ?? 0),
+            'out_of_stock_count' => (int) ($row['out_of_stock_count'] ?? 0),
+            'expiring_soon_count' => (int) ($row['expiring_soon_count'] ?? 0),
+            'total_stock_value' => (float) ($row['total_stock_value'] ?? 0),
+            'supplier_count' => (int) ($row['supplier_count'] ?? 0),
+        ];
+    }
+
+    public static function getReorderRecommendations(int $limit = 8, array $options = []): array
+    {
+        $opts = self::sanitizeListOptions($options);
+        $opts['status'] = 'all';
+
+        $types = '';
+        $params = [];
+        $where = self::buildInventoryWhere($opts, $types, $params);
+        $where[] = 'm.quantity_in_stock <= COALESCE(m.low_stock_threshold, 0)';
+
+        $priceCol = self::medicinePriceColumn();
+        $sql = "SELECT
+                    m.id,
+                    m.name,
+                    m.med_name,
+                    COALESCE(m.quantity_in_stock, 0) AS quantity_in_stock,
+                    COALESCE(m.low_stock_threshold, 0) AS low_stock_threshold,
+                    COALESCE(m.reorder_quantity, 0) AS reorder_quantity,
+                    COALESCE(m.unit_cost, 0) AS unit_cost,
+                    " . ($priceCol !== '' ? "m.$priceCol" : '0') . " AS price,
+                    COALESCE(s.name, '') AS supplier_name,
+                    COALESCE(s.phone, '') AS supplier_phone,
+                    COALESCE(s.lead_time_days, 0) AS supplier_lead_time_days
+                FROM medicines m
+                LEFT JOIN medicine_suppliers s ON s.id = m.supplier_id
+                WHERE " . implode(' AND ', $where) . "
+                ORDER BY (COALESCE(m.low_stock_threshold, 0) - COALESCE(m.quantity_in_stock, 0)) DESC,
+                         COALESCE(m.quantity_in_stock, 0) ASC,
+                         COALESCE(NULLIF(m.med_name, ''), m.name) ASC
+                LIMIT " . max(1, $limit);
+
+        $rows = Database::fetchAll($sql, $types, $params);
+        foreach ($rows as &$row) {
+            $qty = (int) ($row['quantity_in_stock'] ?? 0);
+            $threshold = (int) ($row['low_stock_threshold'] ?? 0);
+            $reorderQty = max((int) ($row['reorder_quantity'] ?? 0), max(0, $threshold - $qty));
+            $unitCost = (float) ($row['unit_cost'] ?? 0);
+            $row['recommended_reorder_quantity'] = $reorderQty;
+            $row['estimated_reorder_cost'] = $reorderQty * $unitCost;
+        }
+        unset($row);
+
+        return $rows;
     }
 
     public static function getSupplierOverview(int $limit = 6): array
@@ -579,25 +786,59 @@ class InventoryModel
             $params[] = $val;
         };
 
-        if (self::hasMedicineColumn('name')) { $addStr('name', $name); }
-        if (self::hasMedicineColumn('med_name')) { $addStr('med_name', $medName); }
-        if (self::hasMedicineColumn('generic_name')) { $addStr('generic_name', $generic); }
-        if (self::hasMedicineColumn('category')) { $addStr('category', $category); }
-        if (self::hasMedicineColumn('category_id')) { $addInt('category_id', max(0, $categoryId)); }
-        if (self::hasMedicineColumn('description')) { $addStr('description', $description); }
-        if (self::hasMedicineColumn('dosage_form')) { $addStr('dosage_form', $dosageForm); }
-        if (self::hasMedicineColumn('strength')) { $addStr('strength', $strength); }
-        if (self::hasMedicineColumn('quantity_in_stock')) { $addInt('quantity_in_stock', $qty); }
-        if (self::hasMedicineColumn('low_stock_threshold')) { $addInt('low_stock_threshold', $threshold); }
-        if (self::hasMedicineColumn('reorder_quantity')) { $addInt('reorder_quantity', $reorderQty); }
+        if (self::hasMedicineColumn('name')) {
+            $addStr('name', $name);
+        }
+        if (self::hasMedicineColumn('med_name')) {
+            $addStr('med_name', $medName);
+        }
+        if (self::hasMedicineColumn('generic_name')) {
+            $addStr('generic_name', $generic);
+        }
+        if (self::hasMedicineColumn('category')) {
+            $addStr('category', $category);
+        }
+        if (self::hasMedicineColumn('category_id')) {
+            $addInt('category_id', max(0, $categoryId));
+        }
+        if (self::hasMedicineColumn('description')) {
+            $addStr('description', $description);
+        }
+        if (self::hasMedicineColumn('dosage_form')) {
+            $addStr('dosage_form', $dosageForm);
+        }
+        if (self::hasMedicineColumn('strength')) {
+            $addStr('strength', $strength);
+        }
+        if (self::hasMedicineColumn('quantity_in_stock')) {
+            $addInt('quantity_in_stock', $qty);
+        }
+        if (self::hasMedicineColumn('low_stock_threshold')) {
+            $addInt('low_stock_threshold', $threshold);
+        }
+        if (self::hasMedicineColumn('reorder_quantity')) {
+            $addInt('reorder_quantity', $reorderQty);
+        }
         $priceCol = self::medicinePriceColumn();
-        if ($priceCol !== '') { $addNum($priceCol, $price); }
-        if (self::hasMedicineColumn('unit_cost')) { $addNum('unit_cost', $unitCost); }
+        if ($priceCol !== '') {
+            $addNum($priceCol, $price);
+        }
+        if (self::hasMedicineColumn('unit_cost')) {
+            $addNum('unit_cost', $unitCost);
+        }
         $imageColumn = self::getMedicineImageColumn();
-        if ($imageColumn !== '' && $imagePath !== '') { $addStr($imageColumn, $imagePath); }
-        if (self::hasMedicineColumn('manufacturer')) { $addStr('manufacturer', $manufacturer); }
-        if (self::hasMedicineColumn('supplier_id')) { $addInt('supplier_id', $supplierId); }
-        if (self::hasMedicineColumn('batch_number')) { $addStr('batch_number', $batchNumber); }
+        if ($imageColumn !== '' && $imagePath !== '') {
+            $addStr($imageColumn, $imagePath);
+        }
+        if (self::hasMedicineColumn('manufacturer')) {
+            $addStr('manufacturer', $manufacturer);
+        }
+        if (self::hasMedicineColumn('supplier_id')) {
+            $addInt('supplier_id', $supplierId);
+        }
+        if (self::hasMedicineColumn('batch_number')) {
+            $addStr('batch_number', $batchNumber);
+        }
         if (self::hasMedicineColumn('expiry_date')) {
             $cols[] = 'expiry_date';
             if ($expiryDate !== '') {
@@ -612,10 +853,18 @@ class InventoryModel
             $cols[] = 'last_restocked_at';
             $vals[] = $qty > 0 ? 'NOW()' : 'NULL';
         }
-        if (self::hasMedicineColumn('selling_unit')) { $addStr('selling_unit', $sellingUnit); }
-        if (self::hasMedicineColumn('unit_quantity')) { $addInt('unit_quantity', $unitQuantity); }
-        if (self::hasMedicineColumn('added_by')) { $addInt('added_by', max(0, $addedBy)); }
-        if (self::hasMedicineColumn('pharmacy_id')) { $addInt('pharmacy_id', $pharmacyId); }
+        if (self::hasMedicineColumn('selling_unit')) {
+            $addStr('selling_unit', $sellingUnit);
+        }
+        if (self::hasMedicineColumn('unit_quantity')) {
+            $addInt('unit_quantity', $unitQuantity);
+        }
+        if (self::hasMedicineColumn('added_by')) {
+            $addInt('added_by', max(0, $addedBy));
+        }
+        if (self::hasMedicineColumn('pharmacy_id')) {
+            $addInt('pharmacy_id', $pharmacyId);
+        }
         if (self::hasMedicineColumn('created_at')) {
             $cols[] = 'created_at';
             $vals[] = 'NOW()';
@@ -717,25 +966,59 @@ class InventoryModel
             $params[] = $val;
         };
 
-        if (self::hasMedicineColumn('name')) { $setStr('name', $name); }
-        if (self::hasMedicineColumn('med_name')) { $setStr('med_name', $medName); }
-        if (self::hasMedicineColumn('generic_name')) { $setStr('generic_name', $generic); }
-        if (self::hasMedicineColumn('category')) { $setStr('category', $category); }
-        if (self::hasMedicineColumn('category_id')) { $setInt('category_id', max(0, $categoryId)); }
-        if (self::hasMedicineColumn('description')) { $setStr('description', $description); }
-        if (self::hasMedicineColumn('dosage_form')) { $setStr('dosage_form', $dosageForm); }
-        if (self::hasMedicineColumn('strength')) { $setStr('strength', $strength); }
-        if (self::hasMedicineColumn('quantity_in_stock')) { $setInt('quantity_in_stock', $qty); }
-        if (self::hasMedicineColumn('low_stock_threshold')) { $setInt('low_stock_threshold', $threshold); }
-        if (self::hasMedicineColumn('reorder_quantity')) { $setInt('reorder_quantity', $reorderQty); }
+        if (self::hasMedicineColumn('name')) {
+            $setStr('name', $name);
+        }
+        if (self::hasMedicineColumn('med_name')) {
+            $setStr('med_name', $medName);
+        }
+        if (self::hasMedicineColumn('generic_name')) {
+            $setStr('generic_name', $generic);
+        }
+        if (self::hasMedicineColumn('category')) {
+            $setStr('category', $category);
+        }
+        if (self::hasMedicineColumn('category_id')) {
+            $setInt('category_id', max(0, $categoryId));
+        }
+        if (self::hasMedicineColumn('description')) {
+            $setStr('description', $description);
+        }
+        if (self::hasMedicineColumn('dosage_form')) {
+            $setStr('dosage_form', $dosageForm);
+        }
+        if (self::hasMedicineColumn('strength')) {
+            $setStr('strength', $strength);
+        }
+        if (self::hasMedicineColumn('quantity_in_stock')) {
+            $setInt('quantity_in_stock', $qty);
+        }
+        if (self::hasMedicineColumn('low_stock_threshold')) {
+            $setInt('low_stock_threshold', $threshold);
+        }
+        if (self::hasMedicineColumn('reorder_quantity')) {
+            $setInt('reorder_quantity', $reorderQty);
+        }
         $priceCol = self::medicinePriceColumn();
-        if ($priceCol !== '') { $setNum($priceCol, $price); }
-        if (self::hasMedicineColumn('unit_cost')) { $setNum('unit_cost', $unitCost); }
+        if ($priceCol !== '') {
+            $setNum($priceCol, $price);
+        }
+        if (self::hasMedicineColumn('unit_cost')) {
+            $setNum('unit_cost', $unitCost);
+        }
         $imageColumn = self::getMedicineImageColumn();
-        if ($imageColumn !== '' && $imagePath !== '') { $setStr($imageColumn, $imagePath); }
-        if (self::hasMedicineColumn('manufacturer')) { $setStr('manufacturer', $manufacturer); }
-        if (self::hasMedicineColumn('supplier_id')) { $setInt('supplier_id', $supplierId); }
-        if (self::hasMedicineColumn('batch_number')) { $setStr('batch_number', $batchNumber); }
+        if ($imageColumn !== '' && $imagePath !== '') {
+            $setStr($imageColumn, $imagePath);
+        }
+        if (self::hasMedicineColumn('manufacturer')) {
+            $setStr('manufacturer', $manufacturer);
+        }
+        if (self::hasMedicineColumn('supplier_id')) {
+            $setInt('supplier_id', $supplierId);
+        }
+        if (self::hasMedicineColumn('batch_number')) {
+            $setStr('batch_number', $batchNumber);
+        }
         if (self::hasMedicineColumn('expiry_date')) {
             if ($expiryDate !== '') {
                 $sets[] = "expiry_date = ?";
@@ -745,12 +1028,18 @@ class InventoryModel
                 $sets[] = 'expiry_date = NULL';
             }
         }
-        if (self::hasMedicineColumn('selling_unit')) { $setStr('selling_unit', $sellingUnit); }
-        if (self::hasMedicineColumn('unit_quantity')) { $setInt('unit_quantity', $unitQuantity); }
+        if (self::hasMedicineColumn('selling_unit')) {
+            $setStr('selling_unit', $sellingUnit);
+        }
+        if (self::hasMedicineColumn('unit_quantity')) {
+            $setInt('unit_quantity', $unitQuantity);
+        }
         if (self::hasMedicineColumn('last_restocked_at') && $qty > (int) ($existing['quantity_in_stock'] ?? 0)) {
             $sets[] = 'last_restocked_at = NOW()';
         }
-        if (self::hasMedicineColumn('updated_at')) { $sets[] = 'updated_at = NOW()'; }
+        if (self::hasMedicineColumn('updated_at')) {
+            $sets[] = 'updated_at = NOW()';
+        }
         if (empty($sets)) {
             return false;
         }
@@ -849,8 +1138,7 @@ class InventoryModel
         int $after,
         string $note = '',
         string $referenceNo = ''
-    ): bool
-    {
+    ): bool {
         return Database::execute(
             "INSERT INTO medicine_stock_movements
              (medicine_id, supplier_id, pharmacy_id, movement_type, quantity_change, quantity_before, quantity_after, note, reference_no, created_by, created_at)
