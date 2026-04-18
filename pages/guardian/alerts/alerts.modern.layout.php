@@ -20,17 +20,175 @@ $cssVer = time();
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/patient/dashboard.css?v=<?= $cssVer ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/guardian/dashboard.css?v=<?= $cssVer ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/guardian/alerts-modern.css?v=<?= $cssVer ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/patient/footer.css?v=<?= $cssVer ?>">
+    <style>
+        body {
+            padding-top: 68px !important;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 110px !important;
+            }
+        }
+
+        .dashboard-wrapper {
+            min-height: calc(100vh - 68px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-hero {
+            position: relative;
+            background-color: var(--medical-blue);
+            padding: 56px 20px 78px;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .dashboard-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('<?= htmlspecialchars($base) ?>/assets/img/hero-image.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            filter: blur(3px);
+            opacity: 0.45;
+            z-index: -2;
+        }
+
+        .dashboard-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 120, 195, 0.75) 0%, rgba(0, 74, 124, 0.6) 100%);
+            z-index: -1;
+        }
+
+        .hero-content,
+        .hero-actions {
+            position: relative;
+            z-index: 10;
+            color: #fff !important;
+        }
+
+        .guardian-alerts-hero .page-hero-content {
+            max-width: 620px;
+            padding: 0;
+            position: relative;
+            z-index: 11;
+        }
+
+        .guardian-alerts-hero .page-hero-title {
+            font-size: clamp(2rem, 2.6vw, 2.6rem);
+            margin-bottom: 10px;
+            letter-spacing: -0.4px;
+            line-height: 1.15;
+            font-weight: 700;
+            color: #fff !important;
+            text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+            opacity: 1 !important;
+            position: relative;
+            z-index: 12;
+        }
+
+        .guardian-alerts-hero .page-hero-subtitle {
+            font-size: 1.06rem;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.96) !important;
+            max-width: 560px;
+            font-weight: 400;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.28);
+            opacity: 1 !important;
+            position: relative;
+            z-index: 12;
+        }
+
+        .guardian-alerts-hero .page-hero-title,
+        .guardian-alerts-hero .page-hero-subtitle,
+        .guardian-alerts-hero .page-hero-content * {
+            color: #fff !important;
+        }
+
+        .dashboard-hero::after {
+            background: linear-gradient(135deg, rgba(0, 74, 124, 0.94) 0%, rgba(0, 43, 74, 0.9) 100%);
+        }
+
+        .dashboard-hero .btn-primary {
+            background-color: #fff;
+            color: #0078c3;
+        }
+
+        .dashboard-hero .btn-outline {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .dashboard-hero .btn,
+        .dashboard-hero a,
+        .dashboard-hero button {
+            color: #fff !important;
+            font-weight: 700;
+        }
+
+        .dashboard-hero .btn-primary,
+        .dashboard-hero .btn-primary:hover,
+        .dashboard-hero .btn-primary:focus {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .dashboard-hero .btn-outline,
+        .dashboard-hero .btn-outline:hover,
+        .dashboard-hero .btn-outline:focus {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .main-layout {
+            margin: -42px auto 0;
+            padding: 0 20px 8px;
+            max-width: 1240px;
+        }
+
+        .stats-overview {
+            margin-bottom: 24px;
+            gap: 14px;
+        }
+
+        .stat-card,
+        .card-panel {
+            padding: 16px 18px;
+        }
+
+        .card-panel {
+            margin-bottom: 24px;
+        }
+
+        .section-header h2,
+        .card-panel h2 {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+        }
+    </style>
 </head>
 <body class="guardian-body">
 
 <?php require_once __DIR__ . '/../common/guardian.navbar.php'; ?>
 
-<main class="main-content">
+<div class="dashboard-wrapper">
     <header class="dashboard-hero guardian-alerts-hero">
-        <div class="hero-content">
-            <div class="hero-kicker">Guardian Workspace</div>
-            <h1 class="hero-title">Alerts that surface what needs your attention first.</h1>
-            <p class="hero-subtitle">Track unread medication reminders, critical health updates, and patient-specific notifications in a cleaner workflow.</p>
+        <div class="hero-content page-hero-content">
+            <h1 class="page-hero-title">Review guardian alerts.</h1>
+            <p class="page-hero-subtitle">See unread and important updates at a glance.</p>
         </div>
         <div class="hero-actions">
             <?php if ($data['unread'] > 0): ?>
@@ -195,7 +353,9 @@ $cssVer = time();
             </section>
         </div>
     </div>
-</main>
+</div>
+
+<?php require_once __DIR__ . '/../../patient/common/patient.footer.php'; ?>
 
 </body>
 </html>

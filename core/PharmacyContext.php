@@ -180,4 +180,23 @@ class PharmacyContext
         return in_array($table, self::PHARMACY_SCOPED_TABLES, true);
     }
 
+    public static function tableExists(string $table): bool
+    {
+        $table = trim($table);
+        if ($table === '') {
+            return false;
+        }
+
+        $row = Database::fetchOne(
+            "SELECT COUNT(*) AS cnt
+             FROM information_schema.TABLES
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = ?",
+            's',
+            [$table]
+        );
+
+        return (int) ($row['cnt'] ?? 0) > 0;
+    }
+
 }

@@ -18,4 +18,3 @@ RewriteRule ^ - [L]
 
 # Route app pages through root front controller
 RewriteRule ^ index.php [QSA,L]
-

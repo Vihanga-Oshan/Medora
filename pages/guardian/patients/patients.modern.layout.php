@@ -24,23 +24,165 @@ $openAddModal = (($_GET['modal'] ?? '') === 'add');
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/patient/dashboard.css?v=<?= $cssVer ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/guardian/dashboard.css?v=<?= $cssVer ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/guardian/patients-modern.css?v=<?= $cssVer ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/patient/footer.css?v=<?= $cssVer ?>">
+    <style>
+        body {
+            padding-top: 68px !important;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 110px !important;
+            }
+        }
+
+        .dashboard-wrapper {
+            min-height: calc(100vh - 68px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-hero {
+            position: relative;
+            background-color: var(--medical-blue);
+            padding: 56px 20px 78px;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .dashboard-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('<?= htmlspecialchars($base) ?>/assets/img/hero-image.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            filter: blur(3px);
+            opacity: 0.45;
+            z-index: -2;
+        }
+
+        .dashboard-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 120, 195, 0.75) 0%, rgba(0, 74, 124, 0.6) 100%);
+            z-index: -1;
+        }
+
+        .hero-content,
+        .hero-actions {
+            position: relative;
+            z-index: 10;
+            color: #fff !important;
+        }
+
+        .guardian-patients-hero .page-hero-content {
+            max-width: 620px;
+            padding: 14px 4px;
+            position: relative;
+            z-index: 11;
+        }
+
+        .guardian-patients-hero .page-hero-title {
+            font-size: clamp(2rem, 2.6vw, 2.6rem);
+            margin-bottom: 10px;
+            letter-spacing: -0.4px;
+            line-height: 1.15;
+            font-weight: 700;
+            color: #fff !important;
+            text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+            opacity: 1 !important;
+            position: relative;
+            z-index: 12;
+        }
+
+        .guardian-patients-hero .page-hero-subtitle {
+            font-size: 1.06rem;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.96) !important;
+            max-width: 560px;
+            font-weight: 400;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.28);
+            opacity: 1 !important;
+            position: relative;
+            z-index: 12;
+        }
+
+        .guardian-patients-hero .page-hero-title,
+        .guardian-patients-hero .page-hero-subtitle,
+        .guardian-patients-hero .page-hero-content * {
+            color: #fff !important;
+        }
+
+        .dashboard-hero::after {
+            background: linear-gradient(135deg, rgba(0, 92, 148, 0.86) 0%, rgba(0, 56, 96, 0.78) 100%);
+        }
+
+        .dashboard-hero .btn-primary {
+            background-color: #fff;
+            color: #0078c3;
+        }
+
+        .dashboard-hero .btn-outline {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .dashboard-hero .btn,
+        .dashboard-hero a,
+        .dashboard-hero button {
+            color: #fff !important;
+        }
+
+        .dashboard-hero .btn-primary,
+        .dashboard-hero .btn-primary:hover,
+        .dashboard-hero .btn-primary:focus {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .main-layout {
+            margin: -42px auto 0;
+            padding: 0 20px 8px;
+            max-width: 1240px;
+        }
+
+        .stats-overview {
+            margin-bottom: 24px;
+            gap: 14px;
+        }
+
+        .stat-card,
+        .card-panel {
+            padding: 16px 18px;
+        }
+
+        .card-panel {
+            margin-bottom: 24px;
+        }
+
+        .patient-spotlight {
+            margin-bottom: 24px;
+        }
+    </style>
 </head>
 <body class="guardian-body">
 
 <?php require_once __DIR__ . '/../common/guardian.navbar.php'; ?>
 
-<main class="main-content">
+<div class="dashboard-wrapper">
     <header class="dashboard-hero guardian-patients-hero">
-        <div class="hero-content">
-            <div class="hero-kicker">Guardian Workspace</div>
-            <h1 class="hero-title">Stay on top of every linked patient's care with one focused view.</h1>
-            <p class="hero-subtitle">Review linked patients, track today's medication progress, and send new patient link requests from one place.</p>
+        <div class="hero-content page-hero-content">
+            <h1 class="page-hero-title">Manage your linked patients.</h1>
+            <p class="page-hero-subtitle">Check patient updates and today&apos;s medication progress in one place.</p>
         </div>
         <div class="hero-actions">
             <button type="button" class="btn btn-primary" onclick="openAddModal()">+ Add Patient</button>
-            <?php if ($selectedPatient): ?>
-                <a href="<?= htmlspecialchars($base) ?>/guardian/patients?nic=<?= urlencode($selectedPatient['nic']) ?>" class="btn btn-outline">Viewing <?= htmlspecialchars($selectedPatient['name']) ?></a>
-            <?php endif; ?>
         </div>
     </header>
 
@@ -218,7 +360,7 @@ $openAddModal = (($_GET['modal'] ?? '') === 'add');
             </section>
         </div>
     </div>
-</main>
+</div>
 
 <div id="addPatientModal" class="modal-overlay <?= $openAddModal ? 'is-open' : '' ?>" aria-hidden="<?= $openAddModal ? 'false' : 'true' ?>">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="addPatientTitle">
@@ -272,6 +414,8 @@ document.addEventListener('keydown', function (event) {
     }
 });
 </script>
+
+<?php require_once __DIR__ . '/../../patient/common/patient.footer.php'; ?>
 
 </body>
 </html>

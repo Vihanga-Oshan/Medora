@@ -138,27 +138,6 @@ class DashboardModel
             return 0;
         }
 
-        if (PharmacyContext::tableExists('medication_schedules')) {
-            $row = Database::fetchOne(
-                "SELECT
-                    SUM(CASE WHEN UPPER(COALESCE(s.status, '')) = 'TAKEN' THEN 1 ELSE 0 END) AS taken_count,
-                    SUM(CASE WHEN UPPER(COALESCE(s.status, '')) IN ('TAKEN','MISSED') THEN 1 ELSE 0 END) AS tracked_count
-                 FROM medication_schedules s
-                 JOIN `" . self::PATIENT_TABLE . "` p ON s.patient_nic = p.nic
-                 WHERE " . self::guardianMatchExpr('p'),
-                's',
-                [$normalizedNic]
-            );
-
-            if (is_array($row)) {
-                $tracked = (int)($row['tracked_count'] ?? 0);
-                $taken = (int)($row['taken_count'] ?? 0);
-                if ($tracked > 0) {
-                    return (int) round(($taken / $tracked) * 100);
-                }
-            }
-        }
-
         if (PharmacyContext::tableExists('medication_log')) {
             $row = Database::fetchOne(
                 "SELECT
