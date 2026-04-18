@@ -169,10 +169,6 @@ class LogUrgePopup {
         body: formData,
         headers: {
           "X-Requested-With": "XMLHttpRequest",
-          // Add CSRF header if using Spring Security
-          ...(window.serverData.csrfToken && {
-            [window.serverData.csrfHeader]: window.serverData.csrfToken,
-          }),
         },
       });
 

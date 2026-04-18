@@ -8,9 +8,6 @@ $guardianNic = $user['id'];
 $base = APP_BASE ?: '';
 
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_alerts_action')) {
-        Response::redirect('/guardian/alerts?error=csrf');
-    }
     $action = $_POST['action'] ?? '';
     if ($action === 'markRead') {
         $id = (int)($_POST['id'] ?? 0);
@@ -54,9 +51,7 @@ $filteredNotifications = array_values(array_filter($notifications, static functi
 }));
 
 $flash = null;
-if (($_GET['error'] ?? '') === 'csrf') {
-    $flash = ['type' => 'error', 'message' => 'Your session expired. Please try the alert action again.'];
-} elseif (($_GET['msg'] ?? '') === 'updated') {
+if (($_GET['msg'] ?? '') === 'updated') {
     $flash = ['type' => 'success', 'message' => 'Alert status updated successfully.'];
 }
 

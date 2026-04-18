@@ -19,10 +19,6 @@ if (!$prescription || $prescriptionNic === '' || $prescriptionNic !== $patientNi
 
 // Handle form submission
 if (Request::isPost() && isset($_POST['medicineId']) && is_array($_POST['medicineId'])) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'pharmacist_schedule_submit')) {
-        Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=csrf');
-    }
-
     $rows = count($_POST['medicineId']);
     $schedules = [];
     
@@ -58,18 +54,9 @@ if (Request::isPost() && isset($_POST['medicineId']) && is_array($_POST['medicin
         Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=empty');
     }
 
-    $txStarted = Database::beginTransaction();
-    $ok = $txStarted && ScheduleModel::bulkInsert($schedules);
+    $ok = ScheduleModel::bulkInsert($schedules);
     if (!$ok) {
-        if ($txStarted) {
-            Database::rollback();
-        }
         Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=save');
-    }
-
-    if (!Database::commit()) {
-        Database::rollback();
-        Response::redirect('/pharmacist/scheduling?id=' . $prescriptionId . '&nic=' . urlencode((string)$patientNic) . '&error=commit');
     }
 
     ScheduleModel::syncPatientPharmacySelection($patientNic);

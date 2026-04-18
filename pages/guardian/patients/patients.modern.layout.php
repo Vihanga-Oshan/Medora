@@ -125,7 +125,6 @@ $openAddModal = (($_GET['modal'] ?? '') === 'add');
                                 <div class="linked-patient-actions">
                                     <a href="<?= htmlspecialchars($base) ?>/guardian/patients?nic=<?= urlencode($p['nic']) ?>" class="mini-link" onclick="event.stopPropagation()">Open</a>
                                     <form action="<?= htmlspecialchars($base) ?>/guardian/patients/remove" method="post" onsubmit="event.stopPropagation(); return confirm('Remove patient from guardian list?');">
-                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_patient_unlink')) ?>">
                                         <input type="hidden" name="nic" value="<?= htmlspecialchars($p['nic']) ?>">
                                         <button type="submit" class="btn-remove">Remove</button>
                                     </form>
@@ -230,7 +229,6 @@ $openAddModal = (($_GET['modal'] ?? '') === 'add');
             <p>Enter the patient's NIC exactly as it appears on their profile. Medora will prevent duplicate or conflicting guardian links.</p>
         </div>
         <form action="<?= htmlspecialchars($base) ?>/guardian/patients/add" method="post" class="guardian-patient-form">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_patient_link')) ?>">
             <div class="field-group">
                 <label for="guardian-patient-nic">Patient NIC</label>
                 <input id="guardian-patient-nic" type="text" name="nic" required placeholder="e.g. 199512345678" autocomplete="off">

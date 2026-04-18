@@ -7,10 +7,6 @@ require_once __DIR__ . '/../../common/admin.activity.php';
 require_once __DIR__ . '/../pharmacists.model.php';
 
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_pharmacists_delete')) {
-        Response::redirect('/admin/pharmacists?error=csrf');
-    }
-
     $id = (int)$_POST['id'];
     if ($id) {
         $name = 'Pharmacist';

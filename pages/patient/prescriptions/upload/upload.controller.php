@@ -7,11 +7,6 @@
 $error      = null;
 
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_prescription_upload')) {
-        $error = 'Session expired. Please refresh and try again.';
-        return;
-    }
-
     $file = $_FILES['prescription_file'] ?? null;
 
     if (!$file || $file['error'] !== UPLOAD_ERR_OK) {

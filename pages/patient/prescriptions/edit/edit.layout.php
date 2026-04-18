@@ -51,7 +51,6 @@ $cssVer = time();
 
             <form method="post" action="<?= htmlspecialchars($base) ?>/patient/prescriptions/edit">
                 <input type="hidden" name="id" value="<?= (int)$prescription['id'] ?>">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('patient_prescription_edit')) ?>">
                 <div class="form-group">
                     <label for="fileName">Prescription Name</label>
                     <input type="text" id="fileName" name="file_name"

@@ -12,18 +12,14 @@ if (!$id) {
 }
 
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_pharmacists_edit')) {
-        $error = "Security validation failed. Please refresh and try again.";
-    } else {
-        if (PharmacistsModel::update($id, $_POST)) {
-            $updatedName = trim((string)($_POST['name'] ?? 'Pharmacist'));
-            if ($updatedName !== '') {
-                AdminActivityLog::log($user, "Updated pharmacist profile for {$updatedName}", 'blue', $user['name'] ?? 'Admin', 'pharmacist', $id);
-            }
-            Response::redirect('/admin/pharmacists?msg=updated');
+    if (PharmacistsModel::update($id, $_POST)) {
+        $updatedName = trim((string)($_POST['name'] ?? 'Pharmacist'));
+        if ($updatedName !== '') {
+            AdminActivityLog::log($user, "Updated pharmacist profile for {$updatedName}", 'blue', $user['name'] ?? 'Admin', 'pharmacist', $id);
         }
-        $error = "Failed to update pharmacist. Please try again.";
+        Response::redirect('/admin/pharmacists?msg=updated');
     }
+    $error = "Failed to update pharmacist. Please try again.";
 }
 
 $ph = PharmacistsModel::getById($id);
@@ -92,7 +88,6 @@ $base = APP_BASE ?: '';
             <?php if (isset($error)): ?><div class="error-msg"><?= $error ?></div><?php endif; ?>
 
             <form method="post">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_pharmacists_edit')) ?>">
                 <input type="hidden" name="current_id" value="<?= $ph['id'] ?>">
                 <div class="field">
                     <label>Full Name</label>

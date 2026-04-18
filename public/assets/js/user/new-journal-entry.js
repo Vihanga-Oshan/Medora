@@ -138,14 +138,6 @@ class NewJournalEntry {
       const formData = new FormData();
       formData.append("categoryName", categoryName);
 
-      // Add CSRF token if available
-      if (window.serverData.csrfToken) {
-        formData.append(
-          window.serverData.csrfHeader,
-          window.serverData.csrfToken
-        );
-      }
-
       const response = await fetch(
         `${window.serverData.contextPath}/user/addCustomCategory`,
         {
@@ -258,10 +250,6 @@ class NewJournalEntry {
         body: formData,
         headers: {
           "X-Requested-With": "XMLHttpRequest",
-          // Add CSRF header if using Spring Security
-          ...(window.serverData.csrfToken && {
-            [window.serverData.csrfHeader]: window.serverData.csrfToken,
-          }),
         },
       });
 

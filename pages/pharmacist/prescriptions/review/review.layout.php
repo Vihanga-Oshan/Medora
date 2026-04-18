@@ -173,13 +173,11 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                 <div class="review-actions">
                     <form method="post" class="action-form">
                         <input type="hidden" name="prescriptionId" value="<?= (int)($p['id'] ?? 0) ?>">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('pharmacist_prescription_review_action')) ?>">
                         <input type="hidden" name="action" value="REJECTED">
                         <button type="submit" class="btn-reject">Reject Prescription</button>
                     </form>
                     <form method="post" class="action-form">
                         <input type="hidden" name="prescriptionId" value="<?= (int)($p['id'] ?? 0) ?>">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('pharmacist_prescription_review_action')) ?>">
                         <input type="hidden" name="action" value="APPROVED">
                         <button type="submit" class="btn-approve">Approve Prescription</button>
                     </form>

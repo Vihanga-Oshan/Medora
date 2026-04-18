@@ -34,7 +34,6 @@
         <?php endif; ?>
 
         <form action="<?= htmlspecialchars($base) ?>/patient/prescriptions/upload" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('patient_prescription_upload')) ?>">
             <label for="prescriptionFile" class="upload-area" id="uploadZone">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

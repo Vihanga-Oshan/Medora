@@ -10,16 +10,12 @@ $error        = null;
 $id           = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_prescription_edit')) {
-        $error = 'Session expired. Please refresh and try again.';
+    $newName = trim($_POST['file_name'] ?? '');
+    if ($newName === '') {
+        $error = 'Prescription name cannot be empty.';
     } else {
-        $newName = trim($_POST['file_name'] ?? '');
-        if ($newName === '') {
-            $error = 'Prescription name cannot be empty.';
-        } else {
-            PrescriptionsModel::updateFileName($id, $newName, $user['nic']);
-            Response::redirect('/patient/prescriptions');
-        }
+        PrescriptionsModel::updateFileName($id, $newName, $user['nic']);
+        Response::redirect('/patient/prescriptions');
     }
 }
 

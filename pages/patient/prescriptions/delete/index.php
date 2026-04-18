@@ -11,10 +11,6 @@ if (!Request::isPost()) {
     Response::redirect('/patient/prescriptions');
 }
 
-if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_prescription_delete')) {
-    Response::redirect('/patient/prescriptions?error=csrf');
-}
-
 $id      = (int)($_POST['id'] ?? 0);
 $filePath = PrescriptionsModel::delete($id, $user['nic']);
 

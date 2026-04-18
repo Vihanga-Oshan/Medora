@@ -18,27 +18,14 @@ $patient = ReviewModel::getPatientByNic($prescription['patient_nic']);
 
 // Handle POST actions
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'pharmacist_prescription_review_action')) {
-        Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=csrf');
-    }
-
     $action = strtoupper(trim((string)($_POST['action'] ?? '')));
     if (!in_array($action, ['APPROVED', 'REJECTED'], true)) {
         Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=action');
     }
 
-    $txStarted = Database::beginTransaction();
-    $statusUpdated = $txStarted && ReviewModel::updateStatus($id, $action);
+    $statusUpdated = ReviewModel::updateStatus($id, $action);
     if (!$statusUpdated) {
-        if ($txStarted) {
-            Database::rollback();
-        }
         Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=update');
-    }
-
-    if (!Database::commit()) {
-        Database::rollback();
-        Response::redirect('/pharmacist/prescriptions/review?id=' . $id . '&error=commit');
     }
 
     // Notification is best-effort; prescription status should still update even if this fails.

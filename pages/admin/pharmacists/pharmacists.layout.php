@@ -110,7 +110,6 @@ $base = APP_BASE ?: '';
                                         <div class="dropdown-content">
                                             <a href="<?= htmlspecialchars($base) ?>/admin/pharmacists/edit?id=<?= $ph['id'] ?>">Edit Profile</a>
                                             <form action="<?= htmlspecialchars($base) ?>/admin/pharmacists/delete" method="post" onsubmit="return confirm('Suspend this pharmacist?')">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_pharmacists_delete')) ?>">
                                                 <input type="hidden" name="id" value="<?= $ph['id'] ?>">
                                                 <button type="submit" class="danger">Suspend Account</button>
                                             </form>

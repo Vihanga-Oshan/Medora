@@ -150,7 +150,7 @@ Application DB connection is configured via `.env` and used by `config/database.
 |------|-------------|
 | Security | Password hashing, CSRF protection, input validation, SQL injection prevention via safe query patterns. |
 | Performance | Main dashboard and list views should load in practical response times for standard clinic usage. |
-| Reliability | Core flows (prescription review, schedule updates, medication logs) must be transaction-safe. |
+| Reliability | Core flows (prescription review, schedule updates, medication logs) must fail cleanly and avoid partial writes where practical. |
 | Usability | Role-specific navigation and clear status indicators for operational actions. |
 | Maintainability | Modular page/controller/model layout and a single canonical DB setup script. |
 

@@ -137,7 +137,6 @@
         }
 
         var formData = new FormData();
-        formData.append('csrf_token', cfg.verifyCsrfToken || '');
         formData.append('current_password', modalInput.value);
 
         fetch(cfg.verifyUrl || '', {

@@ -136,9 +136,6 @@ Standard methods:
 - `Database::fetchOne()` = get one row
 - `Database::fetchAll()` = get multiple rows
 - `Database::execute()` = insert/update/delete
-- `Database::beginTransaction()`
-- `Database::commit()`
-- `Database::rollback()`
 
 Important design point:
 
@@ -172,7 +169,7 @@ What to say:
 Controller files usually:
 
 - check request type
-- validate input / CSRF
+- validate input
 - call model methods
 - return redirect or JSON
 - prepare `$data` for the layout
@@ -299,29 +296,7 @@ Short answer:
 
 `AJAX responses are standardized through Request::expectsJson() and Response::json(), so asynchronous endpoints return clean JSON consistently.`
 
-## 14. How is CSRF handled?
-
-Main file:
-
-- `core/Csrf.php`
-
-POST forms usually:
-
-- generate token with `Csrf::token(...)`
-- verify token with `Csrf::verify(...)`
-
-Where used:
-
-- settings updates
-- message posting
-- schedule submission
-- prescription actions
-
-Simple answer:
-
-`CSRF protection is implemented manually using a Csrf helper. Forms send a token, and the token is verified before sensitive POST actions are processed.`
-
-## 15. What coding standards are used in this project now?
+## 14. What coding standards are used in this project now?
 
 Current simplified standard:
 
@@ -343,7 +318,7 @@ Use this:
 
 Use this:
 
-`The project requirement was to avoid third-party frameworks and libraries, so I implemented the architecture using core PHP. To keep it maintainable, I created reusable helper classes such as Request, Response, Auth, Database, PharmacyContext, and Csrf.`
+`The project requirement was to avoid third-party frameworks and libraries, so I implemented the architecture using core PHP. To keep it maintainable, I created reusable helper classes such as Request, Response, Auth, Database, and PharmacyContext.`
 
 ## 18. Files you should remember before a viva
 
@@ -354,7 +329,6 @@ Memorize these:
 - `core/Request.php`
 - `core/Response.php`
 - `core/Auth.php`
-- `core/Csrf.php`
 - `core/PharmacyContext.php`
 - `core/ChatMessageSupport.php`
 - one patient controller/model pair
@@ -364,4 +338,4 @@ Memorize these:
 
 If you only remember one summary, remember this:
 
-`index.php routes the request, Auth protects the page, Request reads input, controllers handle flow, models talk to the database through prepared statements, Response returns redirects or JSON, and core helpers store shared logic like pharmacy context, CSRF, and chat support.`
+`index.php routes the request, Auth protects the page, Request reads input, controllers handle flow, models talk to the database through prepared statements, Response returns redirects or JSON, and core helpers store shared logic like pharmacy context and chat support.`

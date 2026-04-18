@@ -14,12 +14,6 @@ if (!Request::isPost()) {
     exit;
 }
 
-if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_profile_verify_password')) {
-    http_response_code(403);
-    echo json_encode(['ok' => false, 'message' => 'Security validation failed']);
-    exit;
-}
-
 $guardianNic = (string)($user['id'] ?? '');
 $currentPassword = (string)($_POST['current_password'] ?? '');
 $error = null;

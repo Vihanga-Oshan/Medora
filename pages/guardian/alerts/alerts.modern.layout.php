@@ -35,7 +35,6 @@ $cssVer = time();
         <div class="hero-actions">
             <?php if ($data['unread'] > 0): ?>
                 <form method="post" action="<?= htmlspecialchars($base) ?>/guardian/alerts">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_alerts_action')) ?>">
                     <input type="hidden" name="action" value="markAllRead">
                     <button type="submit" class="btn btn-primary">Mark All Read</button>
                 </form>
@@ -181,7 +180,6 @@ $cssVer = time();
                                 <div class="alert-actions">
                                     <?php if (!$isRead): ?>
                                         <form method="post" action="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=<?= urlencode($filter) ?>">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_alerts_action')) ?>">
                                             <input type="hidden" name="action" value="markRead">
                                             <input type="hidden" name="id" value="<?= (int)$n['id'] ?>">
                                             <button type="submit" class="btn btn-outline btn-small">Mark Read</button>

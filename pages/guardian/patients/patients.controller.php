@@ -33,7 +33,6 @@ $errorMap = [
     'already_linked' => 'This patient is already linked to another guardian.',
     'already_linked_other' => 'This patient is already linked to another guardian.',
     'unauthorized' => 'You can only manage patients linked to your account.',
-    'csrf' => 'Your session expired. Please try again.',
     'link_failed' => 'We could not link that patient right now.',
     'unlink_failed' => 'We could not remove that patient right now.',
 ];

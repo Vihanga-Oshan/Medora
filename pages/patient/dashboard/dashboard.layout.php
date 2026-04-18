@@ -255,7 +255,6 @@ $cssVer             = time();
                                 </div>
                                 <div class="med-actions-block">
                                     <form action="<?= htmlspecialchars($base) ?>/patient/medications/mark" method="post">
-                                        <input type="hidden" name="csrf_token"  value="<?= htmlspecialchars(Csrf::token('patient_medication_mark')) ?>">
                                         <input type="hidden" name="schedule_id"  value="<?= (int)$m['id'] ?>">
                                         <input type="hidden" name="reminder_event_id" value="<?= (int)($m['reminder_event_id'] ?? 0) ?>">
                                         <input type="hidden" name="patient_nic"  value="<?= htmlspecialchars($user['nic']) ?>">
@@ -265,7 +264,6 @@ $cssVer             = time();
                                         <button type="submit" class="action-btn btn-check" title="Mark as Taken">&#10003;</button>
                                     </form>
                                     <form action="<?= htmlspecialchars($base) ?>/patient/medications/mark" method="post">
-                                        <input type="hidden" name="csrf_token"  value="<?= htmlspecialchars(Csrf::token('patient_medication_mark')) ?>">
                                         <input type="hidden" name="schedule_id"  value="<?= (int)$m['id'] ?>">
                                         <input type="hidden" name="reminder_event_id" value="<?= (int)($m['reminder_event_id'] ?? 0) ?>">
                                         <input type="hidden" name="patient_nic"  value="<?= htmlspecialchars($user['nic']) ?>">

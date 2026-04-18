@@ -212,7 +212,6 @@ $cssVer = time();
 
             <div class="settings-form-v2">
                 <form method="post" id="name-change-form" class="credential-row">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_profile_update')) ?>">
                     <input type="hidden" name="action" value="update_name">
                     <div class="field-group">
                         <label for="guardian-name">Full Name</label>
@@ -235,7 +234,6 @@ $cssVer = time();
                 </div>
 
                 <form method="post" id="email-change-form" class="credential-row">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_profile_update')) ?>">
                     <input type="hidden" name="action" value="update_email">
                     <div class="field-group">
                         <label for="guardian-email">Email Address</label>
@@ -251,7 +249,6 @@ $cssVer = time();
                 </form>
 
                 <form method="post" id="phone-change-form" class="credential-row">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_profile_update')) ?>">
                     <input type="hidden" name="action" value="update_phone">
                     <div class="field-group">
                         <label for="guardian-phone">Phone Number</label>
@@ -289,7 +286,6 @@ $cssVer = time();
             </div>
 
             <form class="profile-form settings-form-v2" action="<?= htmlspecialchars($base) ?>/guardian/profile" method="post">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('guardian_profile_update')) ?>">
                 <input type="hidden" name="action" value="update_password">
                 <input type="hidden" id="verified-current-password" name="current_password" value="">
 
@@ -334,7 +330,6 @@ $cssVer = time();
 <script>
     window.GuardianSettingsConfig = {
         verifyUrl: "<?= htmlspecialchars($base) ?>/guardian/profile/verify-password",
-        verifyCsrfToken: "<?= htmlspecialchars(Csrf::token('guardian_profile_verify_password')) ?>",
         startWithPasswordCard: <?= $showPasswordCard ? 'true' : 'false' ?>
     };
 </script>

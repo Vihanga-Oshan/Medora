@@ -32,7 +32,6 @@ $cssVer        = time();
         <p class="card-subtitle">Upload a clear image or PDF of your prescription for pharmacist validation</p>
 
         <form action="<?= htmlspecialchars($base) ?>/patient/prescriptions/upload" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('patient_prescription_upload')) ?>">
             <label for="prescriptionFile" class="upload-area" id="uploadZone">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -96,7 +95,6 @@ $cssVer        = time();
         <p>Are you sure you want to delete this prescription?</p>
         <form id="deleteForm" method="post" action="<?= htmlspecialchars($base) ?>/patient/prescriptions/delete">
             <input type="hidden" name="id" id="prescriptionIdToDelete">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('patient_prescription_delete')) ?>">
             <div class="modal-actions">
                 <button type="submit" class="delete-btn">Yes, Delete</button>
                 <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>

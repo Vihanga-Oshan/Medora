@@ -11,10 +11,6 @@ if (!Request::isPost()) {
     Response::redirect('/patient/dashboard');
 }
 
-if (!Csrf::verify($_POST['csrf_token'] ?? null, 'patient_medication_mark')) {
-    Response::redirect('/patient/dashboard?error=csrf');
-}
-
 $scheduleId = (int)($_POST['schedule_id'] ?? 0);
 $reminderEventId = (int)($_POST['reminder_event_id'] ?? 0);
 $status     = strtoupper(trim($_POST['status'] ?? ''));

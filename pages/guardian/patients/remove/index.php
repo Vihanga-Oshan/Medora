@@ -10,10 +10,6 @@ if (!Request::isPost()) {
     Response::redirect('/guardian/patients');
 }
 
-if (!Csrf::verify($_POST['csrf_token'] ?? null, 'guardian_patient_unlink')) {
-    Response::redirect('/guardian/patients?error=csrf');
-}
-
 $patientNic = GuardianLinkRequestSupport::normalizeNic((string)($_POST['nic'] ?? ''));
 $guardianNic = GuardianLinkRequestSupport::normalizeNic((string)($user['id'] ?? ''));
 $patient = PatientsModel::getPatientProfile($patientNic);

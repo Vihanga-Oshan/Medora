@@ -81,7 +81,6 @@ $base = APP_BASE ?: '';
                 </div>
 
                 <form method="post" id="email-change-form" class="credential-row">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_settings_update')) ?>">
                     <input type="hidden" name="action" value="update_email">
                     <div class="field-group credential-field">
                         <label for="admin-email">Email Address</label>
@@ -120,7 +119,6 @@ $base = APP_BASE ?: '';
             </div>
 
             <form method="post" class="settings-form-v2">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_settings_update')) ?>">
                 <input type="hidden" name="action" value="update_password">
                 <input type="hidden" id="verified-current-password" name="current_password" value="">
 
@@ -165,7 +163,6 @@ $base = APP_BASE ?: '';
 <script>
     window.AdminSettingsConfig = {
         verifyUrl: "<?= htmlspecialchars($base) ?>/admin/settings/verify-password",
-        verifyCsrfToken: "<?= htmlspecialchars(Csrf::token('admin_settings_verify_password')) ?>",
         startWithPasswordCard: <?= $showPasswordCard ? 'true' : 'false' ?>
     };
 </script>

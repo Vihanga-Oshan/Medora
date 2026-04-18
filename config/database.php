@@ -179,21 +179,4 @@ class Database
         return $rows;
     }
 
-    public static function beginTransaction(): bool
-    {
-        self::setUpConnection();
-        return (bool) self::$connection->begin_transaction();
-    }
-
-    public static function commit(): bool
-    {
-        self::setUpConnection();
-        return (bool) self::$connection->commit();
-    }
-
-    public static function rollback(): bool
-    {
-        self::setUpConnection();
-        return (bool) self::$connection->rollback();
-    }
 }

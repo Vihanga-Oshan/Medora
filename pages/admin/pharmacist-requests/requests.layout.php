@@ -77,13 +77,11 @@
                         <td>
                             <?php if (($r['status'] ?? '') === 'pending'): ?>
                                 <form method="post" style="display:inline; margin-right:6px;">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_pharmacist_requests_action')) ?>">
                                     <input type="hidden" name="action" value="approve">
                                     <input type="hidden" name="request_id" value="<?= (int)$r['id'] ?>">
                                     <button class="btn btn-primary btn-small" type="submit">Approve</button>
                                 </form>
                                 <form method="post" style="display:inline;">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_pharmacist_requests_action')) ?>">
                                     <input type="hidden" name="action" value="reject">
                                     <input type="hidden" name="request_id" value="<?= (int)$r['id'] ?>">
                                     <input type="hidden" name="note" value="Rejected by admin">

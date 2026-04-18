@@ -49,7 +49,7 @@ $isPdf = str_ends_with(strtolower($fileName), '.pdf');
 $errorCode = (string)($_GET['error'] ?? '');
 $errorMessage = '';
 if ($errorCode === 'csrf') {
-    $errorMessage = 'Session token expired. Please refresh and submit again.';
+    $errorMessage = '';
 } elseif ($errorCode === 'empty') {
     $errorMessage = 'Please add at least one complete medication row before submitting.';
 } elseif ($errorCode === 'save' || $errorCode === 'commit') {
@@ -128,7 +128,6 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 
             <div class="scheduling-grid">
                 <form action="<?= htmlspecialchars($base) ?>/pharmacist/scheduling" method="post" id="schedulingForm" class="schedule-form">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('pharmacist_schedule_submit')) ?>">
                     <input type="hidden" name="prescription_id" value="<?= (int)($p['id'] ?? 0) ?>">
                     <input type="hidden" name="patient_nic" value="<?= htmlspecialchars((string)($p['patient_nic'] ?? $p['patientNic'] ?? '')) ?>">
 

@@ -9,9 +9,6 @@ if (!in_array($statusFilter, ['', 'pending', 'approved', 'rejected'], true)) {
 }
 
 if (Request::isPost()) {
-    if (!Csrf::verify(Request::post('csrf_token'), 'admin_pharmacist_requests_action')) {
-        $error = 'Security validation failed. Please refresh and try again.';
-    } else {
     $action = Request::post('action') ?? '';
     $requestId = (int)(Request::post('request_id') ?? 0);
     $adminId = (int)($user['id'] ?? 0);
@@ -43,7 +40,6 @@ if (Request::isPost()) {
             AdminActivityLog::log($user, "Rejected pharmacist request for {$fullName}", 'red', $user['name'] ?? 'Admin', 'pharmacist_request', $requestId);
             Response::redirect('/admin/pharmacist-requests?status=pending');
         }
-    }
     }
 }
 

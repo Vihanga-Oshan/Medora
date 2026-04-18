@@ -10,10 +10,6 @@ if (!Request::isPost()) {
     Response::json(['ok' => false, 'message' => 'Method not allowed'], 405);
 }
 
-if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_settings_verify_password')) {
-    Response::json(['ok' => false, 'message' => 'Security validation failed'], 403);
-}
-
 $adminId = (int)($user['id'] ?? 0);
 $currentPassword = (string)($_POST['current_password'] ?? '');
 $error = null;

@@ -9,18 +9,14 @@ require_once __DIR__ . '/../pharmacists.model.php';
 $pharmacies = PharmacyContext::getPharmacies();
 
 if (Request::isPost()) {
-    if (!Csrf::verify($_POST['csrf_token'] ?? null, 'admin_pharmacists_add')) {
-        $error = "Security validation failed. Please refresh and try again.";
-    } else {
-        if (PharmacistsModel::create($_POST)) {
-            $createdName = trim((string)($_POST['name'] ?? 'Pharmacist'));
-            if ($createdName !== '') {
-                AdminActivityLog::log($user, "Created pharmacist account for {$createdName}", 'green', $user['name'] ?? 'Admin', 'pharmacist');
-            }
-            Response::redirect('/admin/pharmacists?msg=added');
+    if (PharmacistsModel::create($_POST)) {
+        $createdName = trim((string)($_POST['name'] ?? 'Pharmacist'));
+        if ($createdName !== '') {
+            AdminActivityLog::log($user, "Created pharmacist account for {$createdName}", 'green', $user['name'] ?? 'Admin', 'pharmacist');
         }
-        $error = "Failed to create pharmacist. Please check the information.";
+        Response::redirect('/admin/pharmacists?msg=added');
     }
+    $error = "Failed to create pharmacist. Please check the information.";
 }
 
 $base = APP_BASE ?: '';
@@ -85,7 +81,6 @@ $base = APP_BASE ?: '';
             <?php if (isset($error)): ?><div class="error-msg"><?= $error ?></div><?php endif; ?>
 
             <form method="post">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Csrf::token('admin_pharmacists_add')) ?>">
                 <div class="field">
                     <label>Full Name</label>
                     <input type="text" name="name" required placeholder="Dr. John Doe">
