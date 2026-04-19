@@ -410,3 +410,17 @@
 [2026-04-17 12:40:44] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":1,"result_count":1,"pharmacist_count":0}
 [2026-04-17 12:40:48] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":1,"result_count":1,"pharmacist_count":0}
 [2026-04-17 12:49:40] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":1,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:37:49] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":12,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:37:53] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":2,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:37:57] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":2,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:01] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":3,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:05] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":3,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:09] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":3,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:13] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":1,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:17] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":2,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:21] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":3,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:25] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":2,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:29] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":5,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:33] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":1,"result_count":1,"pharmacist_count":0}
+[2026-04-18 12:38:37] [DEBUG] Patient getMessages completed. {"patient_nic":"200312500353","pharmacy_id":1,"duration_ms":2,"result_count":1,"pharmacist_count":0}
+[2026-04-19 14:48:01] [DEBUG] Pharmacist getMessages completed. {"contact_id":"200312500353","type":"patients","duration_ms":1,"pharmacy_id":1}

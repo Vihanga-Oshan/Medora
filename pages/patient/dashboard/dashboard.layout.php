@@ -170,6 +170,7 @@ $cssVer             = time();
         <div class="hero-actions">
             <a href="<?= htmlspecialchars($base) ?>/patient/shop" class="btn btn-primary">&#128722; Order Medicines</a>
             <a href="<?= htmlspecialchars($base) ?>/patient/shop/orders" class="btn btn-outline">&#128230; My Orders</a>
+             <a href="<?= htmlspecialchars($base) ?>/patient/shop/orders" class="btn btn-outline">&#128230; My Orders</a>
         </div>
     </header>
 

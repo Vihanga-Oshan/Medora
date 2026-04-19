@@ -75,4 +75,59 @@ class DashboardModel
             LIMIT $limit
         ");
     }
+    public static function addDashboardComment(string $comment): bool
+    {
+        $comment = trim($comment);
+        if ($comment === '') {
+            return false;
+        }
+
+        $auth = Auth::getUser();
+        $pharmacistId = (int) ($auth['id'] ?? 0);
+        $pharmacyId = self::currentPharmacyId();
+
+        if ($pharmacistId <= 0) {
+            return false;
+        }
+
+      
+        if (mb_strlen($comment) > 1000) {
+            $comment = mb_substr($comment, 0, 1000);
+        }
+
+        $sql = "
+        INSERT INTO pharmacist_dashboard_comments
+            (pharmacist_id, pharmacy_id, comment_text, created_at)
+        VALUES (?, ?, ?, NOW())
+    ";
+
+        return Database::execute($sql, 'iis', [$pharmacistId, $pharmacyId > 0 ? $pharmacyId : null, $comment]);
+    }
+
+    public static function getDashboardComments(int $limit = 10): array
+    {
+        $limit = max(1, min(50, (int) $limit));
+        $pharmacyId = self::currentPharmacyId();
+
+        $where = '';
+        $types = '';
+        $params = [];
+
+        if ($pharmacyId > 0) {
+            $where = "WHERE (c.pharmacy_id = ? OR c.pharmacy_id IS NULL)";
+            $types = 'i';
+            $params = [$pharmacyId];
+        }
+
+        $sql = "
+        SELECT c.id, c.comment_text, c.created_at, p.name AS pharmacist_name
+        FROM pharmacist_dashboard_comments c
+        LEFT JOIN pharmacist p ON p.id = c.pharmacist_id
+        $where
+        ORDER BY c.id DESC
+        LIMIT $limit
+    ";
+
+        return Database::fetchAll($sql, $types, $params);
+    }
 }

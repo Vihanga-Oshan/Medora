@@ -61,3 +61,18 @@
 [2026-04-17 08:56:03] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
 [2026-04-17 08:56:04] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
 [2026-04-17 08:56:04] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}
+[2026-04-18 13:29:29] [DEBUG] Pharmacist login request received. {"id_input":"7777","id_numeric":7777,"password_length":11}
+[2026-04-18 13:29:29] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":7777,"found":0,"has_password":0}
+[2026-04-18 13:29:29] [DEBUG] Password verification result. {"id_numeric":7777,"user_found":0,"hash_prefix":"","verified":0}
+[2026-04-18 13:29:35] [DEBUG] Pharmacist login request received. {"id_input":"1234","id_numeric":1234,"password_length":13}
+[2026-04-18 13:29:35] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
+[2026-04-18 13:29:35] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
+[2026-04-18 13:29:35] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}
+[2026-04-19 01:17:12] [DEBUG] Pharmacist login request received. {"id_input":"1234","id_numeric":1234,"password_length":13}
+[2026-04-19 01:17:12] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
+[2026-04-19 01:17:12] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
+[2026-04-19 01:17:12] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}
+[2026-04-19 07:59:32] [DEBUG] Pharmacist login request received. {"id_input":"1234","id_numeric":1234,"password_length":13}
+[2026-04-19 07:59:32] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
+[2026-04-19 07:59:32] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
+[2026-04-19 07:59:32] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}

@@ -6,7 +6,10 @@
 $metrics = $data['metrics'];
 $patientsNeedingCheck = $data['patientsNeedingCheck'];
 $patientsNeedingSchedule = $data['patientsNeedingSchedule'];
+$inventorySummary = $data['inventorySummary'] ?? [];
+$inventoryReorders = $data['inventoryReorders'] ?? [];
 $base = APP_BASE ?: '';
+$cssVer = time();
 $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $isDashboard = str_contains($currentPath, '/pharmacist/dashboard');
 $isValidate = str_contains($currentPath, '/pharmacist/validate') || str_contains($currentPath, '/pharmacist/prescriptions');
@@ -15,6 +18,11 @@ $isPatients = str_contains($currentPath, '/pharmacist/patients');
 $isMessages = str_contains($currentPath, '/pharmacist/messages') || str_contains($currentPath, '/pharmacist/dispensing');
 $isMedicine = str_contains($currentPath, '/pharmacist/medicine-inventory') || str_contains($currentPath, '/pharmacist/inventory');
 $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains($currentPath, '/pharmacist/medication-plans');
+$pendingCount = (int)($metrics['pendingCount'] ?? 0);
+$approvedCount = (int)($metrics['approvedCount'] ?? 0);
+$newPatientCount = (int)($metrics['newPatientCount'] ?? 0);
+$checkCount = count($patientsNeedingCheck);
+$scheduleCount = count($patientsNeedingSchedule);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +30,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medora - Dashboard</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/dashboard-style.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/dashboard-style.css?v=<?= $cssVer ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/pharmacist/medicine-inventory.css?v=<?= $cssVer ?>">
 </head>
 <body>
     <div class="container">
@@ -68,87 +77,218 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                 </div>
             </header>
 
-            <h2 class="page-title">Dashboard</h2>
+            <section class="inventory-section dashboard-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Pharmacist Command Center</h2>
+                        <p>Track prescriptions, review queues, and patient follow-ups from one dashboard.</p>
+                    </div>
+                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/" class="add-btn"><span>&#10010;</span> Review Queue</a>
+                </div>
 
-            <div class="metric-cards">
-                <div class="metric-card">
-                    <div class="metric-value"><?= (int)($metrics['pendingCount'] ?? 0) ?></div>
-                    <div class="metric-label">Pending Prescriptions</div>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/" class="see-all">See All</a>
+                <div class="summary-grid dashboard-summary-grid">
+                    <article class="summary-card accent-blue">
+                        <span class="summary-label">Pending Prescriptions</span>
+                        <strong><?= $pendingCount ?></strong>
+                        <small>Waiting for review and validation</small>
+                    </article>
+                    <article class="summary-card accent-green">
+                        <span class="summary-label">Approved for Scheduling</span>
+                        <strong><?= $approvedCount ?></strong>
+                        <small>Ready for the next fulfillment step</small>
+                    </article>
+                    <article class="summary-card accent-purple">
+                        <span class="summary-label">New Patients</span>
+                        <strong><?= $newPatientCount ?></strong>
+                        <small>Added during the last 24 hours</small>
+                    </article>
+                    <article class="summary-card accent-amber">
+                        <span class="summary-label">Action Items Today</span>
+                        <strong><?= $checkCount + $scheduleCount ?></strong>
+                        <small><?= $checkCount ?> checks and <?= $scheduleCount ?> scheduling tasks</small>
+                    </article>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-value"><?= (int)($metrics['approvedCount'] ?? 0) ?></div>
-                    <div class="metric-label">Pending Schedules</div>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions/" class="see-all">See All</a>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value"><?= (int)($metrics['newPatientCount'] ?? 0) ?></div>
-                    <div class="metric-label">New patients (last 24 hrs)</div>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/patients/" class="see-all">See All</a>
-                </div>
-            </div>
 
-            <div class="table-container">
-                <div class="table-header">
-                    <h3>Patient List &mdash; Check Required</h3>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/" class="see-all-link">See All &raquo;</a>
+                <div class="insight-grid dashboard-insight-grid">
+                    <section class="panel-card">
+                        <div class="panel-head">
+                            <h3>Review Overview</h3>
+                            <span class="panel-chip">Today</span>
+                        </div>
+                        <div class="mini-list">
+                            <article class="mini-row">
+                                <div>
+                                    <strong>Prescription validation queue</strong>
+                                    <small>Patients waiting for pharmacist review</small>
+                                </div>
+                                <div class="mini-meta">
+                                    <span class="status-badge low"><?= $pendingCount ?> pending</span>
+                                    <small><a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/" class="inline-panel-link">Open validation list</a></small>
+                                </div>
+                            </article>
+                            <article class="mini-row">
+                                <div>
+                                    <strong>Scheduling handoff queue</strong>
+                                    <small>Approved prescriptions ready for scheduling</small>
+                                </div>
+                                <div class="mini-meta">
+                                    <span class="status-badge healthy"><?= $approvedCount ?> approved</span>
+                                    <small><a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions/" class="inline-panel-link">Open approved list</a></small>
+                                </div>
+                            </article>
+                            <article class="mini-row">
+                                <div>
+                                    <strong>Patient registrations</strong>
+                                    <small>New patient records created recently</small>
+                                </div>
+                                <div class="mini-meta">
+                                    <span class="status-badge info"><?= $newPatientCount ?> new</span>
+                                    <small><a href="<?= htmlspecialchars($base) ?>/pharmacist/patients/" class="inline-panel-link">View patient directory</a></small>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="panel-card">
+                        <div class="panel-head">
+                            <h3>Inventory Details</h3>
+                            <span class="panel-chip">Stock</span>
+                        </div>
+                        <div class="dashboard-inventory-stats">
+                            <article class="dashboard-inventory-stat">
+                                <span class="highlight-kicker">Medicines</span>
+                                <strong><?= (int)($inventorySummary['total_items'] ?? 0) ?></strong>
+                                <small><?= (int)($inventorySummary['total_units'] ?? 0) ?> units currently in stock</small>
+                            </article>
+                            <article class="dashboard-inventory-stat">
+                                <span class="highlight-kicker">Low stock</span>
+                                <strong><?= (int)($inventorySummary['low_stock_count'] ?? 0) ?></strong>
+                                <small><?= (int)($inventorySummary['out_of_stock_count'] ?? 0) ?> item(s) are already out of stock</small>
+                            </article>
+                            <article class="dashboard-inventory-stat">
+                                <span class="highlight-kicker">Inventory value</span>
+                                <strong>Rs. <?= number_format((float)($inventorySummary['total_stock_value'] ?? 0), 2) ?></strong>
+                                <small><?= (int)($inventorySummary['supplier_count'] ?? 0) ?> active suppliers linked</small>
+                            </article>
+                        </div>
+                        <div class="dashboard-reorder-block">
+                            <div class="dashboard-reorder-head">
+                                <strong>Reorder Recommendations</strong>
+                                <a href="<?= htmlspecialchars($base) ?>/pharmacist/inventory/" class="inline-panel-link">Open inventory</a>
+                            </div>
+                            <?php if (empty($inventoryReorders)): ?>
+                                <p class="empty-msg">No medicines need reordering right now.</p>
+                            <?php else: ?>
+                                <div class="mini-list">
+                                    <?php foreach ($inventoryReorders as $medicine): ?>
+                                        <?php $medicineName = trim((string)($medicine['med_name'] ?? '')) !== '' ? (string)$medicine['med_name'] : (string)($medicine['name'] ?? 'Medicine'); ?>
+                                        <article class="mini-row">
+                                            <div>
+                                                <strong><?= htmlspecialchars($medicineName) ?></strong>
+                                                <small><?= htmlspecialchars((string)($medicine['supplier_name'] ?? 'No supplier assigned')) ?></small>
+                                            </div>
+                                            <div class="mini-meta">
+                                                <span class="status-badge low">Reorder <?= (int)($medicine['recommended_reorder_quantity'] ?? 0) ?></span>
+                                                <small>On hand <?= (int)($medicine['quantity_in_stock'] ?? 0) ?></small>
+                                            </div>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </section>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Patient Name</th>
-                            <th>Chronic Condition</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($patientsNeedingCheck)): ?>
-                            <?php foreach ($patientsNeedingCheck as $p): ?>
+
+                <section class="panel-card dashboard-table-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Patient List &mdash; Check Required</h3>
+                            <p class="panel-description">Review patients whose prescriptions still need pharmacist validation.</p>
+                        </div>
+                        <a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/" class="action-link secondary">See All</a>
+                    </div>
+                    <div class="table-shell">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td><?= htmlspecialchars($p['name']) ?></td>
-                                    <td><?= htmlspecialchars($p['condition_text'] ?? 'None') ?></td>
-                                    <td><a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/?id=<?= $p['prescription_id'] ?>" class="action-link">Check</a></td>
+                                    <th>Patient</th>
+                                    <th>Condition</th>
+                                    <th>Action</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="3" style="text-align: center; color:#888;">No patients requiring checks at this time.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($patientsNeedingCheck)): ?>
+                                    <?php foreach ($patientsNeedingCheck as $p): ?>
+                                        <tr>
+                                            <td class="dashboard-name-cell">
+                                                <strong class="med-title"><?= htmlspecialchars($p['name']) ?></strong>
+                                                <span class="med-subtext">Prescription review required</span>
+                                            </td>
+                                            <td>
+                                                <span class="med-subtext"><?= htmlspecialchars($p['condition_text'] ?? 'None') ?></span>
+                                            </td>
+                                            <td>
+                                                <div class="action-stack dashboard-action-stack">
+                                                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/?id=<?= $p['prescription_id'] ?>" class="action-link">Check</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="empty-msg dashboard-empty-msg">No patients requiring checks at this time.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
 
-            <div class="table-container">
-                <div class="table-header">
-                    <h3>Patient List &mdash; Schedule Required</h3>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions/" class="see-all-link">See All &raquo;</a>
-                </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Patient Name</th>
-                            <th>Chronic Condition</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($patientsNeedingSchedule)): ?>
-                            <?php foreach ($patientsNeedingSchedule as $p): ?>
+                <section class="panel-card dashboard-table-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Patient List &mdash; Schedule Required</h3>
+                            <p class="panel-description">Move approved prescriptions into the scheduling workflow.</p>
+                        </div>
+                        <a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions/" class="action-link secondary">See All</a>
+                    </div>
+                    <div class="table-shell">
+                        <table class="data-table">
+                            <thead>
                                 <tr>
-                                    <td><?= htmlspecialchars($p['name']) ?></td>
-                                    <td><?= htmlspecialchars($p['condition_text'] ?? 'None') ?></td>
-                                    <td><a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions/?id=<?= $p['prescription_id'] ?>&nic=<?= $p['nic'] ?>" class="action-link">Schedule</a></td>
+                                    <th>Patient</th>
+                                    <th>Condition</th>
+                                    <th>Action</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="3" style="text-align: center; color:#888;">No patients requiring schedules at this time.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($patientsNeedingSchedule)): ?>
+                                    <?php foreach ($patientsNeedingSchedule as $p): ?>
+                                        <tr>
+                                            <td class="dashboard-name-cell">
+                                                <strong class="med-title"><?= htmlspecialchars($p['name']) ?></strong>
+                                                <span class="med-subtext">Scheduling request is ready</span>
+                                            </td>
+                                            <td>
+                                                <span class="med-subtext"><?= htmlspecialchars($p['condition_text'] ?? 'None') ?></span>
+                                            </td>
+                                            <td>
+                                                <div class="action-stack dashboard-action-stack">
+                                                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions/?id=<?= $p['prescription_id'] ?>&nic=<?= $p['nic'] ?>" class="action-link">Schedule</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="empty-msg dashboard-empty-msg">No patients requiring schedules at this time.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
         </main>
     </div>
 </body>

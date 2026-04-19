@@ -157,7 +157,7 @@ $sortLink = function (string $key) use ($sortBy, $sortDir, $buildInventoryUrl): 
                         <h2>Inventory Control Center</h2>
                         <p>Track medicine availability, supplier coverage, and stock health in one place.</p>
                     </div>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/addMedicine" class="add-btn"><span>+</span> Add
+                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/inventory/add" class="add-btn"><span>+</span> Add
                         Medicine</a>
                 </div>
 
@@ -348,12 +348,14 @@ $sortLink = function (string $key) use ($sortBy, $sortDir, $buildInventoryUrl): 
                                             </div>
                                             <div class="med-meta">
                                                 <?= htmlspecialchars((string) ($m['category'] ?? 'Uncategorized')) ?> |
-                                                <?= htmlspecialchars((string) ($m['dosage_form'] ?? 'Form not set')) ?></div>
+                                                <?= htmlspecialchars((string) ($m['dosage_form'] ?? 'Form not set')) ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <strong><?= htmlspecialchars($supplierName !== '' ? $supplierName : 'Supplier missing') ?></strong>
                                             <div class="med-subtext">
-                                                <?= htmlspecialchars((string) ($m['supplier_phone'] ?? 'No phone')) ?></div>
+                                                <?= htmlspecialchars((string) ($m['supplier_phone'] ?? 'No phone')) ?>
+                                            </div>
                                             <div class="med-meta">Lead time: <?= (int) ($m['supplier_lead_time_days'] ?? 0) ?>
                                                 day(s)</div>
                                         </td>
@@ -361,16 +363,19 @@ $sortLink = function (string $key) use ($sortBy, $sortDir, $buildInventoryUrl): 
                                             <span
                                                 class="status-badge <?= htmlspecialchars((string) ($m['stock_status_key'] ?? 'healthy')) ?>"><?= htmlspecialchars((string) ($m['stock_status_label'] ?? 'Healthy')) ?></span>
                                             <div class="med-subtext">On hand: <?= (int) ($m['quantity_in_stock'] ?? 0) ?>
-                                                <?= htmlspecialchars((string) ($m['selling_unit'] ?? 'units')) ?></div>
+                                                <?= htmlspecialchars((string) ($m['selling_unit'] ?? 'units')) ?>
+                                            </div>
                                             <div class="med-meta">Low stock at <?= (int) ($m['low_stock_threshold'] ?? 0) ?>,
                                                 reorder <?= (int) ($m['reorder_quantity'] ?? 0) ?></div>
                                         </td>
                                         <td>
                                             <strong>Sell: Rs. <?= number_format((float) ($m['price'] ?? 0), 2) ?></strong>
                                             <div class="med-subtext">Cost: Rs.
-                                                <?= number_format((float) ($m['unit_cost'] ?? 0), 2) ?></div>
+                                                <?= number_format((float) ($m['unit_cost'] ?? 0), 2) ?>
+                                            </div>
                                             <div class="med-meta">Value: Rs.
-                                                <?= number_format((float) ($m['total_stock_value'] ?? 0), 2) ?></div>
+                                                <?= number_format((float) ($m['total_stock_value'] ?? 0), 2) ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <strong><?= htmlspecialchars((string) ($m['expiry_date'] ?? 'Not set')) ?></strong>
@@ -396,7 +401,7 @@ $sortLink = function (string $key) use ($sortBy, $sortDir, $buildInventoryUrl): 
                                                     onclick="openStockModal(<?= (int) ($m['id'] ?? 0) ?>, '<?= htmlspecialchars($displayName, ENT_QUOTES) ?>')">Adjust
                                                     Stock</button>
                                                 <a class="action-link secondary"
-                                                    href="<?= htmlspecialchars($base) ?>/pharmacist/edit-medicine?id=<?= (int) ($m['id'] ?? 0) ?>">Edit</a>
+                                                    href="<?= htmlspecialchars($base) ?>/pharmacist/inventory/edit?id=<?= (int) ($m['id'] ?? 0) ?>">Edit</a>
                                                 <button class="action-link danger" type="button"
                                                     onclick="confirmDelete('<?= (int) ($m['id'] ?? 0) ?>')">Delete</button>
                                             </div>
@@ -465,7 +470,7 @@ $sortLink = function (string $key) use ($sortBy, $sortDir, $buildInventoryUrl): 
             <p>Are you sure you want to delete this medicine? This action cannot be undone.</p>
             <div class="modal-actions">
                 <button class="cancel-btn" onclick="closeModal('deleteModal')">Cancel</button>
-                <form id="deleteForm" method="post" action="<?= htmlspecialchars($base) ?>/pharmacist/delete-medicine">
+                <form id="deleteForm" method="post" action="<?= htmlspecialchars($base) ?>/pharmacist/inventory/delete">
                     <input type="hidden" name="id" id="deleteId">
                     <button type="submit" class="delete-btn">Yes, Delete</button>
                 </form>

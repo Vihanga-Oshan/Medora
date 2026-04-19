@@ -1,0 +1,2 @@
+[2026-04-19 14:48:00] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 14:48:00] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}

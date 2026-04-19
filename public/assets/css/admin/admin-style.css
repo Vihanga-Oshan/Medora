@@ -430,6 +430,7 @@ body,
 .table-card.card {
   display: block;
   padding: 16px;
+  overflow: visible;
 }
 
 .filter-form {
@@ -624,6 +625,7 @@ button.danger:hover {
 .dropdown {
   position: relative;
   display: inline-block;
+  overflow: visible;
 }
 
 .menu-dots {
@@ -647,6 +649,16 @@ button.danger:hover {
   padding: 6px;
   display: none;
   z-index: 1200;
+}
+
+.admin-pharmacists-page .data-table,
+.admin-pharmacists-page table {
+  overflow: visible;
+}
+
+.admin-pharmacists-page .data-table td:last-child,
+.admin-pharmacists-page .data-table th:last-child {
+  overflow: visible;
 }
 
 .dropdown-content.show {

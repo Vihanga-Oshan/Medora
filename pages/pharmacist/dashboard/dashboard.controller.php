@@ -1,14 +1,16 @@
 <?php
-/**
- * Pharmacist Dashboard Controller
- */
+
 require_once __DIR__ . '/dashboard.model.php';
+require_once __DIR__ . '/../inventory/inventory.model.php';
 
 $metrics = DashboardModel::getMetrics();
 $patientsNeedingCheck = DashboardModel::getPatientsNeedingCheck();
 $patientsNeedingSchedule = DashboardModel::getPatientsNeedingSchedule();
+$comments = DashboardModel::getDashboardComments();
+$inventorySummary = InventoryModel::getSummary();
+$inventoryReorders = InventoryModel::getReorderRecommendations(4);
 
-// Greeting logic
+
 $hour = (int)date('H');
 if ($hour < 12) {
     $greeting = "Good Morning";
@@ -25,4 +27,7 @@ $data = [
     'greeting'                => $greeting,
     'currentDate'             => date('d F Y'),
     'currentTime'             => date('H:i:s'),
+    'comments'                => $comments,
+    'inventorySummary'        => $inventorySummary,
+    'inventoryReorders'       => $inventoryReorders,
 ];
