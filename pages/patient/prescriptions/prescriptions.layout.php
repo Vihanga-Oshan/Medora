@@ -6,17 +6,6 @@
 $prescriptions = $data['prescriptions'];
 $base = APP_BASE ?: '';
 $cssVer = time();
-$formData = $formData ?? [
-    'wants_medicine_order' => '0',
-    'wants_schedule' => '1',
-    'delivery_method' => 'PICKUP',
-    'billing_name' => (string) ($user['name'] ?? ''),
-    'billing_phone' => '',
-    'billing_email' => (string) ($user['email'] ?? ''),
-    'billing_address' => '',
-    'billing_city' => '',
-    'billing_notes' => '',
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,12 +55,11 @@ $formData = $formData ?? [
 
                 <div class="request-options">
                     <label class="option-check">
-                        <input type="checkbox" name="wants_medicine_order" value="1"
-                            <?= ($formData['wants_medicine_order'] ?? '0') === '1' ? 'checked' : '' ?>>
+                        <input type="checkbox" name="wants_medicine_order" value="1">
                         <span>Order medicine</span>
                     </label>
                     <label class="option-check">
-                        <input type="checkbox" name="wants_schedule" value="1" <?= ($formData['wants_schedule'] ?? '1') === '1' ? 'checked' : '' ?>>
+                        <input type="checkbox" name="wants_schedule" value="1">
                         <span>Schedule medicine</span>
                     </label>
                 </div>
@@ -85,40 +73,33 @@ $formData = $formData ?? [
                     <div class="billing-grid">
                         <label class="field-group">
                             <span>Billing Name</span>
-                            <input type="text" name="billing_name"
-                                value="<?= htmlspecialchars((string) ($formData['billing_name'] ?? '')) ?>">
+                            <input type="text" name="billing_name" required>
                         </label>
                         <label class="field-group">
                             <span>Phone Number</span>
-                            <input type="text" name="billing_phone"
-                                value="<?= htmlspecialchars((string) ($formData['billing_phone'] ?? '')) ?>">
+                            <input type="text" name="billing_phone" required>
                         </label>
                         <label class="field-group">
                             <span>Email</span>
-                            <input type="email" name="billing_email"
-                                value="<?= htmlspecialchars((string) ($formData['billing_email'] ?? '')) ?>">
+                            <input type="email" name="billing_email" required>
                         </label>
                         <label class="field-group">
                             <span>Collection Method</span>
                             <select name="delivery_method" id="deliveryMethod">
-                                <option value="PICKUP" <?= ($formData['delivery_method'] ?? 'PICKUP') === 'PICKUP' ? 'selected' : '' ?>>Pick up from pharmacy</option>
-                                <option value="DELIVERY" <?= ($formData['delivery_method'] ?? 'PICKUP') === 'DELIVERY' ? 'selected' : '' ?>>Deliver to me</option>
+                                <option value="PICKUP">Pick up from pharmacy</option>
                             </select>
                         </label>
                         <label class="field-group field-group-wide" id="billingAddressGroup">
                             <span>Address</span>
-                            <textarea name="billing_address"
-                                rows="3"><?= htmlspecialchars((string) ($formData['billing_address'] ?? '')) ?></textarea>
+                            <textarea name="billing_address" rows="3"></textarea>
                         </label>
                         <label class="field-group">
                             <span>City</span>
-                            <input type="text" name="billing_city"
-                                value="<?= htmlspecialchars((string) ($formData['billing_city'] ?? '')) ?>">
+                            <input type="text" name="billing_city">
                         </label>
                         <label class="field-group field-group-wide">
                             <span>Notes</span>
-                            <textarea name="billing_notes"
-                                rows="3"><?= htmlspecialchars((string) ($formData['billing_notes'] ?? '')) ?></textarea>
+                            <textarea name="billing_notes" rows="3"></textarea>
                         </label>
                     </div>
                 </div>

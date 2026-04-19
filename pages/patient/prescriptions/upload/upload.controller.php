@@ -7,23 +7,11 @@
 require_once ROOT . '/core/PharmacyOrderSupport.php';
 
 $error = null;
-$formData = [
-    'wants_medicine_order' => '0',
-    'wants_schedule' => '1',
-    'delivery_method' => 'PICKUP',
-    'billing_name' => (string) ($user['name'] ?? ''),
-    'billing_phone' => '',
-    'billing_email' => (string) ($user['email'] ?? ''),
-    'billing_address' => '',
-    'billing_city' => '',
-    'billing_notes' => '',
-];
 
 if (Request::isPost()) {
     $formData = [
         'wants_medicine_order' => !empty($_POST['wants_medicine_order']) ? '1' : '0',
         'wants_schedule' => !empty($_POST['wants_schedule']) ? '1' : '0',
-        'delivery_method' => PharmacyOrderSupport::normalizeDeliveryMethod((string) ($_POST['delivery_method'] ?? 'PICKUP')),
         'billing_name' => trim((string) ($_POST['billing_name'] ?? '')),
         'billing_phone' => trim((string) ($_POST['billing_phone'] ?? '')),
         'billing_email' => trim((string) ($_POST['billing_email'] ?? '')),
@@ -33,8 +21,19 @@ if (Request::isPost()) {
     ];
     $wantsMedicineOrder = $formData['wants_medicine_order'] === '1';
     $wantsSchedule = $formData['wants_schedule'] === '1';
-    $billing = PharmacyOrderSupport::sanitizeBillingData($formData);
+
+    $billing = [
+        'delivery_method' => 'PICKUP',
+        'billing_name' => $formData['billing_name'],
+        'billing_phone' => $formData['billing_phone'],
+        'billing_email' => $formData['billing_email'],
+        'billing_address' => $formData['billing_address'],
+        'billing_city' => $formData['billing_city'],
+        'billing_notes' => $formData['billing_notes'],
+    ];
+
     $billingError = PharmacyOrderSupport::validateBillingData($billing, $wantsMedicineOrder);
+
     if ($wantsMedicineOrder) {
         PharmacyContext::patientHasSelection((string) ($user['nic'] ?? ''));
     }
