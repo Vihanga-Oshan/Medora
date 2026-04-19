@@ -2,6 +2,8 @@
 /**
  * Prescription Review Model
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class ReviewModel
 {
     private static function currentPharmacyId(): int
@@ -15,6 +17,7 @@ class ReviewModel
 
     public static function getPrescriptionById(int $id): ?array
     {
+        PharmacyOrderSupport::ensureSchema();
         $sql = "SELECT * FROM prescriptions WHERE id = ?";
         $types = 'i';
         $params = [$id];
@@ -45,7 +48,16 @@ class ReviewModel
             $types .= 'i';
             $params[] = self::currentPharmacyId();
         }
-        return Database::execute($sql, $types, $params);
+        $ok = Database::execute($sql, $types, $params);
+        if ($ok) {
+            PharmacyOrderSupport::syncPrescriptionOrderStatus($id, $status);
+        }
+        return $ok;
+    }
+
+    public static function getOrderByPrescriptionId(int $prescriptionId): ?array
+    {
+        return PharmacyOrderSupport::getPrescriptionOrder($prescriptionId);
     }
 
     public static function createNotification(string $nic, string $message, string $type = 'PRESCRIPTION'): bool

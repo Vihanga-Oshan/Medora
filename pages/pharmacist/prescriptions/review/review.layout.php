@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 /**
  * Prescription Review Layout
  * Based on: java/src/main/webapp/WEB-INF/views/pharmacist/prescription-review.jsp
  */
 $p = $data['prescription'] ?? [];
 $pt = $data['patient'] ?? [];
+$order = $data['order'] ?? [];
 $fileName = (string)($p['file_name'] ?? '');
 $filePath = trim((string)($p['file_path'] ?? ''));
 $isPdf = str_ends_with(strtolower($fileName), '.pdf');
@@ -46,6 +47,7 @@ $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $isDashboard = str_contains($currentPath, '/pharmacist/dashboard');
 $isValidate = str_contains($currentPath, '/pharmacist/validate') || str_contains($currentPath, '/pharmacist/prescriptions');
 $isApproved = str_contains($currentPath, '/pharmacist/approved-prescriptions') || str_contains($currentPath, '/pharmacist/scheduling');
+$isOrders = str_contains($currentPath, '/pharmacist/orders');
 $isPatients = str_contains($currentPath, '/pharmacist/patients');
 $isMessages = str_contains($currentPath, '/pharmacist/messages') || str_contains($currentPath, '/pharmacist/dispensing');
 $isMedicine = str_contains($currentPath, '/pharmacist/medicine-inventory') || str_contains($currentPath, '/pharmacist/inventory');
@@ -62,32 +64,7 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 </head>
 <body>
 <div class="container">
-    <aside class="sidebar">
-        <div class="logo-section">
-            <div class="logo-icon">&#10010;</div>
-            <h1 class="logo-text">Medora</h1>
-        </div>
-
-        <nav class="main-nav">
-            <ul>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/dashboard" class="nav-item <?= $isDashboard ? 'active' : '' ?>">Dashboard</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/validate" class="nav-item <?= $isValidate ? 'active' : '' ?>">Prescription Review</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions" class="nav-item <?= $isApproved ? 'active' : '' ?>">Approved Prescriptions</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/patients" class="nav-item <?= $isPatients ? 'active' : '' ?>">Patients</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/messages" class="nav-item <?= $isMessages ? 'active' : '' ?>">Messages <span class="nav-badge">2</span></a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/medicine-inventory" class="nav-item <?= $isMedicine ? 'active' : '' ?>">Medicine</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/settings" class="nav-item <?= $isSettings ? 'active' : '' ?>">Settings</a></li>
-            </ul>
-        </nav>
-
-        <div class="footer-section">
-            <form method="post" action="<?= htmlspecialchars($base) ?>/pharmacist/logout" style="margin-top:10px;">
-                <button type="submit" class="nav-item logout-link" style="display:block; width:100%; text-align:left; border:none; background:none; cursor:pointer;">Logout</button>
-            </form>
-            <div class="copyright">Medora &copy; 2022</div>
-            <div class="version">v 1.1.2</div>
-        </div>
-    </aside>
+    <?php require_once __DIR__ . '/../../common/pharmacist.sidebar.php'; ?>
 
 <main class="main-content review-page">
     <header class="header">
@@ -162,6 +139,38 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                         <span class="label">Chronic Conditions</span>
                         <span class="value"><?= htmlspecialchars((string)($pt['chronic_issues'] ?? 'None')) ?></span>
                     </div>
+                    <div class="detail-row">
+                        <span class="label">Requested Services</span>
+                        <span class="value">
+                            <?php if (!empty($p['wants_medicine_order'])): ?><span class="status-pending">Medicine Order</span><?php endif; ?>
+                            <?php if (!empty($p['wants_schedule'])): ?><span class="status-approved">Schedule</span><?php endif; ?>
+                            <?php if (empty($p['wants_medicine_order']) && empty($p['wants_schedule'])): ?>Review only<?php endif; ?>
+                        </span>
+                    </div>
+                    <?php if (!empty($order)): ?>
+                        <div class="detail-row">
+                            <span class="label">Collection Method</span>
+                            <span class="value"><?= htmlspecialchars(ucwords(strtolower(str_replace('_', ' ', (string)($order['delivery_method'] ?? 'PICKUP'))))) ?></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Billing Name</span>
+                            <span class="value"><?= htmlspecialchars((string)($order['billing_name'] ?? 'Not provided')) ?></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Billing Phone</span>
+                            <span class="value"><?= htmlspecialchars((string)($order['billing_phone'] ?? 'Not provided')) ?></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Billing Email</span>
+                            <span class="value"><?= htmlspecialchars((string)($order['billing_email'] ?? 'Not provided')) ?></span>
+                        </div>
+                        <?php if (!empty($order['billing_address'])): ?>
+                            <div class="detail-row">
+                                <span class="label">Delivery Address</span>
+                                <span class="value"><?= htmlspecialchars((string)$order['billing_address']) ?></span>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
                     <?php if (!empty($pt['guardian_nic'])): ?>
                         <div class="detail-row">
                             <span class="label">Guardian NIC</span>
@@ -253,4 +262,5 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 </div>
 </body>
 </html>
+
 

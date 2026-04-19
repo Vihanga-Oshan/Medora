@@ -4,6 +4,15 @@ $cssVer = time();
 $items = $data['items'] ?? [];
 $cartTotal = (float)($data['cartTotal'] ?? 0);
 $flash = $data['flash'] ?? null;
+$formData = $data['formData'] ?? [
+    'delivery_method' => 'PICKUP',
+    'billing_name' => (string)($user['name'] ?? ''),
+    'billing_phone' => '',
+    'billing_email' => (string)($user['email'] ?? ''),
+    'billing_address' => '',
+    'billing_city' => '',
+    'billing_notes' => '',
+];
 
 $toImageUrl = static function (string $rawPath) use ($base): string {
     $img = trim($rawPath);
@@ -90,12 +99,41 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
                         <span>Total</span>
                         <span>Rs. <?= number_format($cartTotal, 2) ?></span>
                     </div>
-                    <a href="<?= htmlspecialchars($base) ?>/patient/shop/orders" class="btn btn-primary" style="width:100%; box-sizing:border-box; margin-top:14px;">Proceed to Buy</a>
+                    <form method="post" style="margin-top:14px;" id="checkoutForm">
+                        <div style="display:grid; gap:12px;">
+                            <input type="text" name="billing_name" placeholder="Billing name" value="<?= htmlspecialchars((string)($formData['billing_name'] ?? '')) ?>" required>
+                            <input type="text" name="billing_phone" placeholder="Phone number" value="<?= htmlspecialchars((string)($formData['billing_phone'] ?? '')) ?>" required>
+                            <input type="email" name="billing_email" placeholder="Email" value="<?= htmlspecialchars((string)($formData['billing_email'] ?? '')) ?>" required>
+                            <select name="delivery_method" id="cartDeliveryMethod">
+                                <option value="PICKUP" <?= ($formData['delivery_method'] ?? 'PICKUP') === 'PICKUP' ? 'selected' : '' ?>>Pick up from pharmacy</option>
+                                <option value="DELIVERY" <?= ($formData['delivery_method'] ?? 'PICKUP') === 'DELIVERY' ? 'selected' : '' ?>>Deliver to me</option>
+                            </select>
+                            <textarea name="billing_address" id="cartBillingAddress" rows="3" placeholder="Delivery address"><?= htmlspecialchars((string)($formData['billing_address'] ?? '')) ?></textarea>
+                            <input type="text" name="billing_city" placeholder="City" value="<?= htmlspecialchars((string)($formData['billing_city'] ?? '')) ?>">
+                            <textarea name="billing_notes" rows="3" placeholder="Notes for the pharmacy"><?= htmlspecialchars((string)($formData['billing_notes'] ?? '')) ?></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%; box-sizing:border-box; margin-top:14px;">Place Order</button>
+                    </form>
                 </div>
             </div>
         </div>
     <?php endif; ?>
 </main>
+<script>
+(function () {
+    const method = document.getElementById('cartDeliveryMethod');
+    const address = document.getElementById('cartBillingAddress');
+    if (!method || !address) return;
+
+    function syncAddress() {
+        const delivery = method.value === 'DELIVERY';
+        address.style.display = delivery ? 'block' : 'none';
+        address.required = delivery;
+    }
+
+    method.addEventListener('change', syncAddress);
+    syncAddress();
+})();
+</script>
 </body>
 </html>
-

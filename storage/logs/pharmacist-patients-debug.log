@@ -1,2 +1,24 @@
 [2026-04-19 14:48:00] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
 [2026-04-19 14:48:00] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 15:37:17] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 15:37:17] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 16:22:04] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 16:22:04] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 16:22:33] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 16:22:33] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 16:33:51] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 16:33:51] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 16:54:39] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 16:54:39] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 17:37:32] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 17:37:32] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 17:43:36] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 17:43:36] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 18:42:42] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 18:42:42] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 19:03:54] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 19:03:54] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 19:06:48] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 19:06:48] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}
+[2026-04-19 19:13:46] [DEBUG] Backfill candidates loaded. {"pharmacy_id":1,"candidate_count":0,"db_error":""}
+[2026-04-19 19:13:46] [DEBUG] Patient list query completed. {"pharmacy_id":1,"search":"","row_count":1,"db_error":""}

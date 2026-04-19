@@ -1,7 +1,9 @@
 <?php
 /**
- * Prescriptions Model — all DB queries for the prescriptions module.
+ * Prescriptions Model - all DB queries for the prescriptions module.
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class PrescriptionsModel
 {
     private static function patientExists(string $nic): bool
@@ -69,9 +71,10 @@ class PrescriptionsModel
 
     public static function getByPatient(string $nic): array
     {
+        PharmacyOrderSupport::ensureSchema();
         $dateCol = self::dateColumn();
         $rows = Database::fetchAll("
-            SELECT id, file_name, file_path, status, $dateCol AS uploaded_at
+            SELECT id, file_name, file_path, status, wants_medicine_order, wants_schedule, $dateCol AS uploaded_at
             FROM prescriptions
             WHERE patient_nic = ?
               AND " . self::pharmacyWhere('prescriptions') . "
@@ -79,7 +82,7 @@ class PrescriptionsModel
         ", 's', [$nic]);
         $out = [];
         foreach ($rows as $row) {
-            $row['formatted_upload_date'] = date('M d, Y', strtotime($row['uploaded_at']));
+            $row['formatted_upload_date'] = date('M d, Y', strtotime((string) ($row['uploaded_at'] ?? 'now')));
             $out[] = $row;
         }
         return $out;
@@ -87,9 +90,10 @@ class PrescriptionsModel
 
     public static function getById(int $id, string $nic): ?array
     {
+        PharmacyOrderSupport::ensureSchema();
         $dateCol = self::dateColumn();
         return Database::fetchOne("
-            SELECT id, file_name, file_path, status, $dateCol AS uploaded_at
+            SELECT id, file_name, file_path, status, wants_medicine_order, wants_schedule, $dateCol AS uploaded_at
             FROM prescriptions
             WHERE id = ? AND patient_nic = ?
               AND " . self::pharmacyWhere('prescriptions') . "
@@ -124,46 +128,73 @@ class PrescriptionsModel
         return null;
     }
 
-    public static function insert(string $nic, string $fileName, string $filePath, string $patientName = 'Patient'): bool
-    {
+    public static function insert(
+        string $nic,
+        string $fileName,
+        string $filePath,
+        string $patientName = 'Patient',
+        bool $wantsMedicineOrder = false,
+        bool $wantsSchedule = true,
+        array $billing = []
+    ): bool {
+        PharmacyOrderSupport::ensureSchema();
+
+        if ($nic !== '' && self::currentPharmacyId() <= 0) {
+            PharmacyContext::patientHasSelection($nic);
+        }
+
         $pid = (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0)
             ? self::currentPharmacyId()
             : 0;
+        $orderFlag = $wantsMedicineOrder ? 1 : 0;
+        $scheduleFlag = $wantsSchedule ? 1 : 0;
 
-        if ($pid > 0) {
-            $ok = Database::execute(
-                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
-                'sssi',
-                [$nic, $fileName, $filePath, $pid]
+        $insert = function () use ($pid, $nic, $fileName, $filePath, $orderFlag, $scheduleFlag): bool {
+            if ($pid > 0) {
+                return Database::execute(
+                    "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, wants_medicine_order, wants_schedule, upload_date, pharmacy_id)
+                     VALUES (?, ?, ?, 'PENDING', ?, ?, NOW(), ?)",
+                    'sssiii',
+                    [$nic, $fileName, $filePath, $orderFlag, $scheduleFlag, $pid]
+                );
+            }
+
+            return Database::execute(
+                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, wants_medicine_order, wants_schedule, upload_date)
+                 VALUES (?, ?, ?, 'PENDING', ?, ?, NOW())",
+                'sssii',
+                [$nic, $fileName, $filePath, $orderFlag, $scheduleFlag]
             );
-        } else {
-            $ok = Database::execute(
-                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date) VALUES (?, ?, ?, 'PENDING', NOW())",
-                'sss',
-                [$nic, $fileName, $filePath]
-            );
+        };
+
+        $ok = $insert();
+        if (!$ok) {
+            if (!self::ensurePatientRecord($nic, $patientName)) {
+                return false;
+            }
+            $ok = $insert();
         }
 
-        if ($ok) {
-            return true;
-        }
-
-        if (!self::ensurePatientRecord($nic, $patientName)) {
+        if (!$ok) {
             return false;
         }
 
-        if ($pid > 0) {
-            return Database::execute(
-                "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date, pharmacy_id) VALUES (?, ?, ?, 'PENDING', NOW(), ?)",
-                'sssi',
-                [$nic, $fileName, $filePath, $pid]
-            );
+        $insertedId = (int) (Database::$connection->insert_id ?? 0);
+        if ($wantsMedicineOrder && $insertedId > 0) {
+            $created = PharmacyOrderSupport::createPrescriptionOrder([
+                'id' => $insertedId,
+                'patient_nic' => $nic,
+                'pharmacy_id' => $pid,
+                'file_name' => $fileName,
+                'status' => 'PENDING',
+                'wants_schedule' => $scheduleFlag,
+            ], $billing);
+
+            if (!$created) {
+                return false;
+            }
         }
 
-        return Database::execute(
-            "INSERT INTO prescriptions (patient_nic, file_name, file_path, status, upload_date) VALUES (?, ?, ?, 'PENDING', NOW())",
-            'sss',
-            [$nic, $fileName, $filePath]
-        );
+        return true;
     }
 }

@@ -2,6 +2,8 @@
 /**
  * Prescription Validation Model
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class ValidateModel
 {
     private static function currentPharmacyId(): int
@@ -19,6 +21,7 @@ class ValidateModel
 
     public static function getPendingPrescriptions(): array
     {
+        PharmacyOrderSupport::ensureSchema();
         $dateExpr = self::prescriptionDateExpr();
         $whereParts = ["TRIM(UPPER(status)) = 'PENDING'"];
         $types = '';
@@ -36,6 +39,8 @@ class ValidateModel
                 patient_nic,
                 file_name,
                 file_path,
+                wants_medicine_order,
+                wants_schedule,
                 $dateExpr AS upload_date,
                 status
             FROM prescriptions

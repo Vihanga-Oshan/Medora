@@ -31,6 +31,14 @@ if (!function_exists('shopSetCart')) {
     }
 }
 
+if (!function_exists('shopClearCart')) {
+    function shopClearCart(): void
+    {
+        shopEnsureSession();
+        unset($_SESSION['patient_shop_cart']);
+    }
+}
+
 if (!function_exists('shopAddToCart')) {
     function shopAddToCart(int $medicineId, int $qty = 1): void
     {
@@ -82,7 +90,7 @@ if (!function_exists('shopTrackRecentlyViewed')) {
         $id = (string)$medicineId;
         $recent = array_values(array_filter($recent, static fn($x) => (string)$x !== $id));
         array_unshift($recent, $id);
-        $recent = array_slice($recent, 0, 8);
+        $recent = array_slice($recent, 0, 4);
         $_SESSION['patient_shop_recent'] = $recent;
     }
 }

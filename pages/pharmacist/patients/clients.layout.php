@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $base = APP_BASE ?: '';
 
 $base = APP_BASE ?: '';
@@ -26,32 +26,7 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 </head>
 <body>
 <div class="container">
-  <aside class="sidebar">
-    <div class="logo-section">
-      <div class="logo-icon">&#10010;</div>
-      <h1 class="logo-text">Medora</h1>
-    </div>
-
-    <nav class="main-nav">
-      <ul>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/dashboard" class="nav-item <?= $isDashboard ? 'active' : '' ?>">Dashboard</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/validate" class="nav-item <?= $isValidate ? 'active' : '' ?>">Prescription Review</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions" class="nav-item <?= $isApproved ? 'active' : '' ?>">Approved Prescriptions</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/patients" class="nav-item <?= $isPatients ? 'active' : '' ?>">Patients</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/messages" class="nav-item <?= $isMessages ? 'active' : '' ?>">Messages <span class="nav-badge">2</span></a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/medicine-inventory" class="nav-item <?= $isMedicine ? 'active' : '' ?>">Medicine</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/settings" class="nav-item <?= $isSettings ? 'active' : '' ?>">Settings</a></li>
-      </ul>
-    </nav>
-
-    <div class="footer-section">
-      <form method="post" action="<?= htmlspecialchars($base) ?>/pharmacist/logout" style="margin-top:10px;">
-        <button type="submit" class="nav-item logout-link" style="display:block; width:100%; text-align:left; border:none; background:none; cursor:pointer;">Logout</button>
-      </form>
-      <div class="copyright">Medora &copy; 2022</div>
-      <div class="version">v 1.1.2</div>
-    </div>
-  </aside>
+  <?php require_once __DIR__ . '/../common/pharmacist.sidebar.php'; ?>
 
   <div class="main-content">
     <header class="header">
@@ -111,3 +86,4 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 </div>
 </body>
 </html>
+

@@ -369,6 +369,8 @@ CREATE TABLE `prescriptions` (
   `file_path` VARCHAR(512) NOT NULL,
   `upload_date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `status` ENUM('PENDING', 'APPROVED', 'REJECTED', 'SCHEDULED') NOT NULL DEFAULT 'PENDING',
+  `wants_medicine_order` TINYINT(1) NOT NULL DEFAULT 0,
+  `wants_schedule` TINYINT(1) NOT NULL DEFAULT 1,
   `pharmacy_id` INT DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_prescriptions_patient` (`patient_nic`),
@@ -378,6 +380,63 @@ CREATE TABLE `prescriptions` (
     ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_prescriptions_pharmacy`
     FOREIGN KEY (`pharmacy_id`) REFERENCES `pharmacies` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `pharmacy_orders` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `pharmacy_id` INT DEFAULT NULL,
+  `patient_nic` VARCHAR(20) NOT NULL,
+  `prescription_id` INT DEFAULT NULL,
+  `source` VARCHAR(30) NOT NULL DEFAULT 'PRESCRIPTION',
+  `order_title` VARCHAR(255) NOT NULL,
+  `status` VARCHAR(40) NOT NULL DEFAULT 'PENDING',
+  `wants_schedule` TINYINT(1) NOT NULL DEFAULT 0,
+  `delivery_method` VARCHAR(20) NOT NULL DEFAULT 'PICKUP',
+  `billing_name` VARCHAR(150) NOT NULL DEFAULT '',
+  `billing_phone` VARCHAR(50) NOT NULL DEFAULT '',
+  `billing_email` VARCHAR(150) NOT NULL DEFAULT '',
+  `billing_address` VARCHAR(255) NOT NULL DEFAULT '',
+  `billing_city` VARCHAR(120) NOT NULL DEFAULT '',
+  `billing_notes` TEXT DEFAULT NULL,
+  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `delivery_fee` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `total_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `fulfillment_notes` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_pharmacy_orders_patient` (`patient_nic`, `created_at`),
+  KEY `idx_pharmacy_orders_pharmacy` (`pharmacy_id`, `status`, `created_at`),
+  KEY `idx_pharmacy_orders_prescription` (`prescription_id`),
+  CONSTRAINT `fk_pharmacy_orders_patient`
+    FOREIGN KEY (`patient_nic`) REFERENCES `patient` (`nic`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_pharmacy_orders_prescription`
+    FOREIGN KEY (`prescription_id`) REFERENCES `prescriptions` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_pharmacy_orders_pharmacy`
+    FOREIGN KEY (`pharmacy_id`) REFERENCES `pharmacies` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `pharmacy_order_items` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `order_id` INT NOT NULL,
+  `medicine_id` INT DEFAULT NULL,
+  `medicine_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `quantity` INT NOT NULL DEFAULT 1,
+  `unit_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `line_total` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_order_items_order` (`order_id`),
+  KEY `idx_order_items_medicine` (`medicine_id`),
+  CONSTRAINT `fk_order_items_order`
+    FOREIGN KEY (`order_id`) REFERENCES `pharmacy_orders` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_order_items_medicine`
+    FOREIGN KEY (`medicine_id`) REFERENCES `medicines` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

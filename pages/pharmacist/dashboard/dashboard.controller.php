@@ -9,6 +9,7 @@ $patientsNeedingSchedule = DashboardModel::getPatientsNeedingSchedule();
 $comments = DashboardModel::getDashboardComments();
 $inventorySummary = InventoryModel::getSummary();
 $inventoryReorders = InventoryModel::getReorderRecommendations(4);
+$recentOrders = DashboardModel::getRecentOrders(5);
 
 
 $hour = (int)date('H');
@@ -30,4 +31,5 @@ $data = [
     'comments'                => $comments,
     'inventorySummary'        => $inventorySummary,
     'inventoryReorders'       => $inventoryReorders,
+    'recentOrders'            => $recentOrders,
 ];

@@ -3,6 +3,8 @@
  * Patient Shop Model
  * Java reference: /router/shop
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class ShopModel
 {
     private static function medicinePriceExpr(string $alias = 'm'): string
@@ -232,8 +234,8 @@ class ShopModel
                 $nearestBranchName = self::nearestBranchNameWithStock($selectedPharmacyId, $branchIds, $pharmacyIndex);
             }
 
-            $display['id'] = (int) ($display['id'] ?? 0); // representative id for view/recent
-            $display['cart_id'] = $selectedMedicineId;   // add-to-cart id for selected branch
+            $display['id'] = (int) ($display['id'] ?? 0); 
+            $display['cart_id'] = $selectedMedicineId; 
             $display['quantity_in_stock'] = $selectedStock;
             $display['selected_branch_name'] = $selectedPharmacyName;
             $display['available_branch_name'] = $nearestBranchName;
@@ -320,7 +322,7 @@ class ShopModel
         return $ordered;
     }
 
-    public static function getSuggestions(int $limit = 6, array $excludeIds = []): array
+    public static function getSuggestions(int $limit = 4, array $excludeIds = []): array
     {
         $limit = max(1, min(20, (int) $limit));
         $exclude = [];
@@ -346,14 +348,80 @@ class ShopModel
         return $out;
     }
 
+    public static function getSuggestionsByViewedCategories(array $recentIds, int $limit = 4): array
+    {
+        $limit = max(1, min(4, (int) $limit));
+        $exclude = [];
+        foreach ($recentIds as $id) {
+            $num = (int) $id;
+            if ($num > 0) {
+                $exclude[$num] = true;
+            }
+        }
+
+        if (empty($recentIds)) {
+            return array_slice(self::getSuggestions($limit, []), 0, $limit);
+        }
+
+        $recentRows = self::getMedicinesByIds($recentIds);
+        $categoryOrder = [];
+        foreach ($recentRows as $row) {
+            $category = trim((string) ($row['category'] ?? ''));
+            if ($category !== '' && !in_array($category, $categoryOrder, true)) {
+                $categoryOrder[] = $category;
+            }
+        }
+
+        if (empty($categoryOrder)) {
+            return array_slice(self::getSuggestions($limit, $recentIds), 0, $limit);
+        }
+
+        $all = self::getMedicines('', '');
+        $matches = [];
+        foreach ($all as $row) {
+            $mid = (int) ($row['id'] ?? 0);
+            if ($mid > 0 && isset($exclude[$mid])) {
+                continue;
+            }
+
+            $category = trim((string) ($row['category'] ?? ''));
+            if ($category === '' || !in_array($category, $categoryOrder, true)) {
+                continue;
+            }
+
+            $matches[] = $row;
+        }
+
+        usort($matches, static function (array $a, array $b) use ($categoryOrder): int {
+            $aCategory = trim((string) ($a['category'] ?? ''));
+            $bCategory = trim((string) ($b['category'] ?? ''));
+            $aCategoryRank = array_search($aCategory, $categoryOrder, true);
+            $bCategoryRank = array_search($bCategory, $categoryOrder, true);
+            if ($aCategoryRank === false) {
+                $aCategoryRank = PHP_INT_MAX;
+            }
+            if ($bCategoryRank === false) {
+                $bCategoryRank = PHP_INT_MAX;
+            }
+
+            if ($aCategoryRank !== $bCategoryRank) {
+                return $aCategoryRank <=> $bCategoryRank;
+            }
+
+            $aStock = (int) ($a['quantity_in_stock'] ?? 0);
+            $bStock = (int) ($b['quantity_in_stock'] ?? 0);
+            if ($aStock !== $bStock) {
+                return $bStock <=> $aStock;
+            }
+
+            return strcmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''));
+        });
+
+        return array_slice($matches, 0, $limit);
+    }
+
     public static function getOrderHistory(string $patientNic): array
     {
-        return Database::fetchAll("
-            SELECT id, file_name, status, upload_date
-            FROM prescriptions
-            WHERE patient_nic = ?
-              AND " . self::pharmacyCondition('prescriptions', 'prescriptions') . "
-            ORDER BY upload_date DESC
-        ", 's', [$patientNic]);
+        return PharmacyOrderSupport::getPatientOrders($patientNic);
     }
 }

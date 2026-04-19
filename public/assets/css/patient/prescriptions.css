@@ -110,6 +110,81 @@ input[type="file"] {
   margin-top: 16px;
 }
 
+.request-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.option-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.billing-panel {
+  margin: 16px 0 24px;
+  padding: 20px;
+  border: 1px solid #dbe4ee;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.billing-panel.is-hidden,
+.field-group.is-hidden {
+  display: none;
+}
+
+.billing-header h3 {
+  margin: 0 0 4px;
+  color: var(--navy-dark);
+}
+
+.billing-header p {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.billing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group span {
+  font-weight: 600;
+  color: #334155;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.field-group textarea {
+  resize: vertical;
+}
+
+.field-group-wide {
+  grid-column: 1 / -1;
+}
+
 /* Upload Area Refinement */
 .upload-area {
   border: 2px dashed #cbd5e1;
@@ -411,6 +486,29 @@ input[type="file"] {
   color: #6c757d;
 }
 
+.prescription-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.request-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+
+.request-pill-secondary {
+  background: #dcfce7;
+  color: #166534;
+}
+
 .edit-layout {
   display: flex;
   flex-wrap: wrap;
@@ -644,6 +742,10 @@ input[type="file"] {
 @media (max-width: 768px) {
   .edit-layout {
     flex-direction: column;
+  }
+
+  .billing-grid {
+    grid-template-columns: 1fr;
   }
 }
 

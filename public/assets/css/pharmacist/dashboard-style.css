@@ -41,7 +41,7 @@ body {
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -117,6 +117,7 @@ body {
 }
 
 .footer-section {
+    margin-top: auto;
     padding: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 12px;

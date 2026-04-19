@@ -37,9 +37,9 @@ $user = [
     'profilePictureUrl' => (APP_BASE ?: '') . '/assets/img/avatar.png',
 ];
 
-$currentPharmacyId = (int) ($authUser['pharmacy_id'] ?? 0);
+$currentPharmacyId = PharmacyContext::resolvePharmacistPharmacyId((int) $user['id']);
 if ($currentPharmacyId <= 0) {
-    $currentPharmacyId = PharmacyContext::resolvePharmacistPharmacyId((int) $user['id']);
+    $currentPharmacyId = (int) ($authUser['pharmacy_id'] ?? 0);
 }
 if ($currentPharmacyId <= 0) {
     Auth::clearTokenCookie('pharmacist');

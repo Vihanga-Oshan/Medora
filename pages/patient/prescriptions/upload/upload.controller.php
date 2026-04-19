@@ -4,18 +4,54 @@
  * Ported from: UploadPrescriptionServlet.java
  * Handles both GET (show form) and POST (save file).
  */
-$error      = null;
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
+$error = null;
+$formData = [
+    'wants_medicine_order' => '0',
+    'wants_schedule' => '1',
+    'delivery_method' => 'PICKUP',
+    'billing_name' => (string) ($user['name'] ?? ''),
+    'billing_phone' => '',
+    'billing_email' => (string) ($user['email'] ?? ''),
+    'billing_address' => '',
+    'billing_city' => '',
+    'billing_notes' => '',
+];
 
 if (Request::isPost()) {
+    $formData = [
+        'wants_medicine_order' => !empty($_POST['wants_medicine_order']) ? '1' : '0',
+        'wants_schedule' => !empty($_POST['wants_schedule']) ? '1' : '0',
+        'delivery_method' => PharmacyOrderSupport::normalizeDeliveryMethod((string) ($_POST['delivery_method'] ?? 'PICKUP')),
+        'billing_name' => trim((string) ($_POST['billing_name'] ?? '')),
+        'billing_phone' => trim((string) ($_POST['billing_phone'] ?? '')),
+        'billing_email' => trim((string) ($_POST['billing_email'] ?? '')),
+        'billing_address' => trim((string) ($_POST['billing_address'] ?? '')),
+        'billing_city' => trim((string) ($_POST['billing_city'] ?? '')),
+        'billing_notes' => trim((string) ($_POST['billing_notes'] ?? '')),
+    ];
+    $wantsMedicineOrder = $formData['wants_medicine_order'] === '1';
+    $wantsSchedule = $formData['wants_schedule'] === '1';
+    $billing = PharmacyOrderSupport::sanitizeBillingData($formData);
+    $billingError = PharmacyOrderSupport::validateBillingData($billing, $wantsMedicineOrder);
+    if ($wantsMedicineOrder) {
+        PharmacyContext::patientHasSelection((string) ($user['nic'] ?? ''));
+    }
+    $selectedPharmacyId = PharmacyContext::selectedPharmacyId();
     $file = $_FILES['prescription_file'] ?? null;
 
-    if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+    if ($billingError !== null) {
+        $error = $billingError;
+    } elseif ($wantsMedicineOrder && $selectedPharmacyId <= 0) {
+        $error = 'Please select a pharmacy branch before ordering medicine.';
+    } elseif (!$file || $file['error'] !== UPLOAD_ERR_OK) {
         $error = 'Please select a valid file to upload.';
     } elseif ($file['size'] > 10 * 1024 * 1024) {
         $error = 'File is too large. Maximum allowed size is 10MB.';
     } else {
         $allowed = ['jpg', 'jpeg', 'png', 'pdf'];
-        $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
         if (!in_array($ext, $allowed, true)) {
             $error = 'Invalid file type. Only JPG, PNG and PDF are allowed.';
@@ -28,7 +64,7 @@ if (Request::isPost()) {
             ];
 
             $finfo = function_exists('finfo_open') ? finfo_open(FILEINFO_MIME_TYPE) : false;
-            $mime = $finfo ? (string)finfo_file($finfo, (string)$file['tmp_name']) : '';
+            $mime = $finfo ? (string) finfo_file($finfo, (string) $file['tmp_name']) : '';
             if ($finfo) {
                 finfo_close($finfo);
             }
@@ -46,13 +82,16 @@ if (Request::isPost()) {
             $destPath = $uploadDir . $safeName;
 
             if (move_uploaded_file($file['tmp_name'], $destPath)) {
-                $displayName = trim((string)pathinfo((string)$file['name'], PATHINFO_FILENAME));
+                $displayName = trim((string) pathinfo((string) $file['name'], PATHINFO_FILENAME));
                 $displayName = preg_replace('/[^a-zA-Z0-9\-\._ ]/', '_', $displayName) ?: 'Prescription';
                 $saved = PrescriptionsModel::insert(
-                    (string)$user['nic'],
+                    (string) $user['nic'],
                     $displayName . '.' . $ext,
                     $safeName,
-                    (string)($user['name'] ?? 'Patient')
+                    (string) ($user['name'] ?? 'Patient'),
+                    $wantsMedicineOrder,
+                    $wantsSchedule,
+                    $billing
                 );
 
                 if ($saved) {

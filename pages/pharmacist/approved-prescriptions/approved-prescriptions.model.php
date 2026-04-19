@@ -2,6 +2,8 @@
 /**
  * Approved Prescriptions Model
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class ApprovedPrescriptionsModel
 {
     private static function currentPharmacyId(): int
@@ -19,8 +21,9 @@ class ApprovedPrescriptionsModel
 
     public static function getApprovedPrescriptions(): array
     {
+        PharmacyOrderSupport::ensureSchema();
         $dateExpr = self::prescriptionDateExpr();
-        $whereParts = ["TRIM(UPPER(status)) = 'APPROVED'"];
+        $whereParts = ["TRIM(UPPER(status)) = 'APPROVED'", "(COALESCE(wants_schedule, 1) = 1 OR COALESCE(wants_medicine_order, 0) = 1)"];
         $types = '';
         $params = [];
         if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
@@ -36,6 +39,8 @@ class ApprovedPrescriptionsModel
                 patient_nic,
                 file_name,
                 file_path,
+                wants_medicine_order,
+                wants_schedule,
                 $dateExpr AS upload_date
             FROM prescriptions
             $where

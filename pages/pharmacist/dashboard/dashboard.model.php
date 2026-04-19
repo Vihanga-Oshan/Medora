@@ -2,6 +2,8 @@
 /**
  * Pharmacist Dashboard Model
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class DashboardModel
 {
     private static function currentPharmacyId(): int
@@ -37,27 +39,31 @@ class DashboardModel
 
     public static function getMetrics(): array
     {
+        PharmacyOrderSupport::ensureSchema();
         $pendingCount = self::countFromQuery(
             "SELECT COUNT(*) AS cnt FROM prescriptions WHERE UPPER(status) = 'PENDING' AND " . self::prescriptionPharmacyWhere('prescriptions')
         );
         $approvedCount = self::countFromQuery(
-            "SELECT COUNT(*) AS cnt FROM prescriptions WHERE UPPER(status) = 'APPROVED' AND " . self::prescriptionPharmacyWhere('prescriptions')
+            "SELECT COUNT(*) AS cnt FROM prescriptions WHERE UPPER(status) = 'APPROVED' AND COALESCE(wants_schedule, 1) = 1 AND " . self::prescriptionPharmacyWhere('prescriptions')
         );
         $newPatientCount = self::countFromQuery(
             "SELECT COUNT(*) AS cnt FROM patient WHERE created_at >= NOW() - INTERVAL 1 DAY"
         );
+        $activeOrderCount = PharmacyOrderSupport::countActivePharmacyOrders(self::currentPharmacyId());
 
         return [
             'pendingCount'    => (int)$pendingCount,
             'approvedCount'   => (int)$approvedCount,
             'newPatientCount' => (int)$newPatientCount,
+            'activeOrderCount' => (int)$activeOrderCount,
         ];
     }
 
     public static function getPatientsNeedingCheck(int $limit = 5): array
     {
+        PharmacyOrderSupport::ensureSchema();
         return self::rowsFromQuery("
-            SELECT DISTINCT p.name, p.chronic_issues AS condition_text, p.nic, pr.id AS prescription_id
+            SELECT DISTINCT p.name, p.chronic_issues AS condition_text, p.nic, pr.id AS prescription_id, pr.wants_medicine_order, pr.wants_schedule
             FROM patient p
             INNER JOIN prescriptions pr ON p.nic = pr.patient_nic
             WHERE UPPER(pr.status) = 'PENDING' AND " . self::prescriptionPharmacyWhere('pr') . "
@@ -67,13 +73,19 @@ class DashboardModel
 
     public static function getPatientsNeedingSchedule(int $limit = 5): array
     {
+        PharmacyOrderSupport::ensureSchema();
         return self::rowsFromQuery("
-            SELECT DISTINCT p.name, p.chronic_issues AS condition_text, p.nic, pr.id AS prescription_id
+            SELECT DISTINCT p.name, p.chronic_issues AS condition_text, p.nic, pr.id AS prescription_id, pr.wants_medicine_order, pr.wants_schedule
             FROM patient p
             INNER JOIN prescriptions pr ON p.nic = pr.patient_nic
-            WHERE UPPER(pr.status) = 'APPROVED' AND " . self::prescriptionPharmacyWhere('pr') . "
+            WHERE UPPER(pr.status) = 'APPROVED' AND COALESCE(pr.wants_schedule, 1) = 1 AND " . self::prescriptionPharmacyWhere('pr') . "
             LIMIT $limit
         ");
+    }
+
+    public static function getRecentOrders(int $limit = 5): array
+    {
+        return PharmacyOrderSupport::getRecentPharmacyOrders(self::currentPharmacyId(), $limit);
     }
     public static function addDashboardComment(string $comment): bool
     {

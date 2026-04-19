@@ -1,13 +1,16 @@
-<?php
+﻿<?php
 /**
  * Medication Scheduling Layout
  * Based on: medication-scheduling.jsp
  */
 $medicines = $data['medicines'] ?? [];
+$inventoryMedicines = $data['inventoryMedicines'] ?? [];
 $dosages = $data['dosages'] ?? [];
 $frequencies = $data['frequencies'] ?? [];
 $mealTimings = $data['mealTimings'] ?? [];
 $p = $data['prescription'] ?? [];
+$order = $data['order'] ?? [];
+$orderItems = $data['orderItems'] ?? [];
 $base = APP_BASE ?: '';
 
 /**
@@ -54,12 +57,19 @@ if ($errorCode === 'csrf') {
     $errorMessage = 'Please add at least one complete medication row before submitting.';
 } elseif ($errorCode === 'save' || $errorCode === 'commit') {
     $errorMessage = 'Unable to save this schedule right now. Please try again.';
+} elseif ($errorCode === 'empty_order') {
+    $errorMessage = 'Please add at least one medicine to the order before submitting.';
+} elseif ($errorCode === 'save_order') {
+    $errorMessage = 'Unable to save the medicine order right now. Please try again.';
 }
+$wantsSchedule = !empty($p['wants_schedule']);
+$wantsMedicineOrder = !empty($p['wants_medicine_order']);
 
 $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $isDashboard = str_contains($currentPath, '/pharmacist/dashboard');
 $isValidate = str_contains($currentPath, '/pharmacist/validate') || str_contains($currentPath, '/pharmacist/prescriptions');
 $isApproved = str_contains($currentPath, '/pharmacist/approved-prescriptions') || str_contains($currentPath, '/pharmacist/scheduling');
+$isOrders = str_contains($currentPath, '/pharmacist/orders');
 $isPatients = str_contains($currentPath, '/pharmacist/patients');
 $isMessages = str_contains($currentPath, '/pharmacist/messages') || str_contains($currentPath, '/pharmacist/dispensing');
 $isMedicine = str_contains($currentPath, '/pharmacist/medicine-inventory') || str_contains($currentPath, '/pharmacist/inventory');
@@ -76,32 +86,7 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 </head>
 <body>
 <div class="container">
-    <aside class="sidebar">
-        <div class="logo-section">
-            <div class="logo-icon">&#10010;</div>
-            <h1 class="logo-text">Medora</h1>
-        </div>
-
-        <nav class="main-nav">
-            <ul>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/dashboard" class="nav-item <?= $isDashboard ? 'active' : '' ?>">Dashboard</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/validate" class="nav-item <?= $isValidate ? 'active' : '' ?>">Prescription Review</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/approved-prescriptions" class="nav-item <?= $isApproved ? 'active' : '' ?>">Approved Prescriptions</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/patients" class="nav-item <?= $isPatients ? 'active' : '' ?>">Patients</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/messages" class="nav-item <?= $isMessages ? 'active' : '' ?>">Messages <span class="nav-badge">2</span></a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/medicine-inventory" class="nav-item <?= $isMedicine ? 'active' : '' ?>">Medicine</a></li>
-                <li><a href="<?= htmlspecialchars($base) ?>/pharmacist/settings" class="nav-item <?= $isSettings ? 'active' : '' ?>">Settings</a></li>
-            </ul>
-        </nav>
-
-        <div class="footer-section">
-            <form method="post" action="<?= htmlspecialchars($base) ?>/pharmacist/logout" style="margin-top:10px;">
-                <button type="submit" class="nav-item logout-link" style="display:block; width:100%; text-align:left; border:none; background:none; cursor:pointer;">Logout</button>
-            </form>
-            <div class="copyright">Medora &copy; 2022</div>
-            <div class="version">v 1.1.2</div>
-        </div>
-    </aside>
+    <?php require_once __DIR__ . '/../common/pharmacist.sidebar.php'; ?>
 
     <main class="main-content">
         <header class="header">
@@ -131,67 +116,122 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                     <input type="hidden" name="prescription_id" value="<?= (int)($p['id'] ?? 0) ?>">
                     <input type="hidden" name="patient_nic" value="<?= htmlspecialchars((string)($p['patient_nic'] ?? $p['patientNic'] ?? '')) ?>">
 
-                    <h3>Medication Schedules</h3>
+                    <?php if ($wantsSchedule): ?>
+                        <h3>Medication Schedules</h3>
 
-                    <div id="scheduleRows">
-                        <div class="med-row" data-row>
-                            <label>Medicine</label>
-                            <select name="medicineId[]" required>
-                                <option value="">-- Select Medicine --</option>
-                                <?php foreach ($medicines as $m): ?>
-                                    <option value="<?= (int)($m['id'] ?? 0) ?>"><?= htmlspecialchars((string)($m['name'] ?? '')) ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                        <div id="scheduleRows">
+                            <div class="med-row" data-row>
+                                <label>Medicine</label>
+                                <select name="medicineId[]" required>
+                                    <option value="">-- Select Medicine --</option>
+                                    <?php foreach ($medicines as $m): ?>
+                                        <option value="<?= (int)($m['id'] ?? 0) ?>"><?= htmlspecialchars((string)($m['name'] ?? '')) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
 
-                            <label>Dosage</label>
-                            <select name="dosageId[]" required>
-                                <?php foreach ($dosages as $d): ?>
-                                    <option value="<?= (int)($d['id'] ?? 0) ?>"><?= htmlspecialchars((string)($d['label'] ?? '')) ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                                <label>Dosage</label>
+                                <select name="dosageId[]" required>
+                                    <?php foreach ($dosages as $d): ?>
+                                        <option value="<?= (int)($d['id'] ?? 0) ?>"><?= htmlspecialchars((string)($d['label'] ?? '')) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
 
-                            <label>Frequency</label>
-                            <select name="frequencyId[]" required>
-                                <?php foreach ($frequencies as $f): ?>
-                                    <option value="<?= (int)($f['id'] ?? 0) ?>"><?= htmlspecialchars((string)($f['label'] ?? '')) ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                                <label>Frequency</label>
+                                <select name="frequencyId[]" required>
+                                    <?php foreach ($frequencies as $f): ?>
+                                        <option value="<?= (int)($f['id'] ?? 0) ?>"><?= htmlspecialchars((string)($f['label'] ?? '')) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
 
-                            <label>Meal Timing</label>
-                            <select name="mealTimingId[]">
-                                <option value="">-- None --</option>
-                                <?php foreach ($mealTimings as $mt): ?>
-                                    <option value="<?= (int)($mt['id'] ?? 0) ?>"><?= htmlspecialchars((string)($mt['label'] ?? '')) ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                                <label>Meal Timing</label>
+                                <select name="mealTimingId[]">
+                                    <option value="">-- None --</option>
+                                    <?php foreach ($mealTimings as $mt): ?>
+                                        <option value="<?= (int)($mt['id'] ?? 0) ?>"><?= htmlspecialchars((string)($mt['label'] ?? '')) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
 
-                            <label>Start Date</label>
-                            <input type="date" name="startDate[]" value="<?= date('Y-m-d') ?>" required>
+                                <label>Start Date</label>
+                                <input type="date" name="startDate[]" value="<?= date('Y-m-d') ?>" required>
 
-                            <label>Duration (Days)</label>
-                            <input type="number" name="durationDays[]" min="1" value="7" required>
+                                <label>Duration (Days)</label>
+                                <input type="number" name="durationDays[]" min="1" value="7" required>
 
-                            <label>Instructions (Optional)</label>
-                            <textarea name="instructions[]" rows="2" placeholder="E.g. Take with water after meals..."></textarea>
+                                <label>Instructions (Optional)</label>
+                                <textarea name="instructions[]" rows="2" placeholder="E.g. Take with water after meals..."></textarea>
 
-                            <button type="button" class="btn-reject" onclick="removeRow(this)">Remove</button>
-                            <br><br>
-                            <hr>
+                                <button type="button" class="btn-reject" onclick="removeRow(this)">Remove</button>
+                                <br><br>
+                                <hr>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="btn-group">
-                        <button type="button" class="btn-reject" id="addRowBtn">+ Add Another Medicine</button>
-                    </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn-reject" id="addRowBtn">+ Add Another Medicine</button>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($wantsMedicineOrder): ?>
+                        <div class="workflow-section">
+                            <h3>Medicine Order Items</h3>
+                            <p class="workflow-copy">Select the inventory items the pharmacy will prepare for this patient.</p>
+                            <div id="orderRows">
+                                <div class="med-row order-row" data-order-row>
+                                    <label>Inventory Item</label>
+                                    <select name="orderMedicineId[]" required>
+                                        <option value="">-- Select Inventory Item --</option>
+                                        <?php foreach ($inventoryMedicines as $medicine): ?>
+                                            <option value="<?= (int)($medicine['id'] ?? 0) ?>">
+                                                <?= htmlspecialchars((string)($medicine['name'] ?? 'Medicine')) ?> | Stock <?= (int)($medicine['quantity_in_stock'] ?? 0) ?> | Rs. <?= number_format((float)($medicine['price'] ?? 0), 2) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+
+                                    <label>Quantity</label>
+                                    <input type="number" name="orderQty[]" min="1" value="1" required>
+
+                                    <button type="button" class="btn-reject" onclick="removeOrderRow(this)">Remove</button>
+                                    <hr>
+                                </div>
+                            </div>
+
+                            <?php if (!empty($orderItems)): ?>
+                                <div class="existing-order-list">
+                                    <strong>Current Selected Order Items</strong>
+                                    <?php foreach ($orderItems as $item): ?>
+                                        <div class="existing-order-item">
+                                            <?= htmlspecialchars((string)($item['medicine_name'] ?? 'Medicine')) ?> x <?= (int)($item['quantity'] ?? 0) ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="btn-group">
+                                <button type="button" class="btn-reject" id="addOrderRowBtn">+ Add Order Item</button>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="btn-group">
                         <a href="<?= htmlspecialchars($base) ?>/pharmacist/dashboard" class="btn-reject">Cancel</a>
-                        <button type="submit" class="btn-submit">Submit Full Schedule</button>
+                        <button type="submit" class="btn-submit">
+                            <?php if ($wantsSchedule && $wantsMedicineOrder): ?>
+                                Save Order + Schedule
+                            <?php elseif ($wantsMedicineOrder): ?>
+                                Save Medicine Order
+                            <?php else: ?>
+                                Submit Full Schedule
+                            <?php endif; ?>
+                        </button>
                     </div>
                 </form>
 
                 <div class="patient-details-box">
                     <h3>Prescription Reference</h3>
+                    <div class="workflow-summary">
+                        <?php if ($wantsMedicineOrder): ?><span class="workflow-pill">Medicine Order</span><?php endif; ?>
+                        <?php if ($wantsSchedule): ?><span class="workflow-pill workflow-pill-secondary">Schedule</span><?php endif; ?>
+                    </div>
                     <div class="preview-placeholder">
                         <?php if ($isPdf): ?>
                             <div class="pdf-box">
@@ -211,21 +251,26 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
 <script>
 const addBtn = document.getElementById('addRowBtn');
 const container = document.getElementById('scheduleRows');
+const addOrderBtn = document.getElementById('addOrderRowBtn');
+const orderContainer = document.getElementById('orderRows');
 
-addBtn.onclick = () => {
-    const firstRow = container.querySelector('[data-row]');
-    const clone = firstRow.cloneNode(true);
+if (addBtn && container) {
+    addBtn.onclick = () => {
+        const firstRow = container.querySelector('[data-row]');
+        const clone = firstRow.cloneNode(true);
 
-    clone.querySelectorAll('input, select, textarea').forEach(el => {
-        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        else if (el.type === 'number') el.value = 7;
-        else if (el.type !== 'date') el.value = '';
-    });
+        clone.querySelectorAll('input, select, textarea').forEach(el => {
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else if (el.type === 'number') el.value = 7;
+            else if (el.type !== 'date') el.value = '';
+        });
 
-    container.appendChild(clone);
-};
+        container.appendChild(clone);
+    };
+}
 
 function removeRow(btn) {
+    if (!container) return;
     const rows = container.querySelectorAll('[data-row]');
     if (rows.length > 1) {
         btn.closest('[data-row]').remove();
@@ -233,7 +278,30 @@ function removeRow(btn) {
         alert('At least one medication is required.');
     }
 }
+
+if (addOrderBtn && orderContainer) {
+    addOrderBtn.onclick = () => {
+        const firstRow = orderContainer.querySelector('[data-order-row]');
+        const clone = firstRow.cloneNode(true);
+        clone.querySelectorAll('input, select').forEach(el => {
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else if (el.type === 'number') el.value = 1;
+        });
+        orderContainer.appendChild(clone);
+    };
+}
+
+function removeOrderRow(btn) {
+    if (!orderContainer) return;
+    const rows = orderContainer.querySelectorAll('[data-order-row]');
+    if (rows.length > 1) {
+        btn.closest('[data-order-row]').remove();
+    } else {
+        alert('At least one order item is required.');
+    }
+}
 </script>
 </body>
 </html>
+
 

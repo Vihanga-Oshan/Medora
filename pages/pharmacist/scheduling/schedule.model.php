@@ -2,6 +2,8 @@
 /**
  * Medication Scheduling Model
  */
+require_once ROOT . '/core/PharmacyOrderSupport.php';
+
 class ScheduleModel
 {
     private static bool $lookupsEnsured = false;
@@ -179,6 +181,24 @@ class ScheduleModel
         return Database::fetchAll($sql);
     }
 
+    public static function getInventoryMedicines(): array
+    {
+        $sql = "
+            SELECT
+                id,
+                COALESCE(NULLIF(TRIM(med_name), ''), NULLIF(TRIM(name), '')) AS name,
+                COALESCE(quantity_in_stock, 0) AS quantity_in_stock,
+                COALESCE(pricing, 0) AS price
+            FROM medicines
+            WHERE COALESCE(NULLIF(TRIM(med_name), ''), NULLIF(TRIM(name), '')) <> ''
+        ";
+        if (PharmacyContext::tableHasPharmacyId('medicines') && self::currentPharmacyId() > 0) {
+            $sql .= " AND pharmacy_id = " . self::currentPharmacyId();
+        }
+        $sql .= " ORDER BY name ASC";
+        return Database::fetchAll($sql);
+    }
+
     public static function getDosages(): array
     {
         self::ensureLookupData();
@@ -199,6 +219,7 @@ class ScheduleModel
 
     public static function getPrescription(int $id): ?array
     {
+        PharmacyOrderSupport::ensureSchema();
         $where = ['id = ?'];
         $params = [$id];
         $types = 'i';
@@ -208,6 +229,63 @@ class ScheduleModel
             $types .= 'i';
         }
         return Database::fetchOne("SELECT * FROM prescriptions WHERE " . implode(' AND ', $where) . " LIMIT 1", $types, $params);
+    }
+
+    public static function getPrescriptionOrder(int $prescriptionId): ?array
+    {
+        return PharmacyOrderSupport::getPrescriptionOrder($prescriptionId);
+    }
+
+    public static function getPrescriptionOrderItems(int $prescriptionId): array
+    {
+        $order = self::getPrescriptionOrder($prescriptionId);
+        if (!$order) {
+            return [];
+        }
+        return PharmacyOrderSupport::getOrderItems((int)($order['id'] ?? 0));
+    }
+
+    public static function savePrescriptionOrderItems(int $prescriptionId, array $items): bool
+    {
+        $prescription = self::getPrescription($prescriptionId);
+        if (!$prescription) {
+            return false;
+        }
+
+        $order = PharmacyOrderSupport::ensurePrescriptionOrder($prescription, [
+            'delivery_method' => 'PICKUP',
+        ]);
+        if (!$order) {
+            return false;
+        }
+        return PharmacyOrderSupport::replaceOrderItems(
+            (int)($order['id'] ?? 0),
+            self::currentPharmacyId(),
+            $items,
+            'PREPARING'
+        );
+    }
+
+    public static function markPrescriptionProcessed(int $prescriptionId): void
+    {
+        if ($prescriptionId <= 0) {
+            return;
+        }
+
+        $where = ['id = ?'];
+        $params = [$prescriptionId];
+        $types = 'i';
+        if (PharmacyContext::tableHasPharmacyId('prescriptions') && self::currentPharmacyId() > 0) {
+            $where[] = 'pharmacy_id = ?';
+            $params[] = self::currentPharmacyId();
+            $types .= 'i';
+        }
+
+        Database::execute(
+            "UPDATE prescriptions SET status = 'SCHEDULED' WHERE " . implode(' AND ', $where),
+            $types,
+            $params
+        );
     }
 
     public static function bulkInsert(array $schedules): bool

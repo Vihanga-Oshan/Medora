@@ -4,14 +4,14 @@ require_once __DIR__ . '/shop.state.php';
 
 $category = trim($_GET['category'] ?? '');
 $q = trim($_GET['q'] ?? '');
-$viewId = (int)($_GET['view'] ?? 0);
+$viewId = (int) ($_GET['view'] ?? 0);
 if ($viewId > 0) {
     shopTrackRecentlyViewed($viewId);
 }
 
 $recentIds = shopGetRecentlyViewedIds();
 $recentlyViewed = ShopModel::getMedicinesByIds($recentIds);
-$suggestions = ShopModel::getSuggestions(6, $recentIds);
+$suggestions = ShopModel::getSuggestionsByViewedCategories($recentIds, 4);
 
 $data = [
     'categories' => ShopModel::getCategories(),

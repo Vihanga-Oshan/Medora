@@ -15,6 +15,7 @@ if (!$prescription) {
 }
 
 $patient = ReviewModel::getPatientByNic($prescription['patient_nic']);
+$order = ReviewModel::getOrderByPrescriptionId($id);
 
 // Handle POST actions
 if (Request::isPost()) {
@@ -44,4 +45,5 @@ if (Request::isPost()) {
 $data = [
     'prescription' => $prescription,
     'patient'      => $patient,
+    'order'        => $order,
 ];

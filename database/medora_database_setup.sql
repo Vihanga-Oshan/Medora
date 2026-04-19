@@ -563,6 +563,22 @@ SET @sql = IF(
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'prescriptions')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'prescriptions' AND column_name = 'wants_medicine_order'),
+  'ALTER TABLE prescriptions ADD COLUMN wants_medicine_order TINYINT(1) NOT NULL DEFAULT 0 AFTER status',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
+  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'prescriptions')
+  AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'prescriptions' AND column_name = 'wants_schedule'),
+  'ALTER TABLE prescriptions ADD COLUMN wants_schedule TINYINT(1) NOT NULL DEFAULT 1 AFTER wants_medicine_order',
+  'SELECT 1'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF(
   EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'medication_schedules')
   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'medication_schedules' AND column_name = 'pharmacy_id'),
   'ALTER TABLE medication_schedules ADD COLUMN pharmacy_id INT NULL',
@@ -684,6 +700,46 @@ CREATE TABLE IF NOT EXISTS medicine_stock_movements (
   created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_medicine_created (medicine_id, created_at),
   INDEX idx_pharmacy_created (pharmacy_id, created_at)
+);
+
+CREATE TABLE IF NOT EXISTS pharmacy_orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pharmacy_id INT DEFAULT NULL,
+  patient_nic VARCHAR(20) NOT NULL,
+  prescription_id INT DEFAULT NULL,
+  source VARCHAR(30) NOT NULL DEFAULT 'PRESCRIPTION',
+  order_title VARCHAR(255) NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'PENDING',
+  wants_schedule TINYINT(1) NOT NULL DEFAULT 0,
+  delivery_method VARCHAR(20) NOT NULL DEFAULT 'PICKUP',
+  billing_name VARCHAR(150) NOT NULL DEFAULT '',
+  billing_phone VARCHAR(50) NOT NULL DEFAULT '',
+  billing_email VARCHAR(150) NOT NULL DEFAULT '',
+  billing_address VARCHAR(255) NOT NULL DEFAULT '',
+  billing_city VARCHAR(120) NOT NULL DEFAULT '',
+  billing_notes TEXT DEFAULT NULL,
+  subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  delivery_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  fulfillment_notes TEXT DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_pharmacy_orders_patient (patient_nic, created_at),
+  INDEX idx_pharmacy_orders_pharmacy (pharmacy_id, status, created_at),
+  INDEX idx_pharmacy_orders_prescription (prescription_id)
+);
+
+CREATE TABLE IF NOT EXISTS pharmacy_order_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  medicine_id INT DEFAULT NULL,
+  medicine_name VARCHAR(255) NOT NULL DEFAULT '',
+  quantity INT NOT NULL DEFAULT 1,
+  unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  line_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_order_items_order (order_id),
+  INDEX idx_order_items_medicine (medicine_id)
 );
 
 INSERT IGNORE INTO dosage_forms(name) VALUES

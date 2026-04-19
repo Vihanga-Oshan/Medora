@@ -5,3 +5,4 @@
 [2026-04-11 11:41:35] [ERROR] Pharmacist login failed. {"id_numeric":7777,"reason":"user_not_found"}
 [2026-04-15 16:26:27] [ERROR] Pharmacist login failed. {"id_numeric":7777,"reason":"user_not_found"}
 [2026-04-18 13:29:30] [ERROR] Pharmacist login failed. {"id_numeric":7777,"reason":"user_not_found"}
+[2026-04-19 17:52:25] [ERROR] Validation failed: invalid pharmacist ID format. {"id_input":"200312500353","id_numeric":200312500353}

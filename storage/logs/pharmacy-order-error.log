@@ -1,0 +1,12 @@
+[2026-04-19 17:00:31] [ORDER] createPrescriptionOrder with pharmacy failed - Table 'medoradb.pharmacy_orders' doesn't exist
+[2026-04-19 17:00:39] [ORDER] createPrescriptionOrder with pharmacy failed - Table 'medoradb.pharmacy_orders' doesn't exist
+[2026-04-19 17:02:35] [ORDER] createPrescriptionOrder with pharmacy failed - Table 'medoradb.pharmacy_orders' doesn't exist
+[2026-04-19 17:02:51] [ORDER] createPrescriptionOrder with pharmacy failed - Table 'medoradb.pharmacy_orders' doesn't exist
+[2026-04-19 17:04:50] [ORDER] ensureOrderTables create pharmacy_orders fallback failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+[2026-04-19 17:04:55] [ORDER] ensureOrderTables create pharmacy_orders with foreign keys failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+[2026-04-19 17:04:56] [ORDER] ensureOrderTables create pharmacy_orders with foreign keys failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+[2026-04-19 17:04:57] [ORDER] ensureOrderTables create pharmacy_orders with foreign keys failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+[2026-04-19 17:04:59] [ORDER] ensureOrderTables create pharmacy_orders with foreign keys failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+[2026-04-19 17:05:03] [ORDER] ensureOrderTables create pharmacy_orders with foreign keys failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1
+[2026-04-19 17:05:03] [ORDER] replaceOrderItems delete old items failed - Table 'medoradb.pharmacy_order_items' doesn't exist
+[2026-04-19 17:05:03] [ORDER] ensureOrderTables create pharmacy_orders with foreign keys failed - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '?' at line 1

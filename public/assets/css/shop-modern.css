@@ -384,6 +384,7 @@ body {
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .medicine-card:hover {
@@ -451,6 +452,10 @@ body {
     line-height: 1.12;
     margin-bottom: 8px;
     color: #0b3a70;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .med-generic-line {
@@ -468,6 +473,14 @@ body {
     margin-bottom: 12px;
     line-height: 1.45;
     color: #334155;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.quick-add-form {
+    margin-top: auto;
 }
 
 .med-price-row {
