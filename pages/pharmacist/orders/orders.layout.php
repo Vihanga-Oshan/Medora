@@ -44,7 +44,6 @@ $statusOptions = [
                     <span class="greeting-icon">&#128230;</span>
                     <div>
                         <span class="greeting-text">Medicine Orders</span>
-                        <span class="date-time">Track prescription and e-shop medicine fulfillment</span>
                     </div>
                 </div>
             </header>

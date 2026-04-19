@@ -457,3 +457,4 @@
 [2026-04-19 20:51:28] [DEBUG] Pharmacist getMessages completed. {"contact_id":"200312500353","type":"patients","duration_ms":1,"pharmacy_id":1}
 [2026-04-19 20:51:32] [DEBUG] Pharmacist getMessages completed. {"contact_id":"200312500353","type":"patients","duration_ms":1,"pharmacy_id":1}
 [2026-04-19 20:51:36] [DEBUG] Pharmacist getMessages completed. {"contact_id":"200312500353","type":"patients","duration_ms":5,"pharmacy_id":1}
+[2026-04-19 21:13:23] [DEBUG] Pharmacist getMessages completed. {"contact_id":"200312500353","type":"patients","duration_ms":1,"pharmacy_id":1}

@@ -39,7 +39,6 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings');
                 <span class="greeting-icon">&#9881;</span>
                 <div>
                     <span class="greeting-text">Settings</span>
-                    <span class="date-time">Manage account and pharmacist tools</span>
                 </div>
             </div>
         </header>

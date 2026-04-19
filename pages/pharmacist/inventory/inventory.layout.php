@@ -115,7 +115,6 @@ $sortLink = function (string $key) use ($sortBy, $sortDir, $buildInventoryUrl): 
                     <span class="greeting-icon">&#128230;</span>
                     <div>
                         <span class="greeting-text">Medicine Stock Management</span>
-                        <span class="date-time">Low stock alerts, suppliers, movements, and inventory control</span>
                     </div>
                 </div>
             </header>

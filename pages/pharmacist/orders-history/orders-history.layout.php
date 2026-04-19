@@ -39,7 +39,6 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                     <span class="greeting-icon">&#128340;</span>
                     <div>
                         <span class="greeting-text">Completed Orders</span>
-                        <span class="date-time">Track previously completed medicine orders</span>
                     </div>
                 </div>
             </header>
