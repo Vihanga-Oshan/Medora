@@ -96,7 +96,7 @@ class InventoryModel
 
     private static function getMedicineImageColumn(): string
     {
-        return '';
+        return 'image_path';
     }
 
     private static function extractImagePath(array $row): string

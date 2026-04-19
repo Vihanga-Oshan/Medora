@@ -659,6 +659,83 @@ class PharmacyOrderSupport
         return (int) ($row['cnt'] ?? 0);
     }
 
+    private static function decrementInventoryForOrder(int $orderId): void
+    {
+        self::ensureSchema();
+        if ($orderId <= 0) {
+            return;
+        }
+
+        // Get all items in the order that have a medicine_id
+        $items = Database::fetchAll(
+            "SELECT order_id, medicine_id, medicine_name, quantity
+             FROM `" . self::ITEM_TABLE . "`
+             WHERE order_id = ? AND medicine_id > 0",
+            'i',
+            [$orderId]
+        );
+
+        if (empty($items)) {
+            return;
+        }
+
+        // Decrement stock for each medicine in the order
+        foreach ($items as $item) {
+            $medicineId = (int) ($item['medicine_id'] ?? 0);
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+
+            if ($medicineId <= 0) {
+                continue;
+            }
+
+            // Get current stock
+            $medicine = Database::fetchOne(
+                "SELECT id, quantity_in_stock, supplier_id, pharmacy_id
+                 FROM medicines
+                 WHERE id = ?
+                 LIMIT 1",
+                'i',
+                [$medicineId]
+            );
+
+            if (!$medicine) {
+                continue;
+            }
+
+            $before = (int) ($medicine['quantity_in_stock'] ?? 0);
+            $after = max(0, $before - $quantity);
+
+            // Update medicines table
+            Database::execute(
+                "UPDATE medicines
+                 SET quantity_in_stock = ?, updated_at = NOW()
+                 WHERE id = ?",
+                'ii',
+                [$after, $medicineId]
+            );
+
+            // Log stock movement as dispense/order
+            Database::execute(
+                "INSERT INTO medicine_stock_movements
+                 (medicine_id, supplier_id, pharmacy_id, movement_type, quantity_change, quantity_before, quantity_after, note, reference_no, created_by, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
+                'iiisiiissi',
+                [
+                    $medicineId,
+                    (int) ($medicine['supplier_id'] ?? 0),
+                    (int) ($medicine['pharmacy_id'] ?? 0),
+                    'dispense',
+                    -1 * $quantity,
+                    $before,
+                    $after,
+                    'Dispensed in pharmacy order #' . $orderId,
+                    'ORDER#' . $orderId,
+                    (int) (Auth::getUser()['id'] ?? 0),
+                ]
+            );
+        }
+    }
+
     public static function updateOrderStatus(int $orderId, int $pharmacyId, string $status, string $notes = ''): bool
     {
         self::ensureSchema();
@@ -686,6 +763,11 @@ class PharmacyOrderSupport
 
         if (!$updated) {
             return false;
+        }
+
+        // Auto-decrement inventory when order is completed
+        if ($status === 'COMPLETED') {
+            self::decrementInventoryForOrder($orderId);
         }
 
         if ($status === 'READY_FOR_PICKUP') {
