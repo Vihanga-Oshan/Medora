@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Admin Dashboard Layout (Medora)
  */
@@ -13,7 +13,7 @@ $recentLogs = $data['recentLogs'] ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Medora</title>
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/dashboard.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/dashboard.css?v=2">
 </head>
 <body class="admin-body">
 
@@ -23,12 +23,12 @@ $recentLogs = $data['recentLogs'] ?? [];
         <span>Medora Admin</span>
     </div>
     <ul class="nav-links">
-        <li class="active"><a href="<?= htmlspecialchars($base) ?>/admin/dashboard"><i>&#128202;</i> Dashboard</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacists"><i>&#9877;</i> Pharmacists</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacies"><i>&#127973;</i> Pharmacies</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacy-assignments"><i>&#128279;</i> Assignments</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacist-requests"><i>&#128221;</i> Requests</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/admin/settings"><i>&#9881;</i> Settings</a></li>
+        <li class="active"><a href="<?= htmlspecialchars($base) ?>/admin/dashboard"><i></i> Dashboard</a></li>
+        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacists"><i></i> Pharmacists</a></li>
+        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacies"><i></i> Pharmacies</a></li>
+        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacy-assignments"><i></i> Assignments</a></li>
+        <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacist-requests"><i></i> Requests</a></li>
+        <li><a href="<?= htmlspecialchars($base) ?>/admin/settings"><i></i> Settings</a></li>
     </ul>
         <div class="admin-profile js-admin-profile">
         <button type="button" class="admin-profile-trigger" aria-haspopup="true" aria-expanded="false">
@@ -49,7 +49,7 @@ $recentLogs = $data['recentLogs'] ?? [];
 <main class="main-content">
     <header class="topbar">
         <div class="search-bar">
-            <span>&#128269;</span>
+            <span></span>
             <input id="admin-global-search" type="text" placeholder="Search this page..." autocomplete="off" />
         </div>
     </header>
@@ -57,11 +57,17 @@ $recentLogs = $data['recentLogs'] ?? [];
     <section class="dashboard">
         <h1>Dashboard</h1>
         <p class="subtitle">Welcome back! Here's what's happening today.</p>
-        <p class="ux-hint">&#9432; Metrics and activity update automatically as system events are recorded.</p>
+        <p class="ux-hint"> Metrics and activity update automatically as system events are recorded.</p>
 
         <div class="stats-grid">
             <div class="card">
-                <div class="card-icon blue"><i>&#128101;</i></div>
+                <div class="card-icon user-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <circle cx="12" cy="9" r="3" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <path d="M6.5 17.5c1.3-2 3.2-3 5.5-3s4.2 1 5.5 3" fill="none" stroke="#000000" stroke-width="1.7" stroke-linecap="round"></path>
+                    </svg>
+                </div>
                 <div>
                     <h2><?= (int)$s['totalPatients'] + (int)$s['totalGuardians'] ?></h2>
                     <p>Total Active Users</p>
@@ -69,7 +75,13 @@ $recentLogs = $data['recentLogs'] ?? [];
                 </div>
             </div>
             <div class="card">
-                <div class="card-icon green"><i>&#128104;&#8205;&#9877;&#65039;</i></div>
+                <div class="card-icon user-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <circle cx="12" cy="9" r="3" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <path d="M6.5 17.5c1.3-2 3.2-3 5.5-3s4.2 1 5.5 3" fill="none" stroke="#000000" stroke-width="1.7" stroke-linecap="round"></path>
+                    </svg>
+                </div>
                 <div>
                     <h2><?= $s['activePharmacists'] ?></h2>
                     <p>Active Pharmacists</p>
@@ -77,7 +89,13 @@ $recentLogs = $data['recentLogs'] ?? [];
                 </div>
             </div>
             <div class="card">
-                <div class="card-icon purple"><i>&#128200;</i></div>
+                <div class="card-icon user-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <circle cx="12" cy="9" r="3" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <path d="M6.5 17.5c1.3-2 3.2-3 5.5-3s4.2 1 5.5 3" fill="none" stroke="#000000" stroke-width="1.7" stroke-linecap="round"></path>
+                    </svg>
+                </div>
                 <div>
                     <h2><?= (int)($s['patientsToday'] ?? 0) ?></h2>
                     <p>Patients Today</p>
@@ -85,7 +103,13 @@ $recentLogs = $data['recentLogs'] ?? [];
                 </div>
             </div>
             <div class="card">
-                <div class="card-icon pink"><i>&#128105;</i></div>
+                <div class="card-icon user-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <circle cx="12" cy="9" r="3" fill="none" stroke="#000000" stroke-width="1.7"></circle>
+                        <path d="M6.5 17.5c1.3-2 3.2-3 5.5-3s4.2 1 5.5 3" fill="none" stroke="#000000" stroke-width="1.7" stroke-linecap="round"></path>
+                    </svg>
+                </div>
                 <div>
                     <h2><?= $s['totalGuardians'] ?></h2>
                     <p>Total Guardians</p>
@@ -98,7 +122,7 @@ $recentLogs = $data['recentLogs'] ?? [];
     <section class="recent-activity">
         <div class="activity-card">
             <div class="activity-header">
-                <span class="activity-icon">&#128200;</span>
+                <span class="activity-icon"></span>
                 <div>
                     <h2>Recent Activity</h2>
                     <p>Latest system actions and events</p>
@@ -109,7 +133,6 @@ $recentLogs = $data['recentLogs'] ?? [];
                 <?php if (empty($recentLogs)): ?>
                     <li>
                         <div class="activity-left">
-                            <span class="activity-badge blue">&#10003;</span>
                             <div>
                                 <strong>System</strong>
                                 <p>No recent activity found yet.</p>
@@ -128,9 +151,6 @@ $recentLogs = $data['recentLogs'] ?? [];
                     ?>
                     <li class="<?= $isHiddenInitially ? 'activity-item is-hidden' : 'activity-item' ?>" <?= $isHiddenInitially ? 'style="display:none;"' : '' ?>>
                         <div class="activity-left">
-                            <span class="activity-badge <?= htmlspecialchars($tone) ?>">
-                                <?= $tone === 'red' ? '&#10007;' : '&#10003;' ?>
-                            </span>
                             <div>
                                 <strong><?= htmlspecialchars($name) ?></strong>
                                 <p><?= htmlspecialchars($action) ?></p>
@@ -178,4 +198,6 @@ $recentLogs = $data['recentLogs'] ?? [];
 </script>
 </body>
 </html>
+
+
 

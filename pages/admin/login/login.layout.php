@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $pageTitle = 'Medora - Admin Login';
 $authCss = 'login/login-guardian.css';
 $base = APP_BASE ?: '';
@@ -38,7 +38,7 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
                             name="password"
                             placeholder="Enter your password"
                             required>
-                        <button type="button" id="passwordToggle" class="password-toggle" aria-label="Toggle password">&#128065;</button>
+                        <button type="button" id="passwordToggle" class="password-toggle" aria-label="Toggle password"></button>
                     </div>
 
                     <div class="form-options">
@@ -71,4 +71,5 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
 </body>
 
 </html>
+
 
