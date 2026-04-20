@@ -128,14 +128,4 @@ class SettingsModel
         ", 'si', [$hashed, $adminId]);
     }
 
-    // Kept for backward compatibility where key-value settings are still used.
-    public static function getAll(): array
-    {
-        $settings = [];
-        $rows = Database::fetchAll("SELECT * FROM settings");
-        foreach ($rows as $row) {
-            $settings[$row['config_key']] = $row['config_value'];
-        }
-        return $settings;
-    }
 }

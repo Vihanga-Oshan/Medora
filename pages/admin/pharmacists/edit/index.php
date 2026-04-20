@@ -1,6 +1,6 @@
-﻿<?php
+<?php
 /**
- * /admin/pharmacists/edit â€” Edit pharmacist handler and view
+ * /admin/pharmacists/edit — Edit pharmacist handler and view
  */
 require_once __DIR__ . '/../../common/admin.head.php';
 require_once __DIR__ . '/../../common/admin.activity.php';
@@ -35,7 +35,7 @@ $base = APP_BASE ?: '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Pharmacist | Admin</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=7">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/add-pharmacist.css">
 </head>
 <body class="admin-body admin-add-pharmacist-page">
@@ -79,6 +79,7 @@ $base = APP_BASE ?: '';
     <section class="section-container">
         <div class="section-header">
             <div>
+                <a href="<?= htmlspecialchars($base) ?>/admin/pharmacists" class="back-link">&#8592; Back to Pharmacists</a>
                 <h1>Edit Pharmacist Details</h1>
                 <p>Update account information for <?= htmlspecialchars($ph['name']) ?></p>
             </div>

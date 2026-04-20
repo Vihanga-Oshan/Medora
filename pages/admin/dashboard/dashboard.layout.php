@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Admin Dashboard Layout (Medora)
  */
@@ -12,7 +12,7 @@ $recentLogs = $data['recentLogs'] ?? [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Medora</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=7">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/dashboard.css?v=2">
 </head>
 <body class="admin-body">

@@ -61,23 +61,30 @@ body,
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 22px 20px 20px;
+  gap: 14px;
+  padding: 18px 18px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .logo img {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .logo span,
 .logo-text {
   color: #f9fafb;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  line-height: 1.15;
+  text-transform: none;
+  text-shadow: 0 1px 0 rgba(2, 6, 23, 0.35);
 }
 
 .nav-links {

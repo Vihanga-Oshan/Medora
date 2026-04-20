@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Admin Settings Layout
  */
@@ -14,7 +14,7 @@ $base = APP_BASE ?: '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Settings | Medora Admin</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=7">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/user-mgt.css?v=3">
 </head>
 <body class="admin-body admin-settings-page">

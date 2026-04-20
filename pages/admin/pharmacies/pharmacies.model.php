@@ -29,14 +29,6 @@ class PharmaciesModel
         );
     }
 
-    public static function toggleStatus(int $id): bool
-    {
-        $id = (int) $id;
-        if ($id <= 0)
-            return false;
-        return Database::execute("UPDATE pharmacies SET status = IF(status='active','inactive','active'), updated_at = NOW() WHERE id = ?", 'i', [$id]);
-    }
-
     public static function softDelete(int $id): bool
     {
         $id = (int) $id;

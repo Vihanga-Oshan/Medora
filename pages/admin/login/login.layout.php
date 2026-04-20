@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = 'Medora - Admin Login';
 $authCss = 'login/login-guardian.css';
 $base = APP_BASE ?: '';
@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../auth/common/auth.head.php';
         <section class="auth-form-panel">
             <div class="login-container">
                 <div class="logo">
-                    <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora Logo">
+                    <img src="<?= htmlspecialchars($base) ?>/assets/img/logo.png" alt="Medora" onerror="this.style.display='none'">
                 </div>
 
                 <h1>Admin Portal</h1>

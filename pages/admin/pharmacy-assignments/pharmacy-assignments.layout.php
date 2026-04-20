@@ -1,11 +1,11 @@
-﻿<?php $base = APP_BASE ?: ''; ?>
+<?php $base = APP_BASE ?: ''; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacy Assignments | Medora Admin</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=7">
 </head>
 <body class="admin-body">
 <aside class="sidebar">

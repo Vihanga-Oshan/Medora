@@ -30,28 +30,56 @@ class PharmacistsModel
         return (int) $digits;
     }
 
-    public static function getAll(string $search = ''): array
+    public static function getAll(int $pharmacyId = 0): array
     {
         $table = self::tableName();
-        $search = trim($search);
 
-        $filters = ["status = 'ACTIVE'"];
-        $types = '';
+        $filters = ["p.status = 'ACTIVE'"];
+        $types = "";
         $params = [];
-        if ($search !== '') {
-            $like = '%' . $search . '%';
-            $filters[] = "(name LIKE ? OR email LIKE ? OR CAST(id AS CHAR) LIKE ?)";
-            $types = 'sss';
-            $params = [$like, $like, $like];
+
+        if ($pharmacyId > 0) {
+            $filters[] = "pu.pharmacy_id = ?";
+            $types .= "i";
+            $params[] = $pharmacyId;
         }
         $where = $filters ? "WHERE " . implode(' AND ', $filters) : "";
 
         return Database::fetchAll("
-            SELECT id, name, email, '' AS phone, CAST(id AS CHAR) AS license_no, status, created_at
-            FROM `$table`
+            SELECT
+                p.id,
+                p.name,
+                p.email,
+                '' AS phone,
+                COALESCE(NULLIF(p.license_no, ''), CAST(p.id AS CHAR)) AS license_no,
+                p.status,
+                p.created_at,
+                COALESCE(ph.name, 'Unassigned') AS pharmacy_name,
+                COALESCE(pu.pharmacy_id, 0) AS pharmacy_id
+            FROM `$table` p
+            LEFT JOIN pharmacy_users pu
+                ON pu.id = (
+                    SELECT pu2.id
+                    FROM pharmacy_users pu2
+                    WHERE pu2.pharmacist_id = p.id
+                      AND pu2.status = 'active'
+                    ORDER BY pu2.is_primary DESC, pu2.id ASC
+                    LIMIT 1
+                )
+            LEFT JOIN pharmacies ph ON ph.id = pu.pharmacy_id
             $where
-            ORDER BY created_at DESC
+            ORDER BY p.created_at DESC
         ", $types, $params);
+    }
+
+    public static function getPharmacyFilters(): array
+    {
+        return Database::fetchAll("
+            SELECT id, name
+            FROM pharmacies
+            WHERE status = 'active'
+            ORDER BY name ASC
+        ");
     }
 
     public static function getById(int $id): ?array
@@ -76,7 +104,8 @@ class PharmacistsModel
         $emailRaw = trim((string) ($data['email'] ?? ''));
         $licenseIdRaw = $data['id'] ?? ($data['license_no'] ?? '');
         $pharmacyId = (int) ($data['pharmacy_id'] ?? 0);
-        $passwordRaw = (string) ($data['password'] ?? '');
+        $passwordRaw = trim((string) ($data['password'] ?? ''));
+        $confirmPasswordRaw = trim((string) ($data['confirm_password'] ?? ''));
 
         if ($nameRaw === '' || $emailRaw === '') {
             return false;
@@ -84,6 +113,14 @@ class PharmacistsModel
 
         $licenseId = self::normalizeLicenseId($licenseIdRaw);
         if ($licenseId <= 0) {
+            return false;
+        }
+
+        if ($passwordRaw === '' || $confirmPasswordRaw === '') {
+            return false;
+        }
+
+        if ($passwordRaw !== $confirmPasswordRaw) {
             return false;
         }
 

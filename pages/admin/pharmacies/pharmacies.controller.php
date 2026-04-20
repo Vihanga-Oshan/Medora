@@ -34,4 +34,24 @@ if (Request::isPost()) {
     }
 }
 
-$pharmacies = PharmaciesModel::all();
+$allPharmacies = PharmaciesModel::all();
+$cityFilter = trim((string) (Request::get('city') ?? ''));
+
+$cityMap = [];
+foreach ($allPharmacies as $pharmacyRow) {
+    $cityName = trim((string) ($pharmacyRow['city'] ?? ''));
+    if ($cityName === '') {
+        continue;
+    }
+    $cityMap[strtolower($cityName)] = $cityName;
+}
+$cities = array_values($cityMap);
+usort($cities, static fn(string $a, string $b): int => strcasecmp($a, $b));
+
+$pharmacies = $allPharmacies;
+if ($cityFilter !== '') {
+    $pharmacies = array_values(array_filter(
+        $allPharmacies,
+        static fn(array $row): bool => strcasecmp(trim((string) ($row['city'] ?? '')), $cityFilter) === 0
+    ));
+}

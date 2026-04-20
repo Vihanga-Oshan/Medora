@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $base = APP_BASE ?: '';
 ?>
 <!DOCTYPE html>
@@ -7,7 +7,7 @@ $base = APP_BASE ?: '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Pharmacies | Medora Admin</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=6">
+    <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/admin/admin-style.css?v=7">
 </head>
 <body class="admin-body">
 <aside class="sidebar">
@@ -74,10 +74,28 @@ $base = APP_BASE ?: '';
         </section>
 
         <section class="card panel-card">
+            <h3>Filter Pharmacies</h3>
+            <form method="get" class="admin-grid">
+                <select name="city">
+                    <option value="">All Cities</option>
+                    <?php foreach (($cities ?? []) as $cityName): ?>
+                        <option value="<?= htmlspecialchars((string)$cityName) ?>" <?= (($cityFilter ?? '') === (string)$cityName) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars((string)$cityName) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <button class="btn btn-primary" type="submit">Filter</button>
+            </form>
+        </section>
+
+        <section class="card panel-card">
             <h3>All Pharmacies</h3>
             <table class="data-table">
                 <thead><tr><th>Name</th><th>Address</th><th>City</th><th>Lat/Lng</th><th>Action</th></tr></thead>
                 <tbody>
+                <?php if (empty($pharmacies)): ?>
+                    <tr><td colspan="5">No pharmacies found for this filter.</td></tr>
+                <?php endif; ?>
                 <?php foreach ($pharmacies as $p): ?>
                     <tr>
                         <td><?= htmlspecialchars((string)$p['name']) ?></td>

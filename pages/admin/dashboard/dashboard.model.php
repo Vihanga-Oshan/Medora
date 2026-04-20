@@ -28,7 +28,7 @@ class DashboardModel
 
     public static function getSummary(): array
     {
-        $activePharmacists = self::countRows('pharmacist');
+        $activePharmacists = self::countRows('pharmacist', "status = 'ACTIVE'");
 
         // Patient counts
         $totalPatients = self::countRows('patient');
