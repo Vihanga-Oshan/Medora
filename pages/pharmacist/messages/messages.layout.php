@@ -154,7 +154,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                                         placeholder="Write your message..." autocomplete="off" required>
                                     <button type="submit" class="send-btn" aria-label="Send message">
                                         <img src="<?= htmlspecialchars($base) ?>/assets/icons/check-mark.png" class="send-icon"
-                                            alt="" aria-hidden="true">
+                                            alt="" aria-hidden="true"
+                                            style="width:18px;height:18px;display:block;object-fit:contain;flex-shrink:0;">
                                     </button>
                                 </form>
                             <?php endif; ?>

@@ -157,6 +157,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                                     <textarea name="instructions[]" rows="2"
                                         placeholder="E.g. Take with water after meals..."></textarea>
 
+                                        
+
                                     <button type="button" class="btn-reject" onclick="removeRow(this)">Remove</button>
                                     <br><br>
                                     <hr>

@@ -1,7 +1,5 @@
 <?php
-/**
- * Prescriptions Model - all DB queries for the prescriptions module.
- */
+
 require_once ROOT . '/core/PharmacyOrderSupport.php';
 
 class PrescriptionsModel

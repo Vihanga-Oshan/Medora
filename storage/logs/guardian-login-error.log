@@ -1,1 +1,5 @@
 [2026-04-11 08:36:35] [ERROR] No guardian table resolved. {"nic_suffix":"0444"}
+[2026-04-20 14:19:56] [ERROR] Guardian account not found for NIC. {"nic_suffix":"3745"}
+[2026-04-20 14:19:56] [ERROR] Guardian login failed. {"nic_suffix":"3745","reason":"guardian_not_found"}
+[2026-04-20 14:20:16] [ERROR] Guardian account not found for NIC. {"nic_suffix":"3745"}
+[2026-04-20 14:20:16] [ERROR] Guardian login failed. {"nic_suffix":"3745","reason":"guardian_not_found"}

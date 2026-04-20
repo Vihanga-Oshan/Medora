@@ -140,12 +140,21 @@ body.messages-page .main-content {
     width: 46px;
     height: 46px;
     border-radius: 12px;
+    overflow: hidden;
 }
 
 .pharmacist-chat-layout .send-btn svg,
 .pharmacist-chat-layout .send-btn img {
     width: 18px;
     height: 18px;
+}
+
+.pharmacist-chat-layout .send-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .messages-flash {

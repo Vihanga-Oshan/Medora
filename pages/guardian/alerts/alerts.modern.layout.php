@@ -16,6 +16,7 @@ $iconAsset = static function (string $file, string $class = 'icon-svg') use ($ba
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -207,190 +208,207 @@ $iconAsset = static function (string $file, string $class = 'icon-svg') use ($ba
         }
     </style>
 </head>
+
 <body class="guardian-body">
 
-<?php require_once __DIR__ . '/../common/guardian.navbar.php'; ?>
+    <?php require_once __DIR__ . '/../common/guardian.navbar.php'; ?>
 
-<div class="dashboard-wrapper">
-    <header class="dashboard-hero guardian-alerts-hero">
-        <div class="hero-content page-hero-content">
-            <h1 class="page-hero-title">Review guardian alerts.</h1>
-            <p class="page-hero-subtitle">See unread and important updates at a glance.</p>
-        </div>
-        <div class="hero-actions">
-            <?php if ($data['unread'] > 0): ?>
-                <form method="post" action="<?= htmlspecialchars($base) ?>/guardian/alerts">
-                    <input type="hidden" name="action" value="markAllRead">
-                    <button type="submit" class="btn btn-primary">Mark All Read</button>
-                </form>
+    <div class="dashboard-wrapper">
+        <header class="dashboard-hero guardian-alerts-hero">
+            <div class="hero-content page-hero-content">
+                <h1 class="page-hero-title">Review guardian alerts.</h1>
+                <p class="page-hero-subtitle">See unread and important updates at a glance.</p>
+            </div>
+            <div class="hero-actions">
+                <?php if ($data['unread'] > 0): ?>
+                    <form method="post" action="<?= htmlspecialchars($base) ?>/guardian/alerts">
+                        <input type="hidden" name="action" value="markAllRead">
+                        <button type="submit" class="btn btn-primary">Mark All Read</button>
+                    </form>
+                <?php endif; ?>
+                <a href="<?= htmlspecialchars($base) ?>/guardian/patients" class="btn btn-outline">View Patients</a>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <?php if ($flash): ?>
+                <div class="guardian-alert-banner guardian-alert-banner-<?= htmlspecialchars($flash['type']) ?>">
+                    <?= htmlspecialchars($flash['message']) ?>
+                </div>
             <?php endif; ?>
-            <a href="<?= htmlspecialchars($base) ?>/guardian/patients" class="btn btn-outline">View Patients</a>
-        </div>
-    </header>
 
-    <div class="main-layout">
-        <?php if ($flash): ?>
-            <div class="guardian-alert-banner guardian-alert-banner-<?= htmlspecialchars($flash['type']) ?>">
-                <?= htmlspecialchars($flash['message']) ?>
-            </div>
-        <?php endif; ?>
-
-        <section class="stats-overview">
-            <div class="stat-card">
-                <div class="stat-icon-wrapper bg-blue">
-                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/bell.png" class="icon-svg" alt="" aria-hidden="true">
-                </div>
-                <div class="stat-details">
-                    <span class="stat-label">Total Alerts</span>
-                    <h3 class="stat-number"><?= (int)$data['total'] ?></h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon-wrapper bg-yellow">
-                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/clock.png" class="icon-svg" alt="" aria-hidden="true">
-                </div>
-                <div class="stat-details">
-                    <span class="stat-label">Unread</span>
-                    <h3 class="stat-number"><?= (int)$data['unread'] ?></h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon-wrapper bg-red">
-                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/danger.png" class="icon-svg" alt="" aria-hidden="true">
-                </div>
-                <div class="stat-details">
-                    <span class="stat-label">Critical</span>
-                    <h3 class="stat-number"><?= (int)$data['critical'] ?></h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon-wrapper bg-green">
-                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/check-mark.png" class="icon-svg" alt="" aria-hidden="true">
-                </div>
-                <div class="stat-details">
-                    <span class="stat-label">Read</span>
-                    <h3 class="stat-number"><?= (int)$data['resolved'] ?></h3>
-                </div>
-            </div>
-        </section>
-
-        <div class="guardian-alerts-grid">
-            <aside class="card-panel alert-sidebar">
-                <div class="section-header">
-                    <div>
-                        <h2>Filters</h2>
-                        <p class="section-copy">Focus on the alerts that matter right now.</p>
+            <section class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper bg-blue">
+                        <img src="<?= htmlspecialchars($base) ?>/assets/icons/bell.png" class="icon-svg" alt=""
+                            aria-hidden="true">
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Total Alerts</span>
+                        <h3 class="stat-number"><?= (int) $data['total'] ?></h3>
                     </div>
                 </div>
-
-                <nav class="alert-filter-list">
-                    <a class="alert-filter-chip <?= $filter === 'all' ? 'active' : '' ?>" href="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=all">
-                        <span>All alerts</span>
-                        <strong><?= (int)$data['total'] ?></strong>
-                    </a>
-                    <a class="alert-filter-chip <?= $filter === 'unread' ? 'active' : '' ?>" href="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=unread">
-                        <span>Unread</span>
-                        <strong><?= (int)$data['unread'] ?></strong>
-                    </a>
-                    <a class="alert-filter-chip <?= $filter === 'critical' ? 'active' : '' ?>" href="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=critical">
-                        <span>Critical</span>
-                        <strong><?= (int)$data['critical'] ?></strong>
-                    </a>
-                </nav>
-
-                <div class="alert-sidebar-summary">
-                    <h3>Quick Guide</h3>
-                    <p>Unread alerts are highlighted. Critical items stay easy to spot, and each row lets you mark a specific alert as read without leaving the page flow.</p>
-                </div>
-            </aside>
-
-            <section class="card-panel alerts-feed">
-                <div class="section-header">
-                    <div>
-                        <h2>Patient Notifications</h2>
-                        <p class="section-copy">
-                            <?php if ($filter === 'unread'): ?>
-                                Showing unread alerts only.
-                            <?php elseif ($filter === 'critical'): ?>
-                                Showing critical alerts only.
-                            <?php else: ?>
-                                Showing all guardian-visible notifications.
-                            <?php endif; ?>
-                        </p>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper bg-yellow">
+                        <img src="<?= htmlspecialchars($base) ?>/assets/icons/clock.png" class="icon-svg" alt=""
+                            aria-hidden="true">
                     </div>
-                    <span class="date-badge"><?= $iconAsset('clock.png', 'date-icon') ?> <span><?= date('Y-m-d') ?></span></span>
-                </div>
-
-                <?php if (empty($notifications)): ?>
-                    <div class="empty-state-modern alert-empty-state">
-                        <div class="state-icon state-icon-soft"><?= $iconAsset('bell.png', 'state-icon-img') ?></div>
-                        <h3>No alerts in this view</h3>
-                        <p>
-                            <?php if (!empty($allNotifications) && $filter !== 'all'): ?>
-                                Try switching back to all alerts to see your full history.
-                            <?php else: ?>
-                                You have no guardian alerts yet. New medication reminders and patient updates will appear here.
-                            <?php endif; ?>
-                        </p>
+                    <div class="stat-details">
+                        <span class="stat-label">Unread</span>
+                        <h3 class="stat-number"><?= (int) $data['unread'] ?></h3>
                     </div>
-                <?php else: ?>
-                    <div class="alert-feed-list">
-                        <?php foreach ($notifications as $n): ?>
-                            <?php
-                                $type = strtoupper((string)($n['type'] ?? 'GENERAL'));
-                                $isRead = (int)($n['is_read'] ?? 0) === 1;
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper bg-red">
+                        <img src="<?= htmlspecialchars($base) ?>/assets/icons/danger.png" class="icon-svg" alt=""
+                            aria-hidden="true">
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Critical</span>
+                        <h3 class="stat-number"><?= (int) $data['critical'] ?></h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper bg-green">
+                        <img src="<?= htmlspecialchars($base) ?>/assets/icons/check-mark.png" class="icon-svg" alt=""
+                            aria-hidden="true">
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-label">Read</span>
+                        <h3 class="stat-number"><?= (int) $data['resolved'] ?></h3>
+                    </div>
+                </div>
+            </section>
+
+            <div class="guardian-alerts-grid">
+                <aside class="card-panel alert-sidebar">
+                    <div class="section-header">
+                        <div>
+                            <h2>Filters</h2>
+                            <p class="section-copy">Focus on the alerts that matter right now.</p>
+                        </div>
+                    </div>
+
+                    <nav class="alert-filter-list">
+                        <a class="alert-filter-chip <?= $filter === 'all' ? 'active' : '' ?>"
+                            href="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=all">
+                            <span>All alerts</span>
+                            <strong><?= (int) $data['total'] ?></strong>
+                        </a>
+                        <a class="alert-filter-chip <?= $filter === 'unread' ? 'active' : '' ?>"
+                            href="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=unread">
+                            <span>Unread</span>
+                            <strong><?= (int) $data['unread'] ?></strong>
+                        </a>
+                        <a class="alert-filter-chip <?= $filter === 'critical' ? 'active' : '' ?>"
+                            href="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=critical">
+                            <span>Critical</span>
+                            <strong><?= (int) $data['critical'] ?></strong>
+                        </a>
+                    </nav>
+
+                    <div class="alert-sidebar-summary">
+                        <h3>Quick Guide</h3>
+                        <p>Unread alerts are highlighted. Critical items stay easy to spot, and each row lets you mark a
+                            specific alert as read without leaving the page flow.</p>
+                    </div>
+                </aside>
+
+                <section class="card-panel alerts-feed">
+                    <div class="section-header">
+                        <div>
+                            <h2>Patient Notifications</h2>
+                            <p class="section-copy">
+                                <?php if ($filter === 'unread'): ?>
+                                    Showing unread alerts only.
+                                <?php elseif ($filter === 'critical'): ?>
+                                    Showing critical alerts only.
+                                <?php else: ?>
+                                    Showing all guardian-visible notifications.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <span class="date-badge"><?= $iconAsset('clock.png', 'date-icon') ?>
+                            <span><?= date('Y-m-d') ?></span></span>
+                    </div>
+
+                    <?php if (empty($notifications)): ?>
+                        <div class="empty-state-modern alert-empty-state">
+                            <div class="state-icon state-icon-soft"><?= $iconAsset('bell.png', 'state-icon-img') ?></div>
+                            <h3>No alerts in this view</h3>
+                            <p>
+                                <?php if (!empty($allNotifications) && $filter !== 'all'): ?>
+                                    Try switching back to all alerts to see your full history.
+                                <?php else: ?>
+                                    You have no guardian alerts yet. New medication reminders and patient updates will appear
+                                    here.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert-feed-list">
+                            <?php foreach ($notifications as $n): ?>
+                                <?php
+                                $type = strtoupper((string) ($n['type'] ?? 'GENERAL'));
+                                $isRead = (int) ($n['is_read'] ?? 0) === 1;
                                 $rowClass = $isRead ? 'is-read' : 'is-unread';
                                 $badgeClass = $type === 'CRITICAL' ? 'status-missed' : ($type === 'REMINDER' ? 'status-pending' : 'status-taken');
                                 $iconFile = $type === 'CRITICAL' ? 'danger.png' : ($type === 'PRESCRIPTION' ? 'pill.png' : 'bell.png');
-                                $patientPhone = trim((string)($n['patient_phone'] ?? ''));
-                            ?>
-                            <article class="guardian-alert-row <?= htmlspecialchars($rowClass) ?>">
-                                <div class="alert-icon-box <?= htmlspecialchars(strtolower($type)) ?>">
-                                    <?= $iconAsset($iconFile, 'alert-row-icon') ?>
-                                </div>
-
-                                <div class="alert-main">
-                                    <div class="alert-topline">
-                                        <div>
-                                            <h3><?= htmlspecialchars((string)($n['patient_name'] ?? 'Patient')) ?></h3>
-                                            <p class="alert-time"><?= htmlspecialchars(date('M d, Y | H:i', strtotime((string)$n['created_at']))) ?></p>
-                                        </div>
-                                        <span class="status-badge <?= htmlspecialchars($badgeClass) ?>"><?= htmlspecialchars($type) ?></span>
+                                $patientPhone = trim((string) ($n['patient_phone'] ?? ''));
+                                ?>
+                                <article class="guardian-alert-row <?= htmlspecialchars($rowClass) ?>">
+                                    <div class="alert-icon-box <?= htmlspecialchars(strtolower($type)) ?>">
+                                        <?= $iconAsset($iconFile, 'alert-row-icon') ?>
                                     </div>
 
-                                    <p class="alert-message"><?= htmlspecialchars((string)($n['message'] ?? '')) ?></p>
+                                    <div class="alert-main">
+                                        <div class="alert-topline">
+                                            <div>
+                                                <h3><?= htmlspecialchars((string) ($n['patient_name'] ?? 'Patient')) ?></h3>
+                                                <p class="alert-time">
+                                                    <?= htmlspecialchars(date('M d, Y | H:i', strtotime((string) $n['created_at']))) ?>
+                                                </p>
+                                            </div>
+                                            <span
+                                                class="status-badge <?= htmlspecialchars($badgeClass) ?>"><?= htmlspecialchars($type) ?></span>
+                                        </div>
 
-                                    <div class="alert-meta-row">
-                                        <span class="read-state <?= $isRead ? 'read' : 'unread' ?>">
-                                            <?= $isRead ? 'Read' : 'Unread' ?>
-                                        </span>
-                                        <?php if ($patientPhone !== ''): ?>
-                                            <a href="tel:<?= htmlspecialchars($patientPhone) ?>" class="mini-link">Call patient contact</a>
+                                        <p class="alert-message"><?= htmlspecialchars((string) ($n['message'] ?? '')) ?></p>
+
+                                        <div class="alert-meta-row">
+                                            <span class="read-state <?= $isRead ? 'read' : 'unread' ?>">
+                                                <?= $isRead ? 'Read' : 'Unread' ?>
+                                            </span>
+                                            <?php if ($patientPhone !== ''): ?>
+                                                <a href="tel:<?= htmlspecialchars($patientPhone) ?>" class="mini-link">Call patient
+                                                    contact</a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert-actions">
+                                        <?php if (!$isRead): ?>
+                                            <form method="post"
+                                                action="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=<?= urlencode($filter) ?>">
+                                                <input type="hidden" name="action" value="markRead">
+                                                <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">
+                                                <button type="submit" class="btn btn-outline btn-small">Mark Read</button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span class="read-badge">Completed</span>
                                         <?php endif; ?>
                                     </div>
-                                </div>
-
-                                <div class="alert-actions">
-                                    <?php if (!$isRead): ?>
-                                        <form method="post" action="<?= htmlspecialchars($base) ?>/guardian/alerts?filter=<?= urlencode($filter) ?>">
-                                            <input type="hidden" name="action" value="markRead">
-                                            <input type="hidden" name="id" value="<?= (int)$n['id'] ?>">
-                                            <button type="submit" class="btn btn-outline btn-small">Mark Read</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="read-badge">Completed</span>
-                                    <?php endif; ?>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </section>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </section>
+            </div>
         </div>
     </div>
-</div>
 
-<?php require_once __DIR__ . '/../../patient/common/patient.footer.php'; ?>
+    <?php require_once __DIR__ . '/../../patient/common/patient.footer.php'; ?>
 
 </body>
+
 </html>

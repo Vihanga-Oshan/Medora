@@ -1,5 +1,10 @@
 <?php
 require_once __DIR__ . '/../../common/patient.head.php';
-require_once __DIR__ . '/../../prescriptions/prescriptions.model.php';
-require_once __DIR__ . '/upload.controller.php';
-if (empty($redirected)) require_once __DIR__ . '/upload.layout.php';
+
+if (!Request::isPost()) {
+    Response::redirect('/patient/prescriptions');
+    return;
+}
+
+require_once __DIR__ . '/../prescriptions.controller.php';
+require_once __DIR__ . '/../prescriptions.layout.php';

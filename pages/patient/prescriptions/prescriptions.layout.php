@@ -33,7 +33,11 @@ $cssVer = time();
             <h2 class="card-title">Upload New Prescription</h2>
             <p class="card-subtitle">Upload a clear image or PDF of your prescription for pharmacist validation</p>
 
-            <form action="<?= htmlspecialchars($base) ?>/patient/prescriptions/upload" method="post"
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-error"><?= htmlspecialchars((string) $error) ?></div>
+            <?php endif; ?>
+
+            <form action="<?= htmlspecialchars($base) ?>/patient/prescriptions" method="post"
                 enctype="multipart/form-data">
                 <label for="prescriptionFile" class="upload-area" id="uploadZone">
                     <img src="<?= htmlspecialchars($base) ?>/assets/icons/pill.png" class="upload-icon" alt=""
@@ -58,45 +62,7 @@ $cssVer = time();
                     </label>
                 </div>
 
-                <div class="billing-panel" id="billingPanel">
-                    <div class="billing-header">
-                        <h3>Billing and Delivery Details</h3>
-                        <p>Fill this section only when you want the pharmacy to order medicines for you.</p>
-                    </div>
-
-                    <div class="billing-grid">
-                        <label class="field-group">
-                            <span>Billing Name</span>
-                            <input type="text" name="billing_name" required>
-                        </label>
-                        <label class="field-group">
-                            <span>Phone Number</span>
-                            <input type="text" name="billing_phone" required>
-                        </label>
-                        <label class="field-group">
-                            <span>Email</span>
-                            <input type="email" name="billing_email" required>
-                        </label>
-                        <label class="field-group">
-                            <span>Collection Method</span>
-                            <select name="delivery_method" id="deliveryMethod">
-                                <option value="PICKUP">Pick up from pharmacy</option>
-                            </select>
-                        </label>
-                        <label class="field-group field-group-wide" id="billingAddressGroup">
-                            <span>Address</span>
-                            <textarea name="billing_address" rows="3"></textarea>
-                        </label>
-                        <label class="field-group">
-                            <span>City</span>
-                            <input type="text" name="billing_city">
-                        </label>
-                        <label class="field-group field-group-wide">
-                            <span>Notes</span>
-                            <textarea name="billing_notes" rows="3"></textarea>
-                        </label>
-                    </div>
-                </div>
+                <?php require __DIR__ . '/common/billing-delivery.panel.php'; ?>
 
                 <button type="submit" class="btn btn-upload">Upload Prescription</button>
             </form>
@@ -111,40 +77,41 @@ $cssVer = time();
                 </div>
             <?php else: ?>
                 <div class="prescription-list-scroll">
-                <div class="prescription-list">
-                    <?php foreach ($prescriptions as $p): ?>
-                        <div class="prescription-tile">
-                            <a href="<?= htmlspecialchars($base) ?>/prescriptions/file?id=<?= (int) $p['id'] ?>" target="_blank"
-                                class="prescription-thumb">
-                                <?php $isPdf = str_ends_with(strtolower($p['file_name']), '.pdf'); ?>
-                                <?php if ($isPdf): ?>
-                                    <div class="pdf-icon">PDF</div>
-                                <?php else: ?>
-                                    <img src="<?= htmlspecialchars($base) ?>/prescriptions/file?id=<?= (int) $p['id'] ?>"
-                                        alt="<?= htmlspecialchars($p['file_name']) ?>">
-                                <?php endif; ?>
-                            </a>
-                            <div class="prescription-meta">
-                                <div class="prescription-name-date">
-                                    <div class="prescription-name"><?= htmlspecialchars($p['file_name']) ?></div>
-                                    <div class="prescription-date"><?= htmlspecialchars($p['formatted_upload_date']) ?></div>
-                                    <div class="prescription-flags">
-                                        <?php if (!empty($p['wants_medicine_order'])): ?><span class="request-pill">Medicine
-                                                Order</span><?php endif; ?>
-                                        <?php if (!empty($p['wants_schedule'])): ?><span
-                                                class="request-pill request-pill-secondary">Schedule</span><?php endif; ?>
+                    <div class="prescription-list">
+                        <?php foreach ($prescriptions as $p): ?>
+                            <div class="prescription-tile">
+                                <a href="<?= htmlspecialchars($base) ?>/prescriptions/file?id=<?= (int) $p['id'] ?>"
+                                    target="_blank" class="prescription-thumb">
+                                    <?php $isPdf = str_ends_with(strtolower($p['file_name']), '.pdf'); ?>
+                                    <?php if ($isPdf): ?>
+                                        <div class="pdf-icon">PDF</div>
+                                    <?php else: ?>
+                                        <img src="<?= htmlspecialchars($base) ?>/prescriptions/file?id=<?= (int) $p['id'] ?>"
+                                            alt="<?= htmlspecialchars($p['file_name']) ?>">
+                                    <?php endif; ?>
+                                </a>
+                                <div class="prescription-meta">
+                                    <div class="prescription-name-date">
+                                        <div class="prescription-name"><?= htmlspecialchars($p['file_name']) ?></div>
+                                        <div class="prescription-date"><?= htmlspecialchars($p['formatted_upload_date']) ?>
+                                        </div>
+                                        <div class="prescription-flags">
+                                            <?php if (!empty($p['wants_medicine_order'])): ?><span class="request-pill">Medicine
+                                                    Order</span><?php endif; ?>
+                                            <?php if (!empty($p['wants_schedule'])): ?><span
+                                                    class="request-pill request-pill-secondary">Schedule</span><?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div class="prescription-actions">
+                                        <a href="<?= htmlspecialchars($base) ?>/patient/prescriptions/edit?id=<?= (int) $p['id'] ?>"
+                                            class="prescription-link edit">Edit</a>
+                                        <button class="prescription-link delete" type="button"
+                                            onclick="confirmDelete(<?= (int) $p['id'] ?>)">Delete</button>
                                     </div>
                                 </div>
-                                <div class="prescription-actions">
-                                    <a href="<?= htmlspecialchars($base) ?>/patient/prescriptions/edit?id=<?= (int) $p['id'] ?>"
-                                        class="prescription-link edit">Edit</a>
-                                    <button class="prescription-link delete" type="button"
-                                        onclick="confirmDelete(<?= (int) $p['id'] ?>)">Delete</button>
-                                </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
