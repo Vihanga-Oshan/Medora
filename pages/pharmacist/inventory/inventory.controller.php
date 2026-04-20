@@ -1,7 +1,5 @@
 <?php
-/**
- * Medicine Inventory Controller
- */
+
 require_once __DIR__ . '/inventory.model.php';
 
 if (Request::isPost() && (string) ($_POST['action'] ?? '') === 'adjust_stock') {

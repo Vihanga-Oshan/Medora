@@ -1,8 +1,4 @@
 <?php
-/**
- * Protected prescription file serving endpoint.
- * URL: /prescriptions/file?id={prescription_id}[&download=1]
- */
 
 $auth = Auth::getUser();
 if (!$auth) {

@@ -1,7 +1,5 @@
 <?php
-/**
- * Approved Prescriptions Controller
- */
+
 $approvedPrescriptions = ApprovedPrescriptionsModel::getApprovedPrescriptions();
 
 $data = [

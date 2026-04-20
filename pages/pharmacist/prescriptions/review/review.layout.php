@@ -1,8 +1,5 @@
 ﻿<?php
-/**
- * Prescription Review Layout
- * Based on: java/src/main/webapp/WEB-INF/views/pharmacist/prescription-review.jsp
- */
+
 $p = $data['prescription'] ?? [];
 $pt = $data['patient'] ?? [];
 $order = $data['order'] ?? [];
@@ -11,10 +8,7 @@ $filePath = trim((string)($p['file_path'] ?? ''));
 $isPdf = str_ends_with(strtolower($fileName), '.pdf');
 $base = APP_BASE ?: '';
 
-/**
- * Prescription Review Layout
- * Based on: java/src/main/webapp/WEB-INF/views/pharmacist/prescription-review.jsp
- */
+
 $p = $data['prescription'] ?? [];
 $pt = $data['patient'] ?? [];
 $fileName = (string)($p['file_name'] ?? '');
@@ -22,10 +16,7 @@ $filePath = trim((string)($p['file_path'] ?? ''));
 $isPdf = str_ends_with(strtolower($fileName), '.pdf');
 $base = APP_BASE ?: '';
 
-/**
- * Prescription Review Layout
- * Based on: java/src/main/webapp/WEB-INF/views/pharmacist/prescription-review.jsp
- */
+
 $p = $data['prescription'] ?? [];
 $pt = $data['patient'] ?? [];
 $fileName = (string)($p['file_name'] ?? '');
@@ -33,10 +24,7 @@ $filePath = trim((string)($p['file_path'] ?? ''));
 $isPdf = str_ends_with(strtolower($fileName), '.pdf');
 $base = APP_BASE ?: '';
 
-/**
- * Prescription Review Layout
- * Based on: java/src/main/webapp/WEB-INF/views/pharmacist/prescription-review.jsp
- */
+
 $p = $data['prescription'] ?? [];
 $pt = $data['patient'] ?? [];
 $fileName = (string)($p['file_name'] ?? '');

@@ -87,6 +87,7 @@ class PatientsModel
             WHERE sm.patient_nic = ?
               AND ? BETWEEN ms.start_date
                               AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . ScheduleVisibility::activeCondition('ms') . "
             ORDER BY ms.id ASC
         ", 'sss', [$date, $nic, $date]);
     }

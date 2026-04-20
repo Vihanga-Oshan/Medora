@@ -1,9 +1,4 @@
 <?php
-
-/**
- * Pharmacist head guard.
- * Verifies the pharmacist JWT and hydrates the active pharmacist profile.
- */
 $authUser = Auth::requireRole('pharmacist');
 
 $pharmacistId = (int) ($authUser['id'] ?? 0);
@@ -34,7 +29,7 @@ $user = [
     'licenseNo' => $pharmacist['license_no'] ?? '',
     'status' => $pharmacist['status'] ?? 'ACTIVE',
     'displayName' => $displayName,
-    'profilePictureUrl' => (APP_BASE ?: '') . '/assets/img/avatar.png',
+    'profilePictureUrl' => (APP_BASE ?: '') . '/assets/img/avatar.jpg',
 ];
 
 $currentPharmacyId = PharmacyContext::resolvePharmacistPharmacyId((int) $user['id']);

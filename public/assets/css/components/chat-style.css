@@ -330,7 +330,8 @@
     transform: scale(0.95);
 }
 
-.send-btn svg {
+.send-btn svg,
+.send-btn img {
     width: 24px;
     height: 24px;
 }

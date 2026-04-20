@@ -74,7 +74,7 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
               <td><?= htmlspecialchars($p['email'] ?? '') ?></td>
               <td><?= htmlspecialchars($p['emergency_contact'] ?? '') ?></td>
               <td>
-                <a href="<?= htmlspecialchars($base) ?>/pharmacist/view-schedule?nic=<?= urlencode((string)($p['nic'] ?? '')) ?>" class="btn-view">View Schedule</a>
+                <a href="<?= htmlspecialchars($base) ?>/pharmacist/view-schedule?nic=<?= urlencode((string)($p['nic'] ?? '')) ?>" class="btn-view">Manage Schedule</a>
               </td>
             </tr>
           <?php endforeach; ?>

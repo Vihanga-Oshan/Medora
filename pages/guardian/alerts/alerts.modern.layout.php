@@ -8,6 +8,11 @@ $filter = $data['filter'];
 $flash = $data['flash'];
 $base = APP_BASE ?: '';
 $cssVer = time();
+$iconAsset = static function (string $file, string $class = 'icon-svg') use ($base): string {
+    $src = htmlspecialchars($base . '/assets/icons/' . $file, ENT_QUOTES, 'UTF-8');
+    $class = htmlspecialchars($class, ENT_QUOTES, 'UTF-8');
+    return '<img src="' . $src . '" class="' . $class . '" alt="" aria-hidden="true">';
+};
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -178,6 +183,28 @@ $cssVer = time();
             margin-bottom: 12px;
             padding-bottom: 10px;
         }
+
+        .date-icon {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .state-icon-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .alert-row-icon {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            display: block;
+        }
     </style>
 </head>
 <body class="guardian-body">
@@ -210,28 +237,36 @@ $cssVer = time();
 
         <section class="stats-overview">
             <div class="stat-card">
-                <div class="stat-icon-wrapper bg-blue">&#128276;</div>
+                <div class="stat-icon-wrapper bg-blue">
+                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/bell.png" class="icon-svg" alt="" aria-hidden="true">
+                </div>
                 <div class="stat-details">
                     <span class="stat-label">Total Alerts</span>
                     <h3 class="stat-number"><?= (int)$data['total'] ?></h3>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-wrapper bg-yellow">&#128339;</div>
+                <div class="stat-icon-wrapper bg-yellow">
+                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/clock.png" class="icon-svg" alt="" aria-hidden="true">
+                </div>
                 <div class="stat-details">
                     <span class="stat-label">Unread</span>
                     <h3 class="stat-number"><?= (int)$data['unread'] ?></h3>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-wrapper bg-red">&#9888;</div>
+                <div class="stat-icon-wrapper bg-red">
+                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/danger.png" class="icon-svg" alt="" aria-hidden="true">
+                </div>
                 <div class="stat-details">
                     <span class="stat-label">Critical</span>
                     <h3 class="stat-number"><?= (int)$data['critical'] ?></h3>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon-wrapper bg-green">&#9989;</div>
+                <div class="stat-icon-wrapper bg-green">
+                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/check-mark.png" class="icon-svg" alt="" aria-hidden="true">
+                </div>
                 <div class="stat-details">
                     <span class="stat-label">Read</span>
                     <h3 class="stat-number"><?= (int)$data['resolved'] ?></h3>
@@ -283,12 +318,12 @@ $cssVer = time();
                             <?php endif; ?>
                         </p>
                     </div>
-                    <span class="date-badge">&#128197; <span><?= date('Y-m-d') ?></span></span>
+                    <span class="date-badge"><?= $iconAsset('clock.png', 'date-icon') ?> <span><?= date('Y-m-d') ?></span></span>
                 </div>
 
                 <?php if (empty($notifications)): ?>
                     <div class="empty-state-modern alert-empty-state">
-                        <div class="state-icon state-icon-soft">&#128276;</div>
+                        <div class="state-icon state-icon-soft"><?= $iconAsset('bell.png', 'state-icon-img') ?></div>
                         <h3>No alerts in this view</h3>
                         <p>
                             <?php if (!empty($allNotifications) && $filter !== 'all'): ?>
@@ -306,12 +341,12 @@ $cssVer = time();
                                 $isRead = (int)($n['is_read'] ?? 0) === 1;
                                 $rowClass = $isRead ? 'is-read' : 'is-unread';
                                 $badgeClass = $type === 'CRITICAL' ? 'status-missed' : ($type === 'REMINDER' ? 'status-pending' : 'status-taken');
-                                $icon = $type === 'CRITICAL' ? '&#9888;' : ($type === 'PRESCRIPTION' ? '&#128196;' : '&#128276;');
+                                $iconFile = $type === 'CRITICAL' ? 'danger.png' : ($type === 'PRESCRIPTION' ? 'pill.png' : 'bell.png');
                                 $patientPhone = trim((string)($n['patient_phone'] ?? ''));
                             ?>
                             <article class="guardian-alert-row <?= htmlspecialchars($rowClass) ?>">
                                 <div class="alert-icon-box <?= htmlspecialchars(strtolower($type)) ?>">
-                                    <span><?= $icon ?></span>
+                                    <?= $iconAsset($iconFile, 'alert-row-icon') ?>
                                 </div>
 
                                 <div class="alert-main">

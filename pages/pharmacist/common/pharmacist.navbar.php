@@ -37,7 +37,9 @@ $base = APP_BASE ?: '';
         <li class="<?= $isMessages ? 'active' : '' ?>"><a
                 href="<?= htmlspecialchars($base) ?>/pharmacist/messages"><i>&#128172;</i> Messages</a></li>
         <li class="<?= $isMedicine ? 'active' : '' ?>"><a
-                href="<?= htmlspecialchars($base) ?>/pharmacist/medicine-inventory"><i>&#128138;</i> Medicine</a></li>
+                href="<?= htmlspecialchars($base) ?>/pharmacist/medicine-inventory"><i><img
+                        src="<?= htmlspecialchars($base) ?>/assets/icons/pill.png" alt="" aria-hidden="true"
+                        style="width:1em;height:1em;object-fit:contain;display:block;"></i> Medicine</a></li>
         <li class="<?= $isSettings ? 'active' : '' ?>"><a
                 href="<?= htmlspecialchars($base) ?>/pharmacist/settings"><i>&#9881;</i> Settings</a></li>
     </ul>

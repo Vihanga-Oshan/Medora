@@ -1,8 +1,5 @@
 ﻿<?php
-/**
- * /pharmacist/validate - Prescription Validation page
- * Java-compatible route with PHP MVC split.
- */
+
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id > 0) {

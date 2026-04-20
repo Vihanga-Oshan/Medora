@@ -1,7 +1,5 @@
 <?php
-/**
- * Prescription Validation Model
- */
+
 require_once ROOT . '/core/PharmacyOrderSupport.php';
 
 class ValidateModel

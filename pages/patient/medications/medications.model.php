@@ -55,6 +55,7 @@ class MedicationsModel
             WHERE sm.patient_nic = ?
               AND ? BETWEEN ms.start_date
                               AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . ScheduleVisibility::activeCondition('ms') . "
               AND " . self::pharmacyCondition('sm', 'schedule_master') . "
               AND " . self::pharmacyCondition('ms', 'medication_schedule') . "
               AND " . self::pharmacyCondition('m', 'medicines') . "
@@ -89,6 +90,7 @@ class MedicationsModel
               AND ml.patient_nic = ?
               AND ml.dose_date = ?
               AND ml.time_slot = ?
+              AND " . ScheduleVisibility::activeCondition('ms') . "
               AND " . self::pharmacyCondition('ml', 'medication_log') . "
             LIMIT 1
         ", 'isss', [$scheduleId, $nic, $today, $slot]);

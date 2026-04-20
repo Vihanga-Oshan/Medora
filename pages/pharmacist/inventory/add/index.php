@@ -77,7 +77,9 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                     <img src="<?= htmlspecialchars($base) ?>/assets/img/avatar.png" alt="User Avatar" class="avatar">
                     <span class="user-role"><?= htmlspecialchars($user['name'] ?? 'Pharmacist') ?></span>
                 </div>
-                <div class="greeting"><span class="greeting-icon">&#128138;</span>
+                <div class="greeting"><span class="greeting-icon"><img
+                            src="<?= htmlspecialchars($base) ?>/assets/icons/pill.png" alt="" aria-hidden="true"
+                            style="width:1em;height:1em;object-fit:contain;display:block;"></span>
                     <div><span class="greeting-text">Add New Medicine</span><span class="date-time">Fill medicine
                             details</span></div>
                 </div>
@@ -107,7 +109,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             <?php foreach ($brands as $b): ?>
                                 <?php $selected = ((string) ($_POST['brand_existing'] ?? '') === (string) $b) ? 'selected' : ''; ?>
                                 <option value="<?= htmlspecialchars((string) $b) ?>" <?= $selected ?>>
-                                    <?= htmlspecialchars((string) $b) ?></option>
+                                    <?= htmlspecialchars((string) $b) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small style="color:#64748b;display:block;margin-top:4px;">or add a new brand</small>
@@ -133,7 +136,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             <?php foreach ($manufacturers as $m): ?>
                                 <?php $selected = ((string) ($_POST['manufacturer_existing'] ?? '') === (string) $m) ? 'selected' : ''; ?>
                                 <option value="<?= htmlspecialchars((string) $m) ?>" <?= $selected ?>>
-                                    <?= htmlspecialchars((string) $m) ?></option>
+                                    <?= htmlspecialchars((string) $m) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small style="color:#64748b;display:block;margin-top:4px;">or add a new manufacturer</small>
@@ -153,7 +157,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             <?php foreach ($suppliers as $supplier): ?>
                                 <?php $selected = ((string) ($_POST['supplier_existing'] ?? '') === (string) ($supplier['id'] ?? '')) ? 'selected' : ''; ?>
                                 <option value="<?= (int) ($supplier['id'] ?? 0) ?>" <?= $selected ?>>
-                                    <?= htmlspecialchars((string) ($supplier['name'] ?? '')) ?></option>
+                                    <?= htmlspecialchars((string) ($supplier['name'] ?? '')) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small style="color:#64748b;display:block;margin-top:4px;">or create a new supplier</small>
@@ -196,7 +201,10 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             name="supplier_address"><?= htmlspecialchars((string) ($_POST['supplier_address'] ?? '')) ?></textarea>
                     </div>
 
-                    <div class="form-section-title"><span>&#128138;</span> Dosage &amp; Presentation</div>
+                    <div class="form-section-title"><span><img
+                                src="<?= htmlspecialchars($base) ?>/assets/icons/pill.png" alt="" aria-hidden="true"
+                                style="width:1em;height:1em;object-fit:contain;display:block;"></span> Dosage &amp;
+                        Presentation</div>
                     <div class="form-group">
                         <label>Dosage Form</label>
                         <select name="dosage_form_existing">
@@ -204,7 +212,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             <?php foreach ($dosageForms as $d): ?>
                                 <?php $selected = ((string) ($_POST['dosage_form_existing'] ?? '') === (string) $d) ? 'selected' : ''; ?>
                                 <option value="<?= htmlspecialchars((string) $d) ?>" <?= $selected ?>>
-                                    <?= htmlspecialchars((string) $d) ?></option>
+                                    <?= htmlspecialchars((string) $d) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small style="color:#64748b;display:block;margin-top:4px;">or add a new dosage form</small>
@@ -225,7 +234,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             <?php foreach ($sellingUnits as $u): ?>
                                 <?php $selected = ((string) ($_POST['selling_unit_existing'] ?? '') === (string) $u) ? 'selected' : ''; ?>
                                 <option value="<?= htmlspecialchars((string) $u) ?>" <?= $selected ?>>
-                                    <?= htmlspecialchars((string) $u) ?></option>
+                                    <?= htmlspecialchars((string) $u) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <small style="color:#64748b;display:block;margin-top:4px;">or add a new selling unit</small>
@@ -243,7 +253,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                             value="<?= htmlspecialchars((string) ($_POST['low_stock_threshold'] ?? '10')) ?>" required>
                     </div>
                     <div class="form-group"><label>Reorder Quantity</label><input type="number" name="reorder_quantity"
-                            min="0" value="<?= htmlspecialchars((string) ($_POST['reorder_quantity'] ?? '25')) ?>"></div>
+                            min="0" value="<?= htmlspecialchars((string) ($_POST['reorder_quantity'] ?? '25')) ?>">
+                    </div>
                     <div class="form-group"><label>Price per Unit <span style="color:#dc2626;">*</span></label><input
                             type="number" name="price" step="0.01" min="0"
                             value="<?= htmlspecialchars((string) ($_POST['price'] ?? '0')) ?>" required></div>

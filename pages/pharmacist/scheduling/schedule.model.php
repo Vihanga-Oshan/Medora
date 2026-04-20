@@ -1,7 +1,5 @@
 <?php
-/**
- * Medication Scheduling Model
- */
+
 require_once ROOT . '/core/PharmacyOrderSupport.php';
 
 class ScheduleModel
@@ -423,10 +421,7 @@ class ScheduleModel
         );
     }
 
-    /**
-     * Keep patient pharmacy context aligned with the pharmacy that created the schedule.
-     * This prevents "scheduled but not visible" issues caused by pharmacy_id filtering.
-     */
+
     public static function syncPatientPharmacySelection(string $nic): void
     {
         $pharmacyId = self::resolvePatientPharmacyId($nic);

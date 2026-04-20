@@ -36,14 +36,8 @@ $cssVer = time();
             <form action="<?= htmlspecialchars($base) ?>/patient/prescriptions/upload" method="post"
                 enctype="multipart/form-data">
                 <label for="prescriptionFile" class="upload-area" id="uploadZone">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#6c757d" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                        <polyline points="17 8 12 3 7 8" stroke="#6c757d" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                        <line x1="12" y1="3" x2="12" y2="15" stroke="#6c757d" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
+                    <img src="<?= htmlspecialchars($base) ?>/assets/icons/pill.png" class="upload-icon" alt=""
+                        aria-hidden="true">
                     <span>Click to upload or drag and drop</span>
                     <span class="small">PDF, PNG, JPG up to 10MB</span>
                     <input type="file" name="prescription_file" id="prescriptionFile" accept=".pdf,.jpg,.jpeg,.png"

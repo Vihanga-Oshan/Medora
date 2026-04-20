@@ -1,9 +1,5 @@
 <?php
-/**
- * Patient Dashboard Model
- * All DB queries for the dashboard page.
- * Returns plain arrays — no HTML, no session logic.
- */
+
 require_once ROOT . '/core/GuardianLinkRequestSupport.php';
 
 class DashboardModel
@@ -63,6 +59,7 @@ class DashboardModel
             WHERE sm.patient_nic = ?
               AND ? BETWEEN ms.start_date
                               AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . ScheduleVisibility::activeCondition('ms') . "
               AND " . self::pharmacyCondition('sm', 'schedule_master') . "
               AND " . self::pharmacyCondition('ms', 'medication_schedule') . "
               AND " . self::pharmacyCondition('m', 'medicines') . "

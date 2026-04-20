@@ -1,7 +1,5 @@
 <?php
-/**
- * Prescription Review Model
- */
+
 require_once ROOT . '/core/PharmacyOrderSupport.php';
 
 class ReviewModel

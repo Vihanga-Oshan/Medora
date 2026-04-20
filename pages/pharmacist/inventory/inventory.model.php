@@ -1,7 +1,5 @@
 <?php
-/**
- * Medicine Inventory Model
- */
+
 class InventoryModel
 {
     private static ?array $medicineColumnsCache = null;

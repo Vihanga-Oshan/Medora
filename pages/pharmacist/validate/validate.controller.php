@@ -1,7 +1,5 @@
 <?php
-/**
- * Prescription Validation Controller
- */
+
 $prescriptions = ValidateModel::getPendingPrescriptions();
 
 $data = [

@@ -1,7 +1,5 @@
 <?php
-/**
- * Approved Prescriptions Model
- */
+
 require_once ROOT . '/core/PharmacyOrderSupport.php';
 
 class ApprovedPrescriptionsModel

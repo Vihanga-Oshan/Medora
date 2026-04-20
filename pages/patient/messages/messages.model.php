@@ -247,6 +247,7 @@ class PatientMessagesModel
             WHERE sm.patient_nic = ?
               AND ? BETWEEN ms.start_date
                                   AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . ScheduleVisibility::activeCondition('ms') . "
               AND " . (PharmacyContext::tableHasPharmacyId('schedule_master') && self::currentPharmacyId() > 0 ? "sm.pharmacy_id = " . self::currentPharmacyId() : "1=1") . "
             ORDER BY ms.id ASC
         ", 'ss', [$patientNic, $today]);

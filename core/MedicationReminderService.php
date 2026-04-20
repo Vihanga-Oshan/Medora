@@ -128,6 +128,7 @@ class MedicationReminderService
             WHERE $eventFilter
               AND e.source_type = 'legacy'
               AND sm.patient_nic = ?
+              AND " . ScheduleVisibility::activeCondition('ms') . "
         ";
         $types .= 's';
         $params[] = $patientNic;
@@ -257,6 +258,7 @@ class MedicationReminderService
             WHERE sm.patient_nic = ?
               AND ? BETWEEN ms.start_date
                               AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . ScheduleVisibility::activeCondition('ms') . "
         ";
         if ($pid > 0 && PharmacyContext::tableHasPharmacyId('schedule_master')) {
             $sql .= " AND (sm.pharmacy_id IS NULL OR sm.pharmacy_id = 0 OR sm.pharmacy_id = " . (int) $pid . ")";
@@ -464,7 +466,7 @@ class MedicationReminderService
             return $slots;
         }
 
-        // Normalize common separators like "&", "/", "and", "|" into commas.
+   
         $normalized = preg_replace('/\s*(?:&|\/|\||\band\b)\s*/i', ',', $text) ?? $text;
         $tokens = preg_split('/\s*,\s*/', $normalized) ?: [];
         if (empty($tokens)) {
@@ -483,7 +485,7 @@ class MedicationReminderService
                 continue;
             }
 
-            // Fuzzy containment for phrases like "day time", "night dose", "day+night".
+           
             if (preg_match('/\bmorning\b/', $token)) {
                 $slots[] = 'morning';
             }

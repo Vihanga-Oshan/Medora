@@ -2,9 +2,6 @@
 
 require_once ROOT . '/core/AppLogger.php';
 
-/**
- * Pharmacist Login Model
- */
 class LoginModel
 {
     private static function writeLog(string $file, string $level, string $message, array $context = []): void

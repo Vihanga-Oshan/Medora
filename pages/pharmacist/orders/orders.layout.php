@@ -71,7 +71,8 @@ $statusOptions = [
                                         <h3><?= htmlspecialchars((string) ($order['order_title'] ?? 'Medicine order')) ?></h3>
                                         <p class="panel-description">
                                             <?= htmlspecialchars((string) ($order['patient_name'] ?? $order['patient_nic'] ?? 'Patient')) ?>
-                                            â€¢ <?= htmlspecialchars((string) ($order['source'] ?? 'ORDER')) ?></p>
+                                            &bull; <?= htmlspecialchars((string) ($order['source'] ?? 'ORDER')) ?>
+                                        </p>
                                     </div>
                                     <span
                                         class="panel-chip"><?= htmlspecialchars((string) ($order['status'] ?? 'PENDING')) ?></span>
@@ -99,7 +100,9 @@ $statusOptions = [
                                     <input type="hidden" name="order_id" value="<?= (int) ($order['id'] ?? 0) ?>">
                                     <select name="status" class="filter-select">
                                         <?php foreach ($statusOptions as $status): ?>
-                                            <option value="<?= htmlspecialchars($status) ?>" <?= strtoupper((string) ($order['status'] ?? '')) === $status ? 'selected' : '' ?>><?= htmlspecialchars($status) ?></option>
+                                            <option value="<?= htmlspecialchars($status) ?>" <?= strtoupper((string) ($order['status'] ?? '')) === $status ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($status) ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                     <input type="text" name="fulfillment_notes" class="filter-select" style="min-width:280px;"
@@ -112,7 +115,8 @@ $statusOptions = [
                                     <article class="mini-row">
                                         <div>
                                             <strong>Billing Contact</strong>
-                                            <small><?= htmlspecialchars((string) ($order['billing_name'] ?? 'Not provided')) ?> â€¢
+                                            <small><?= htmlspecialchars((string) ($order['billing_name'] ?? 'Not provided')) ?>
+                                                &bull;
                                                 <?= htmlspecialchars((string) ($order['billing_email'] ?? 'No email')) ?></small>
                                         </div>
                                         <div class="mini-meta">

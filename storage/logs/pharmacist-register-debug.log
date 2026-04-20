@@ -1,2 +1,6 @@
 [2026-04-17 11:46:31] [DEBUG] Pharmacist register request received. {"email":"pharmacist@gmail.com","license":"1234","requested_pharmacy_id":1}
 [2026-04-17 11:46:31] [DEBUG] Pharmacist request created. {"request_id":1,"email":"pharmacist@gmail.com","license":"1234"}
+[2026-04-19 22:50:03] [DEBUG] Pharmacist register request received. {"email":"pharamacist2@gmail.com","license":"1235","requested_pharmacy_id":4}
+[2026-04-19 22:50:03] [DEBUG] Pharmacist request created. {"request_id":2,"email":"pharamacist2@gmail.com","license":"1235"}
+[2026-04-19 22:53:34] [DEBUG] Pharmacist register request received. {"email":"pharamacist3@gmail.com","license":"1236","requested_pharmacy_id":1}
+[2026-04-19 22:53:34] [DEBUG] Pharmacist request created. {"request_id":3,"email":"pharamacist3@gmail.com","license":"1236"}

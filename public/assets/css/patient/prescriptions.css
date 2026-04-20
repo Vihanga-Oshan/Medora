@@ -210,12 +210,17 @@ input[type="file"] {
   background-color: #f1f5f9;
 }
 
-.upload-area svg {
+.upload-area svg,
+.upload-area .upload-icon {
   margin-bottom: 8px;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
   transition: transform 0.2s ease;
 }
 
-.upload-area:hover svg {
+.upload-area:hover svg,
+.upload-area:hover .upload-icon {
   transform: translateY(-5px);
 }
 

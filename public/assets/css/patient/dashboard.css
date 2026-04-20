@@ -60,6 +60,30 @@
   gap: 15px;
 }
 
+.icon-svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.icon-svg--sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-svg--lg {
+  width: 28px;
+  height: 28px;
+}
+
+.hero-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Stats Overview */
 .stats-overview {
   display: grid;
@@ -94,6 +118,11 @@
   justify-content: center;
   font-size: 1.25rem;
   flex-shrink: 0;
+}
+
+.stat-icon-wrapper .icon-svg {
+  width: 24px;
+  height: 24px;
 }
 
 .bg-blue {
@@ -259,6 +288,12 @@
   margin-bottom: 4px;
 }
 
+.notif-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .notif-msg {
   font-size: 0.95rem;
   color: var(--text-dark);
@@ -357,6 +392,13 @@
   gap: 8px;
 }
 
+.meta-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-blue);
+}
+
 .dosage-info i,
 .instructions i {
   color: var(--medical-blue);
@@ -381,6 +423,11 @@
   font-size: 1.1rem;
   transition: transform 0.2s, background 0.2s;
   background: var(--bg-body);
+}
+
+.action-btn .icon-svg {
+  width: 18px;
+  height: 18px;
 }
 
 .btn-check {
@@ -431,6 +478,10 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
+}
+
+.state-icon .icon-svg {
+  color: var(--success-green);
 }
 
 .empty-state-modern h3 {
@@ -484,8 +535,16 @@
   border: none;
   border-radius: var(--radius-md);
   width: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.btn-icon .icon-svg {
+  width: 18px;
+  height: 18px;
 }
 
 .btn-icon:hover {
@@ -558,4 +617,10 @@
 .status-missed {
   background: #fee2e2;
   color: #b91c1c;
+}
+.alert-title {
+  margin: 0 0 10px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }

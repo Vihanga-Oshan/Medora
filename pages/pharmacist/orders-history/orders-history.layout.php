@@ -66,7 +66,8 @@ $isSettings = str_contains($currentPath, '/pharmacist/settings') || str_contains
                                         <h3><?= htmlspecialchars((string) ($order['order_title'] ?? 'Medicine order')) ?></h3>
                                         <p class="panel-description">
                                             <?= htmlspecialchars((string) ($order['patient_name'] ?? $order['patient_nic'] ?? 'Patient')) ?>
-                                            â€¢ <?= htmlspecialchars((string) ($order['source'] ?? 'ORDER')) ?></p>
+                                            &bull; <?= htmlspecialchars((string) ($order['source'] ?? 'ORDER')) ?>
+                                        </p>
                                     </div>
                                     <span class="panel-chip">COMPLETED</span>
                                 </div>

@@ -1,7 +1,5 @@
 <?php
-/**
- * Medication Scheduling Controller
- */
+
 require_once __DIR__ . '/schedule.model.php';
 
 $prescriptionId = (int)($_GET['id'] ?? $_POST['prescription_id'] ?? 0);
@@ -19,7 +17,6 @@ if (!$prescription || $prescriptionNic === '' || $prescriptionNic !== $patientNi
 $wantsSchedule = !empty($prescription['wants_schedule']);
 $wantsMedicineOrder = !empty($prescription['wants_medicine_order']);
 
-// Handle form submission
 if (Request::isPost()) {
     $schedules = [];
     $orderItems = [];

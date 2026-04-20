@@ -142,7 +142,8 @@ body.messages-page .main-content {
     border-radius: 12px;
 }
 
-.pharmacist-chat-layout .send-btn svg {
+.pharmacist-chat-layout .send-btn svg,
+.pharmacist-chat-layout .send-btn img {
     width: 18px;
     height: 18px;
 }

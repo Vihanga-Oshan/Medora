@@ -5,15 +5,15 @@
 define('ROOT', __DIR__);
 
 // Root app base (e.g. /Medora)
-$appBase = rtrim(dirname((string)($_SERVER['SCRIPT_NAME'] ?? '')), '/\\');
+$appBase = rtrim(dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '')), '/\\');
 if ($appBase === '.' || $appBase === '/') {
     $appBase = '';
 }
 
 // Fallback for rewritten requests where SCRIPT_NAME may appear as /index.php
 if ($appBase === '') {
-    $uriPath = (string)(parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH) ?? '');
-    $firstSegment = trim((string)strtok(ltrim($uriPath, '/'), '/'));
+    $uriPath = (string) (parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH) ?? '');
+    $firstSegment = trim((string) strtok(ltrim($uriPath, '/'), '/'));
     $rootName = basename(ROOT);
     if ($firstSegment !== '' && strcasecmp($firstSegment, $rootName) === 0) {
         $appBase = '/' . $firstSegment;
@@ -28,6 +28,7 @@ require_once ROOT . '/core/PharmacyContext.php';
 require_once ROOT . '/core/MedicationReminderService.php';
 require_once ROOT . '/core/Response.php';
 require_once ROOT . '/core/Request.php';
+require_once ROOT . '/core/ScheduleVisibility.php';
 
 PharmacyContext::boot();
 

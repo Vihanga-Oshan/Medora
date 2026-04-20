@@ -68,6 +68,118 @@ class PharmacistViewScheduleModel
         return $row !== null;
     }
 
+    private static function fetchScheduleRow(int $scheduleId, string $nic): ?array
+    {
+        ScheduleVisibility::ensureSchema();
+
+        return Database::fetchOne("
+            SELECT
+                ms.id,
+                ms.schedule_master_id,
+                ms.medicine_id,
+                ms.dosage_id,
+                ms.frequency_id,
+                ms.meal_timing_id,
+                ms.start_date,
+                ms.end_date,
+                ms.duration_days,
+                COALESCE(ms.instructions, '') AS instructions,
+                sm.patient_nic,
+                COALESCE(sm.pharmacy_id, 0) AS pharmacy_id
+            FROM medication_schedule ms
+            JOIN schedule_master sm ON sm.id = ms.schedule_master_id
+            WHERE ms.id = ?
+              AND sm.patient_nic = ?
+              AND " . ScheduleVisibility::activeCondition('ms') . "
+              AND " . self::pharmacyCondition('sm', 'schedule_master') . "
+              AND " . self::pharmacyCondition('ms', 'medication_schedule') . "
+            LIMIT 1
+        ", 'is', [$scheduleId, $nic]);
+    }
+
+    private static function reminderMessage(array $row): string
+    {
+        $parts = ["Time to take " . trim((string) ($row['medicine_name'] ?? 'Medication'))];
+        $dosage = trim((string) ($row['dosage'] ?? ''));
+        $mealTiming = trim((string) ($row['meal_timing'] ?? ''));
+        if ($dosage !== '') {
+            $parts[] = "($dosage)";
+        }
+        if ($mealTiming !== '') {
+            $parts[] = '- ' . $mealTiming;
+        }
+        return implode(' ', $parts) . '.';
+    }
+
+    private static function cancelPendingReminderEvents(int $scheduleId): void
+    {
+        Database::execute(
+            "UPDATE medication_reminder_events
+             SET status = 'CANCELLED'
+             WHERE source_type = 'legacy'
+               AND source_schedule_id = ?
+               AND status = 'PENDING'",
+            'i',
+            [$scheduleId]
+        );
+    }
+
+    private static function rebuildReminderEvents(int $scheduleId): void
+    {
+        $row = Database::fetchOne("
+            SELECT
+                ms.id,
+                sm.patient_nic,
+                COALESCE(f.times_of_day, '') AS times_of_day,
+                COALESCE(f.label, '') AS frequency_label,
+                COALESCE(mt.label, '') AS meal_timing,
+                COALESCE(dc.label, '') AS dosage,
+                COALESCE(ms.instructions, '') AS instructions,
+                COALESCE(NULLIF(TRIM(m.med_name), ''), NULLIF(TRIM(m.name), ''), 'Medication') AS medicine_name,
+                ms.start_date,
+                ms.end_date,
+                ms.duration_days,
+                COALESCE(ms.pharmacy_id, sm.pharmacy_id, 0) AS pharmacy_id
+            FROM medication_schedule ms
+            JOIN schedule_master sm ON sm.id = ms.schedule_master_id
+            LEFT JOIN medicines m ON m.id = ms.medicine_id
+            LEFT JOIN dosage_categories dc ON dc.id = ms.dosage_id
+            LEFT JOIN frequencies f ON f.id = ms.frequency_id
+            LEFT JOIN meal_timing mt ON mt.id = ms.meal_timing_id
+            WHERE ms.id = ?
+              AND " . ScheduleVisibility::activeCondition('ms') . "
+            LIMIT 1
+        ", 'i', [$scheduleId]);
+
+        if (!$row) {
+            return;
+        }
+
+        self::cancelPendingReminderEvents($scheduleId);
+
+        $startDate = (string) ($row['start_date'] ?? '');
+        $durationDays = max(1, (int) ($row['duration_days'] ?? 1));
+        $today = date('Y-m-d');
+
+        for ($day = 0; $day < $durationDays; $day++) {
+            $doseDate = date('Y-m-d', strtotime($startDate . ' +' . $day . ' days'));
+            if ($doseDate < $today) {
+                continue;
+            }
+
+            MedicationReminderService::createEventsForSchedule([
+                'patient_nic' => (string) ($row['patient_nic'] ?? ''),
+                'source_type' => 'legacy',
+                'source_schedule_id' => $scheduleId,
+                'dose_date' => $doseDate,
+                'times_of_day' => (string) ($row['times_of_day'] ?? ''),
+                'frequency_label' => (string) ($row['frequency_label'] ?? ''),
+                'message' => self::reminderMessage($row),
+                'pharmacy_id' => (int) ($row['pharmacy_id'] ?? 0),
+            ]);
+        }
+    }
+
     public static function getPatient(string $nic): ?array
     {
         $nic = trim($nic);
@@ -85,9 +197,15 @@ class PharmacistViewScheduleModel
 
     public static function getSchedulesByDate(string $nic, string $date): array
     {
+        ScheduleVisibility::ensureSchema();
+
         return Database::fetchAll("
             SELECT
                 ms.id,
+                ms.medicine_id,
+                ms.dosage_id,
+                ms.frequency_id,
+                ms.meal_timing_id,
                 COALESCE(NULLIF(TRIM(m.med_name), ''), NULLIF(TRIM(m.name), ''), 'Medication') AS medicine_name,
                 COALESCE(dc.label, '-') AS dosage,
                 COALESCE(f.label, '-') AS frequency,
@@ -110,10 +228,81 @@ class PharmacistViewScheduleModel
             WHERE sm.patient_nic = ?
               AND ? BETWEEN ms.start_date
                           AND DATE_ADD(ms.start_date, INTERVAL GREATEST(COALESCE(ms.duration_days, 1), 1) - 1 DAY)
+              AND " . ScheduleVisibility::activeCondition('ms') . "
               AND " . self::pharmacyCondition('sm', 'schedule_master') . "
               AND " . self::pharmacyCondition('ms', 'medication_schedule') . "
               AND " . self::pharmacyCondition('ml', 'medication_log') . "
             ORDER BY ms.start_date ASC, ms.id ASC
         ", 'sss', [$date, $nic, $date]);
+    }
+
+    public static function updateSchedule(int $scheduleId, string $nic, array $payload): bool
+    {
+        $row = self::fetchScheduleRow($scheduleId, $nic);
+        if (!$row) {
+            return false;
+        }
+
+        $durationDays = max(1, (int) ($payload['duration_days'] ?? 1));
+        $startDate = trim((string) ($payload['start_date'] ?? ''));
+        if ($startDate === '') {
+            return false;
+        }
+        $endDate = date('Y-m-d', strtotime($startDate . ' +' . max(0, $durationDays - 1) . ' days'));
+
+        $ok = Database::execute(
+            "UPDATE medication_schedule
+             SET medicine_id = ?,
+                 dosage_id = ?,
+                 frequency_id = ?,
+                 meal_timing_id = ?,
+                 start_date = ?,
+                 end_date = ?,
+                 duration_days = ?,
+                 instructions = ?
+             WHERE id = ?
+               AND " . ScheduleVisibility::activeCondition('medication_schedule'),
+            'iiiissisi',
+            [
+                (int) ($payload['medicine_id'] ?? 0),
+                !empty($payload['dosage_id']) ? (int) $payload['dosage_id'] : null,
+                !empty($payload['frequency_id']) ? (int) $payload['frequency_id'] : null,
+                !empty($payload['meal_timing_id']) ? (int) $payload['meal_timing_id'] : null,
+                $startDate,
+                $endDate,
+                $durationDays,
+                trim((string) ($payload['instructions'] ?? '')) !== '' ? trim((string) $payload['instructions']) : null,
+                $scheduleId,
+            ]
+        );
+
+        if ($ok) {
+            self::rebuildReminderEvents($scheduleId);
+        }
+
+        return $ok;
+    }
+
+    public static function softDeleteSchedule(int $scheduleId, string $nic): bool
+    {
+        $row = self::fetchScheduleRow($scheduleId, $nic);
+        if (!$row) {
+            return false;
+        }
+
+        $ok = Database::execute(
+            "UPDATE medication_schedule
+             SET deleted_at = NOW()
+             WHERE id = ?
+               AND " . ScheduleVisibility::activeCondition('medication_schedule'),
+            'i',
+            [$scheduleId]
+        );
+
+        if ($ok) {
+            self::cancelPendingReminderEvents($scheduleId);
+        }
+
+        return $ok;
     }
 }

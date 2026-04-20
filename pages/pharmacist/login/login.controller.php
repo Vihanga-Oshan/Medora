@@ -1,8 +1,5 @@
 <?php
 
-/**
- * Pharmacist Login Controller
- */
 require_once ROOT . '/core/InputValidator.php';
 require_once ROOT . '/core/AppLogger.php';
 

@@ -1,8 +1,5 @@
 ﻿<?php
-/**
- * Pharmacist Dashboard Layout
- * Mirrors the original Java/JSP structure and class names.
- */
+
 $metrics = $data['metrics'];
 $patientsNeedingCheck = $data['patientsNeedingCheck'];
 $patientsNeedingSchedule = $data['patientsNeedingSchedule'];
@@ -214,7 +211,7 @@ $scheduleCount = count($patientsNeedingSchedule);
                                     <div>
                                         <strong><?= htmlspecialchars((string) ($order['order_title'] ?? 'Medicine order')) ?></strong>
                                         <small><?= htmlspecialchars((string) ($order['patient_name'] ?? $order['patient_nic'] ?? 'Patient')) ?>
-                                            â€¢ <?= htmlspecialchars((string) ($order['source'] ?? 'ORDER')) ?></small>
+                                            &bull; <?= htmlspecialchars((string) ($order['source'] ?? 'ORDER')) ?></small>
                                     </div>
                                     <div class="mini-meta">
                                         <span

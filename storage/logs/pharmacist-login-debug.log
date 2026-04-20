@@ -85,3 +85,11 @@
 [2026-04-19 18:02:13] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
 [2026-04-19 18:02:13] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
 [2026-04-19 18:02:13] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}
+[2026-04-19 22:33:02] [DEBUG] Pharmacist login request received. {"id_input":"1234","id_numeric":1234,"password_length":13}
+[2026-04-19 22:33:02] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
+[2026-04-19 22:33:02] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
+[2026-04-19 22:33:02] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}
+[2026-04-20 10:04:44] [DEBUG] Pharmacist login request received. {"id_input":"1234","id_numeric":1234,"password_length":13}
+[2026-04-20 10:04:44] [DEBUG] Pharmacist lookup result. {"table":"pharmacist","id":1234,"found":1,"has_password":1}
+[2026-04-20 10:04:44] [DEBUG] Password verification result. {"id_numeric":1234,"user_found":1,"hash_prefix":"$2y$","verified":1}
+[2026-04-20 10:04:44] [DEBUG] Pharmacist login successful. {"id":1234,"name":"Pharmacist","pharmacy_id":1}

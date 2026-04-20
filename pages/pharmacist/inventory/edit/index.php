@@ -204,7 +204,7 @@ $fv = function (string $key, $fallback = '') use ($medicine): string {
                             name="supplier_address"><?= htmlspecialchars((string) ($_POST['supplier_address'] ?? ($medicine['supplier_address'] ?? ''))) ?></textarea>
                     </div>
 
-                    <div class="form-section-title"><span>&#128138;</span> Dosage &amp; Presentation</div>
+                    <div class="form-section-title"><span><img src="<?= htmlspecialchars($base) ?>/assets/icons/pill.png" alt="" aria-hidden="true" style="width:1em;height:1em;object-fit:contain;display:block;"></span> Dosage &amp; Presentation</div>
                     <div class="form-group">
                         <label>Dosage Form</label>
                         <?php $selectedDosage = (string) ($_POST['dosage_form_existing'] ?? $fv('dosage_form')); ?>

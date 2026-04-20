@@ -1,8 +1,5 @@
 <?php
-/**
- * /pharmacist/inventory/delete
- * POST-only route to delete a medicine row.
- */
+
 require_once __DIR__ . '/../../common/pharmacist.head.php';
 require_once __DIR__ . '/../inventory.model.php';
 
