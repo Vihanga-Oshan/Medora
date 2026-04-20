@@ -1,0 +1,10 @@
+[2026-04-21 00:27:57] [DEBUG] getPharmacyOrders aborted because pharmacy_id <= 0 {"pharmacy_id":0,"limit":100}
+[2026-04-21 00:27:57] [DEBUG] getPharmacyOrders aborted because pharmacy_id <= 0 {"pharmacy_id":0,"limit":100}
+[2026-04-21 00:27:57] [DEBUG] getPharmacyOrders aborted because pharmacy_id <= 0 {"pharmacy_id":0,"limit":100}
+[2026-04-21 00:29:12] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}
+[2026-04-21 00:29:12] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}
+[2026-04-21 00:31:47] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}
+[2026-04-21 00:31:48] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}
+[2026-04-21 00:31:52] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}
+[2026-04-21 00:32:13] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}
+[2026-04-21 00:32:18] [DEBUG] getPharmacyOrders executed {"pharmacy_id":1,"limit":100,"row_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]","db_error":""}

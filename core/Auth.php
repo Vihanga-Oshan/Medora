@@ -167,13 +167,6 @@ class Auth
     // -------------------------------------------------------------------------
     public static function getUser(): ?array
     {
-        $legacy = $_COOKIE[self::LEGACY_COOKIE_NAME] ?? null;
-        if ($legacy !== null) {
-            $payload = self::decode($legacy);
-            if ($payload !== null)
-                return $payload;
-        }
-
         foreach (self::knownCookieNames() as $cookieName) {
             if ($cookieName === self::LEGACY_COOKIE_NAME) {
                 continue;
@@ -183,6 +176,13 @@ class Auth
                 continue;
             }
             $payload = self::decode($token);
+            if ($payload !== null)
+                return $payload;
+        }
+
+        $legacy = $_COOKIE[self::LEGACY_COOKIE_NAME] ?? null;
+        if ($legacy !== null) {
+            $payload = self::decode($legacy);
             if ($payload !== null)
                 return $payload;
         }

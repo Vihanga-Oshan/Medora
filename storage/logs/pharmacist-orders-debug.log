@@ -1,0 +1,21 @@
+[2026-04-21 00:27:57] [ERROR] Unable to resolve pharmacist pharmacy. {"auth_id":0,"token_pharmacy_id":0}
+[2026-04-21 00:27:57] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":0,"limit":100,"order_count":0,"order_ids":"[]"}
+[2026-04-21 00:27:57] [ERROR] Unable to resolve pharmacist pharmacy. {"auth_id":0,"token_pharmacy_id":0}
+[2026-04-21 00:27:57] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":0,"limit":100,"order_count":0,"order_ids":"[]"}
+[2026-04-21 00:27:57] [ERROR] Unable to resolve pharmacist pharmacy. {"auth_id":0,"token_pharmacy_id":0}
+[2026-04-21 00:27:57] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":0,"limit":100,"order_count":0,"order_ids":"[]"}
+[2026-04-21 00:29:12] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:29:12] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}
+[2026-04-21 00:29:12] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:29:12] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}
+[2026-04-21 00:31:47] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:31:47] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}
+[2026-04-21 00:31:48] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:31:48] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}
+[2026-04-21 00:31:52] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:31:52] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:31:52] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}
+[2026-04-21 00:32:13] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:32:13] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}
+[2026-04-21 00:32:18] [DEBUG] Using pharmacist pharmacy from page context. {"current_pharmacy_id":1,"user_id":1234}
+[2026-04-21 00:32:18] [DEBUG] Fetched pharmacist orders. {"pharmacy_id":1,"limit":100,"order_count":24,"order_ids":"[27,26,25,24,23,22,21,19,18,17,16,14,13,12,11,10,9,8,7,5,4,3,2,1]"}

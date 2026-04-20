@@ -105,9 +105,6 @@ $statusOptions = [
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <input type="text" name="fulfillment_notes" class="filter-select" style="min-width:280px;"
-                                        placeholder="Fulfillment notes"
-                                        value="<?= htmlspecialchars((string) ($order['fulfillment_notes'] ?? '')) ?>">
                                     <button type="submit" class="filter-btn">Update Order</button>
                                 </form>
 

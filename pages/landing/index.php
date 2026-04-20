@@ -3,6 +3,7 @@ $base = APP_BASE ?: '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@ $base = APP_BASE ?: '';
     <link rel="shortcut icon" href="<?= htmlspecialchars($base) ?>/assets/img/c-a-icon.png">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/index.css">
 </head>
+
 <body>
 
     <header class="hero">
@@ -34,6 +36,7 @@ $base = APP_BASE ?: '';
                 <div class="cta-buttons">
                     <a href="<?= htmlspecialchars($base) ?>/patient/register" class="btn primary">Get Started</a>
                     <a href="<?= htmlspecialchars($base) ?>/login" class="btn secondary">Sign In</a>
+                    <a href="<?= htmlspecialchars($base) ?>/shop" class="btn secondary">Browse E-shop</a>
                 </div>
                 <div class="compliance">
                     <span class="green-dot">&#9679;</span> HIPAA Compliant
@@ -125,11 +128,13 @@ $base = APP_BASE ?: '';
             <div class="features-grid">
                 <div class="feature-card">
                     <h3>Smart Reminders</h3>
-                    <p>Receive intelligent, personalized reminders that adapt to your schedule and ensure perfect timing.</p>
+                    <p>Receive intelligent, personalized reminders that adapt to your schedule and ensure perfect
+                        timing.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Flexible Scheduling</h3>
-                    <p>Create customizable medication schedules that fit your lifestyle and complex prescription requirements.</p>
+                    <p>Create customizable medication schedules that fit your lifestyle and complex prescription
+                        requirements.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Guardian Access</h3>
@@ -159,21 +164,24 @@ $base = APP_BASE ?: '';
             <div class="testimonial-grid">
                 <div class="testimonial">
                     <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p>"Medora has completely transformed how I manage my medications. I used to forget doses regularly, but now I'm 100% compliant."</p>
+                    <p>"Medora has completely transformed how I manage my medications. I used to forget doses regularly,
+                        but now I'm 100% compliant."</p>
                     <h4>Sarah Mitchell</h4>
                     <span>Patient</span>
                 </div>
 
                 <div class="testimonial">
                     <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p>"I recommend Medora to all my patients who struggle with medication adherence. The improvement has been remarkable."</p>
+                    <p>"I recommend Medora to all my patients who struggle with medication adherence. The improvement
+                        has been remarkable."</p>
                     <h4>Dr. James Anderson</h4>
                     <span>Healthcare Provider</span>
                 </div>
 
                 <div class="testimonial">
                     <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p>"Being able to monitor my mother's medication remotely gives me incredible peace of mind. The alerts keep her on track."</p>
+                    <p>"Being able to monitor my mother's medication remotely gives me incredible peace of mind. The
+                        alerts keep her on track."</p>
                     <h4>Maria Rodriguez</h4>
                     <span>Guardian</span>
                 </div>
@@ -186,6 +194,8 @@ $base = APP_BASE ?: '';
             <h2>Ready to Never Miss a Dose?</h2>
             <p>Join thousands of patients and caregivers who trust Medora for better medication management.</p>
             <a href="<?= htmlspecialchars($base) ?>/patient/register" class="btn primary large">Begin Your Journey</a>
+            <a href="<?= htmlspecialchars($base) ?>/shop" class="btn secondary large" style="margin-left:10px;">Browse
+                E-shop</a>
             <ul class="benefits">
                 <li>Completely free to use</li>
                 <li>Monitor your progress easily</li>
@@ -195,4 +205,5 @@ $base = APP_BASE ?: '';
     </section>
 
 </body>
+
 </html>

@@ -1,4 +1,5 @@
 <?php
+require_once ROOT . '/core/AppLogger.php';
 
 class PharmacyOrderSupport
 {
@@ -23,6 +24,11 @@ class PharmacyOrderSupport
 
         $line = '[' . date('Y-m-d H:i:s') . "] [ORDER] $context - $err" . PHP_EOL;
         @file_put_contents($dir . '/pharmacy-order-error.log', $line, FILE_APPEND);
+    }
+
+    private static function logOrderDebug(string $context, array $data = []): void
+    {
+        AppLogger::write('pharmacy-order-debug.log', 'DEBUG', $context, $data);
     }
 
     public static function ensureSchema(): void
@@ -77,21 +83,26 @@ class PharmacyOrderSupport
 
     private static function ensurePrescriptionColumns(): void
     {
+        self::setUpConnection();
         if (!self::hasColumn('prescriptions', 'wants_medicine_order')) {
-            Database::execute("ALTER TABLE prescriptions ADD COLUMN wants_medicine_order TINYINT(1) NOT NULL DEFAULT 0 AFTER status");
+            Database::$connection->query("ALTER TABLE prescriptions ADD COLUMN wants_medicine_order TINYINT(1) NOT NULL DEFAULT 0 AFTER status");
             self::$columnCache['prescriptions.wants_medicine_order'] = true;
         }
 
         if (!self::hasColumn('prescriptions', 'wants_schedule')) {
-            Database::execute("ALTER TABLE prescriptions ADD COLUMN wants_schedule TINYINT(1) NOT NULL DEFAULT 1 AFTER wants_medicine_order");
+            Database::$connection->query("ALTER TABLE prescriptions ADD COLUMN wants_schedule TINYINT(1) NOT NULL DEFAULT 1 AFTER wants_medicine_order");
             self::$columnCache['prescriptions.wants_schedule'] = true;
         }
     }
 
     private static function ensureOrderTables(): void
     {
-        $createdOrders = Database::execute("
-            CREATE TABLE IF NOT EXISTS `" . self::ORDER_TABLE . "` (
+        self::setUpConnection();
+        $tableName = self::ORDER_TABLE;
+        $itemTableName = self::ITEM_TABLE;
+
+        $createOrdersSql = "
+            CREATE TABLE IF NOT EXISTS `$tableName` (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 pharmacy_id INT DEFAULT NULL,
                 patient_nic VARCHAR(20) NOT NULL,
@@ -123,11 +134,12 @@ class PharmacyOrderSupport
                 CONSTRAINT fk_pharmacy_orders_pharmacy FOREIGN KEY (pharmacy_id) REFERENCES pharmacies (id)
                     ON DELETE SET NULL ON UPDATE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
+        ";
+
+        $createdOrders = Database::$connection->query($createOrdersSql);
         if (!$createdOrders || !self::hasTable(self::ORDER_TABLE)) {
-            self::logOrderError('ensureOrderTables create pharmacy_orders with foreign keys failed');
-            Database::execute("
-                CREATE TABLE IF NOT EXISTS `" . self::ORDER_TABLE . "` (
+            $fallbackSql = "
+                CREATE TABLE IF NOT EXISTS `$tableName` (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     pharmacy_id INT DEFAULT NULL,
                     patient_nic VARCHAR(20) NOT NULL,
@@ -153,15 +165,16 @@ class PharmacyOrderSupport
                     INDEX idx_pharmacy_orders_pharmacy (pharmacy_id, status, created_at),
                     INDEX idx_pharmacy_orders_prescription (prescription_id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            ");
+            ";
+            Database::$connection->query($fallbackSql);
             if (!self::hasTable(self::ORDER_TABLE)) {
                 self::logOrderError('ensureOrderTables create pharmacy_orders fallback failed');
                 return;
             }
         }
 
-        $createdItems = Database::execute("
-            CREATE TABLE IF NOT EXISTS `" . self::ITEM_TABLE . "` (
+        $createItemsSql = "
+            CREATE TABLE IF NOT EXISTS `$itemTableName` (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 order_id INT NOT NULL,
                 medicine_id INT DEFAULT NULL,
@@ -172,16 +185,17 @@ class PharmacyOrderSupport
                 created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_order_items_order (order_id),
                 INDEX idx_order_items_medicine (medicine_id),
-                CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES `" . self::ORDER_TABLE . "` (id)
+                CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES `$tableName` (id)
                     ON DELETE CASCADE ON UPDATE CASCADE,
                 CONSTRAINT fk_order_items_medicine FOREIGN KEY (medicine_id) REFERENCES medicines (id)
                     ON DELETE SET NULL ON UPDATE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
+        ";
+
+        $createdItems = Database::$connection->query($createItemsSql);
         if (!$createdItems || !self::hasTable(self::ITEM_TABLE)) {
-            self::logOrderError('ensureOrderTables create pharmacy_order_items with foreign keys failed');
-            Database::execute("
-                CREATE TABLE IF NOT EXISTS `" . self::ITEM_TABLE . "` (
+            $fallbackItemsSql = "
+                CREATE TABLE IF NOT EXISTS `$itemTableName` (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     order_id INT NOT NULL,
                     medicine_id INT DEFAULT NULL,
@@ -193,7 +207,8 @@ class PharmacyOrderSupport
                     INDEX idx_order_items_order (order_id),
                     INDEX idx_order_items_medicine (medicine_id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            ");
+            ";
+            Database::$connection->query($fallbackItemsSql);
             if (!self::hasTable(self::ITEM_TABLE)) {
                 self::logOrderError('ensureOrderTables create pharmacy_order_items fallback failed');
                 return;
@@ -202,6 +217,11 @@ class PharmacyOrderSupport
 
         self::$tableCache[strtolower(self::ORDER_TABLE)] = true;
         self::$tableCache[strtolower(self::ITEM_TABLE)] = true;
+    }
+
+    private static function setUpConnection(): void
+    {
+        Database::setUpConnection();
     }
 
     public static function normalizeDeliveryMethod(string $method): string
@@ -593,10 +613,14 @@ class PharmacyOrderSupport
     {
         self::ensureSchema();
         if ($pharmacyId <= 0) {
+            self::logOrderDebug('getPharmacyOrders aborted because pharmacy_id <= 0', [
+                'pharmacy_id' => $pharmacyId,
+                'limit' => $limit,
+            ]);
             return [];
         }
 
-        return Database::fetchAll(
+        $rows = Database::fetchAll(
             "SELECT o.*, p.name AS patient_name, pr.file_name AS prescription_file,
                     (SELECT COUNT(*) FROM `" . self::ITEM_TABLE . "` oi WHERE oi.order_id = o.id) AS item_count
              FROM `" . self::ORDER_TABLE . "` o
@@ -610,6 +634,14 @@ class PharmacyOrderSupport
             'ii',
             [$pharmacyId, $pharmacyId]
         );
+        self::logOrderDebug('getPharmacyOrders executed', [
+            'pharmacy_id' => $pharmacyId,
+            'limit' => $limit,
+            'row_count' => count($rows),
+            'order_ids' => array_map(static fn(array $row): int => (int) ($row['id'] ?? 0), $rows),
+            'db_error' => (string) (Database::$connection->error ?? ''),
+        ]);
+        return $rows;
     }
 
     public static function getPharmacyCompletedOrders(int $pharmacyId, int $limit = 100): array

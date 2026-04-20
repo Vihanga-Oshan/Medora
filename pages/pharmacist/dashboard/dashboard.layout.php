@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 $metrics = $data['metrics'];
 $patientsNeedingCheck = $data['patientsNeedingCheck'];
@@ -63,8 +63,7 @@ $scheduleCount = count($patientsNeedingSchedule);
                         <h2>Pharmacist Command Center</h2>
                         <p>Track prescriptions, review queues, and patient follow-ups from one dashboard.</p>
                     </div>
-                    <a href="<?= htmlspecialchars($base) ?>/pharmacist/validate/" class="add-btn"><span>&#10010;</span>
-                        Review Queue</a>
+                    
                 </div>
 
                 <div class="summary-grid dashboard-summary-grid">

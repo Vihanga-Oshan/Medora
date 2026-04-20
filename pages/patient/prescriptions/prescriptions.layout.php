@@ -147,12 +147,7 @@ $cssVer = time();
             const errEl = document.getElementById('uploadError');
             const wantsOrder = document.querySelector('input[name="wants_medicine_order"]');
             const billingPanel = document.getElementById('billingPanel');
-            const deliveryMethod = document.getElementById('deliveryMethod');
-            const billingAddressGroup = document.getElementById('billingAddressGroup');
-            const billingName = document.querySelector('input[name="billing_name"]');
             const billingPhone = document.querySelector('input[name="billing_phone"]');
-            const billingEmail = document.querySelector('input[name="billing_email"]');
-            const billingAddress = document.querySelector('textarea[name="billing_address"]');
             const max = 10 * 1024 * 1024;
 
             if (!zone || !input || !preview || !errEl) {
@@ -224,32 +219,16 @@ $cssVer = time();
 
             function syncBillingUi() {
                 const ordering = wantsOrder && wantsOrder.checked;
-                const delivery = deliveryMethod && deliveryMethod.value === 'DELIVERY';
                 if (billingPanel) {
                     billingPanel.classList.toggle('is-hidden', !ordering);
                 }
-                if (billingAddressGroup) {
-                    billingAddressGroup.classList.toggle('is-hidden', !ordering || !delivery);
-                }
-                if (billingName) {
-                    billingName.required = ordering;
-                }
                 if (billingPhone) {
                     billingPhone.required = ordering;
-                }
-                if (billingEmail) {
-                    billingEmail.required = ordering;
-                }
-                if (billingAddress) {
-                    billingAddress.required = ordering && delivery;
                 }
             }
 
             if (wantsOrder) {
                 wantsOrder.addEventListener('change', syncBillingUi);
-            }
-            if (deliveryMethod) {
-                deliveryMethod.addEventListener('change', syncBillingUi);
             }
             syncBillingUi();
         })();
