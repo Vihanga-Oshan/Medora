@@ -16,9 +16,9 @@ if (Request::isPost()) {
         }
 
         if (PharmacistsModel::softDelete($id)) {
-            AdminActivityLog::log($user, "Suspended pharmacist account for {$name}", 'red', $user['name'] ?? 'Admin', 'pharmacist', $id);
+            AdminActivityLog::log($user, "Deleted pharmacist account for {$name}", 'red', $user['name'] ?? 'Admin', 'pharmacist', $id);
         }
-        Response::redirect('/admin/pharmacists?msg=suspended');
+        Response::redirect('/admin/pharmacists?msg=deleted');
     }
 } else {
     Response::redirect('/admin/pharmacists');

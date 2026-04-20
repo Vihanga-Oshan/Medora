@@ -5,18 +5,17 @@ class PharmacistRequestsModel
 {
     public static function all(string $status = ''): array
     {
-        $rows = [];
+        $status = strtolower(trim($status));
         if ($status !== '') {
-            $rows = Database::fetchAll(
+            return Database::fetchAll(
                 "SELECT r.*, p.name AS pharmacy_name
                  FROM pharmacist_requests r
                  LEFT JOIN pharmacies p ON p.id = r.requested_pharmacy_id
-                 WHERE r.status = ?
+                 WHERE LOWER(r.status) = ?
                  ORDER BY r.created_at DESC",
                 's',
                 [$status]
             );
-            return $rows;
         }
         return Database::fetchAll("SELECT r.*, p.name AS pharmacy_name
                                FROM pharmacist_requests r

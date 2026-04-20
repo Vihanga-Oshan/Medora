@@ -3,9 +3,13 @@ require_once __DIR__ . '/requests.model.php';
 require_once __DIR__ . '/../common/admin.activity.php';
 
 $error = null;
-$statusFilter = Request::get('status') ?? '';
+$statusFilter = strtolower(trim((string)(Request::get('status') ?? '')));
 if (!in_array($statusFilter, ['', 'pending', 'approved', 'rejected'], true)) {
     $statusFilter = '';
+}
+
+if ($statusFilter === '') {
+    $statusFilter = PharmacistRequestsModel::pendingCount() > 0 ? 'pending' : 'approved';
 }
 
 if (Request::isPost()) {
@@ -23,7 +27,7 @@ if (Request::isPost()) {
                 $fullName = trim((string)($row['full_name'] ?? 'Pharmacist request'));
             }
             AdminActivityLog::log($user, "Approved pharmacist request for {$fullName}", 'green', $user['name'] ?? 'Admin', 'pharmacist_request', $requestId);
-            Response::redirect('/admin/pharmacist-requests?status=pending');
+            Response::redirect('/admin/pharmacist-requests');
         }
     }
 
@@ -38,7 +42,7 @@ if (Request::isPost()) {
                 $fullName = trim((string)($row['full_name'] ?? 'Pharmacist request'));
             }
             AdminActivityLog::log($user, "Rejected pharmacist request for {$fullName}", 'red', $user['name'] ?? 'Admin', 'pharmacist_request', $requestId);
-            Response::redirect('/admin/pharmacist-requests?status=pending');
+            Response::redirect('/admin/pharmacist-requests');
         }
     }
 }

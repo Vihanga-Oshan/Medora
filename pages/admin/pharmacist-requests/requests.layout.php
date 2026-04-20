@@ -1,4 +1,5 @@
 <?php $base = APP_BASE ?: ''; ?>
+<?php $showActions = ($statusFilter === 'pending'); ?>
 <!DOCTYPE html>
 <html lang="en">
 

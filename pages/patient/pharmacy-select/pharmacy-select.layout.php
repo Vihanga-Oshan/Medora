@@ -23,6 +23,21 @@ $base = APP_BASE ?: '';
         .btn.secondary { background:#e7eefc; color:#1b5ecf; }
         .toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; }
         .status { color:#60708a; font-size:13px; }
+        .close-link {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:96px;
+            height:38px;
+            padding:0 16px;
+            border-radius:999px;
+            background:#eef4ff;
+            color:#1b5ecf;
+            text-decoration:none;
+            font-weight:700;
+            box-shadow:inset 0 0 0 1px #d7e4fb;
+        }
+        .close-link:hover { background:#dfeaff; }
         @media (max-width: 980px){ .wrap { grid-template-columns:1fr; } .map{height:420px;} }
     </style>
 </head>
@@ -31,7 +46,12 @@ $base = APP_BASE ?: '';
     <section class="panel">
         <div class="toolbar">
             <h3 style="margin:0;">Choose Your Pharmacy</h3>
-            <span class="status" id="geoStatus">Locating...</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <?php if ((int)$selectedPharmacyId > 0): ?>
+                    <a class="close-link" href="<?= htmlspecialchars($base) ?>/patient/dashboard">Close</a>
+                <?php endif; ?>
+                <span class="status" id="geoStatus">Locating...</span>
+            </div>
         </div>
 
         <?php if (!empty($error)): ?>

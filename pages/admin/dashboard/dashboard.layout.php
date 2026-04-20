@@ -29,7 +29,6 @@ $recentLogs = $data['recentLogs'] ?? [];
         <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacy-assignments"><i>&#128279;</i> Assignments</a></li>
         <li><a href="<?= htmlspecialchars($base) ?>/admin/pharmacist-requests"><i>&#128221;</i> Requests</a></li>
         <li><a href="<?= htmlspecialchars($base) ?>/admin/settings"><i>&#9881;</i> Settings</a></li>
-        <li><a href="<?= htmlspecialchars($base) ?>/admin/logout"><i>&#128682;</i> Logout</a></li>
     </ul>
         <div class="admin-profile js-admin-profile">
         <button type="button" class="admin-profile-trigger" aria-haspopup="true" aria-expanded="false">

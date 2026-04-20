@@ -35,21 +35,19 @@ class PharmacistsModel
         $table = self::tableName();
         $search = trim($search);
 
-        $filters = [];
+        $filters = ["status = 'ACTIVE'"];
         $types = '';
         $params = [];
         if ($search !== '') {
             $like = '%' . $search . '%';
-            $filters[] = "name LIKE ?";
-            $filters[] = "email LIKE ?";
-            $filters[] = "CAST(id AS CHAR) LIKE ?";
+            $filters[] = "(name LIKE ? OR email LIKE ? OR CAST(id AS CHAR) LIKE ?)";
             $types = 'sss';
             $params = [$like, $like, $like];
         }
-        $where = $filters ? "WHERE " . implode(' OR ', $filters) : "";
+        $where = $filters ? "WHERE " . implode(' AND ', $filters) : "";
 
         return Database::fetchAll("
-            SELECT id, name, email, '' AS phone, CAST(id AS CHAR) AS license_no, 'ACTIVE' AS status, created_at
+            SELECT id, name, email, '' AS phone, CAST(id AS CHAR) AS license_no, status, created_at
             FROM `$table`
             $where
             ORDER BY created_at DESC
@@ -205,8 +203,12 @@ class PharmacistsModel
     public static function softDelete(int $id): bool
     {
         $table = self::tableName();
-
-        return Database::execute("DELETE FROM `$table` WHERE id = ?", 'i', [$id]);
+        $ok = Database::execute("UPDATE `$table` SET status = 'INACTIVE' WHERE id = ?", 'i', [$id]);
+        if (!$ok) {
+            return false;
+        }
+        Database::execute("UPDATE pharmacy_users SET status = 'inactive' WHERE pharmacist_id = ?", 'i', [$id]);
+        return true;
     }
 
     public static function getStats(): array
@@ -214,10 +216,12 @@ class PharmacistsModel
         $table = self::tableName();
 
         $rs1 = Database::fetchOne("SELECT COUNT(*) AS cnt FROM `$table`");
+        $rs2 = Database::fetchOne("SELECT COUNT(*) AS cnt FROM `$table` WHERE status = 'ACTIVE'");
+        $rs3 = Database::fetchOne("SELECT COUNT(*) AS cnt FROM `$table` WHERE status = 'INACTIVE'");
         return [
             'total' => (int) ($rs1['cnt'] ?? 0),
-            'active' => (int) ($rs1['cnt'] ?? 0),
-            'deleted' => 0,
+            'active' => (int) ($rs2['cnt'] ?? 0),
+            'deleted' => (int) ($rs3['cnt'] ?? 0),
         ];
     }
 }

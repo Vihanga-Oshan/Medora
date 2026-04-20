@@ -20,15 +20,14 @@ if (Request::isPost()) {
         }
     }
 
-    if ($action === 'toggle') {
+    if ($action === 'delete') {
         $id = (int)(Request::post('id') ?? 0);
-        $ok = PharmaciesModel::toggleStatus($id);
+        $ok = PharmaciesModel::softDelete($id);
         if ($ok && $id > 0) {
-            $row = Database::fetchOne("SELECT name, status FROM pharmacies WHERE id = ? LIMIT 1", 'i', [$id]);
+            $row = Database::fetchOne("SELECT name FROM pharmacies WHERE id = ? LIMIT 1", 'i', [$id]);
             if ($row) {
                 $name = trim((string)($row['name'] ?? 'Pharmacy'));
-                $status = strtoupper((string)($row['status'] ?? 'active'));
-                AdminActivityLog::log($user, "Changed {$name} status to {$status}", 'blue', $user['name'] ?? 'Admin', 'pharmacy', $id);
+                AdminActivityLog::log($user, "Deleted pharmacy {$name}", 'red', $user['name'] ?? 'Admin', 'pharmacy', $id);
             }
         }
         Response::redirect('/admin/pharmacies');

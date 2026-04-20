@@ -8,8 +8,7 @@ if (Request::isPost()) {
     if ($action === 'assign') {
         $pharmacyId = (int) (Request::post('pharmacy_id') ?? 0);
         $pharmacistId = (int) (Request::post('pharmacist_id') ?? 0);
-        $primary = (Request::post('is_primary') ?? '') === '1';
-        if (!PharmacyAssignmentsModel::assign($pharmacyId, $pharmacistId, $primary)) {
+        if (!PharmacyAssignmentsModel::assign($pharmacyId, $pharmacistId)) {
             $error = 'Failed to save assignment.';
         } else {
             $pharmacyName = 'Pharmacy';
@@ -24,8 +23,7 @@ if (Request::isPost()) {
                 $pharmacistName = trim((string) ($row['name'] ?? 'Pharmacist'));
             }
 
-            $roleText = $primary ? 'as primary' : 'as secondary';
-            AdminActivityLog::log($user, "Assigned {$pharmacistName} to {$pharmacyName} {$roleText}", 'green', $user['name'] ?? 'Admin', 'assignment');
+            AdminActivityLog::log($user, "Assigned {$pharmacistName} to {$pharmacyName}", 'green', $user['name'] ?? 'Admin', 'assignment');
             Response::redirect('/admin/pharmacy-assignments');
         }
     }
@@ -49,7 +47,7 @@ if (Request::isPost()) {
             $row = $assignmentInfo;
             $pharmacistName = trim((string) ($row['pharmacist_name'] ?? 'Pharmacist'));
             $pharmacyName = trim((string) ($row['pharmacy_name'] ?? 'Pharmacy'));
-            AdminActivityLog::log($user, "Deactivated assignment of {$pharmacistName} at {$pharmacyName}", 'red', $user['name'] ?? 'Admin', 'assignment', $assignmentId);
+            AdminActivityLog::log($user, "Removed assignment of {$pharmacistName} at {$pharmacyName}", 'red', $user['name'] ?? 'Admin', 'assignment', $assignmentId);
         }
         Response::redirect('/admin/pharmacy-assignments');
     }

@@ -3,7 +3,7 @@ class PharmaciesModel
 {
     public static function all(): array
     {
-        return Database::fetchAll("SELECT * FROM pharmacies ORDER BY created_at DESC, id DESC");
+        return Database::fetchAll("SELECT * FROM pharmacies WHERE status = 'active' ORDER BY created_at DESC, id DESC");
     }
 
     public static function create(array $in): bool
@@ -35,5 +35,14 @@ class PharmaciesModel
         if ($id <= 0)
             return false;
         return Database::execute("UPDATE pharmacies SET status = IF(status='active','inactive','active'), updated_at = NOW() WHERE id = ?", 'i', [$id]);
+    }
+
+    public static function softDelete(int $id): bool
+    {
+        $id = (int) $id;
+        if ($id <= 0) {
+            return false;
+        }
+        return Database::execute("UPDATE pharmacies SET status = 'inactive', updated_at = NOW() WHERE id = ?", 'i', [$id]);
     }
 }
