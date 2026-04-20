@@ -204,3 +204,50 @@
 .admin-add-pharmacist-page .btn.btn-primary:hover {
   background: #000;
 }
+
+/* Match updated admin blue palette on add/edit pharmacist pages. */
+.admin-add-pharmacist-page {
+  background: var(--admin-bg);
+}
+
+.admin-add-pharmacist-page .form-card {
+  border-color: var(--admin-border);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-add-pharmacist-page .back-link {
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+.admin-add-pharmacist-page .back-link:visited {
+  color: var(--admin-text);
+}
+
+.admin-add-pharmacist-page .back-link:hover {
+  background: var(--admin-pill);
+  border-color: #bfd7f0;
+  color: var(--admin-text);
+}
+
+.admin-add-pharmacist-page .field input,
+.admin-add-pharmacist-page .field select {
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+  background: #fff;
+}
+
+.admin-add-pharmacist-page .field input:focus,
+.admin-add-pharmacist-page .field select:focus {
+  border-color: #7fb6e6;
+  box-shadow: 0 0 0 3px rgba(0, 120, 195, 0.12);
+}
+
+.admin-add-pharmacist-page .btn.btn-primary {
+  background: var(--admin-primary);
+  color: #fff;
+}
+
+.admin-add-pharmacist-page .btn.btn-primary:hover {
+  background: #0066a5;
+}

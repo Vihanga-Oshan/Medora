@@ -51,7 +51,7 @@ $base = APP_BASE ?: '';
         <div class="section-header">
             <div>
                 <h1>Pharmacies</h1>
-                <p>Manage pharmacies and their active status</p>
+                <p>Manage pharmacies</p>
             </div>
         </div>
 
@@ -76,7 +76,7 @@ $base = APP_BASE ?: '';
         <section class="card panel-card">
             <h3>All Pharmacies</h3>
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Address</th><th>City</th><th>Lat/Lng</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>Address</th><th>City</th><th>Lat/Lng</th><th>Action</th></tr></thead>
                 <tbody>
                 <?php foreach ($pharmacies as $p): ?>
                     <tr>
@@ -84,12 +84,11 @@ $base = APP_BASE ?: '';
                         <td><?= htmlspecialchars((string)$p['address_line1']) ?></td>
                         <td><?= htmlspecialchars((string)$p['city']) ?></td>
                         <td><?= htmlspecialchars((string)$p['latitude']) ?>, <?= htmlspecialchars((string)$p['longitude']) ?></td>
-                        <td><?= htmlspecialchars((string)$p['status']) ?></td>
                         <td>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="action" value="toggle">
+                            <form method="post" style="display:inline;" onsubmit="return confirm('Delete this pharmacy? This is a soft delete and can be recovered later.');">
+                                <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
-                                <button class="btn btn-primary btn-small" type="submit">Toggle</button>
+                                <button class="btn btn-danger btn-small" type="submit">Delete</button>
                             </form>
                         </td>
                     </tr>

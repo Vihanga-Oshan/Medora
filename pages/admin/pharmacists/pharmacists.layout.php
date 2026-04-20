@@ -109,9 +109,9 @@ $base = APP_BASE ?: '';
                                         <button class="menu-dots">&#8942;</button>
                                         <div class="dropdown-content">
                                             <a href="<?= htmlspecialchars($base) ?>/admin/pharmacists/edit?id=<?= $ph['id'] ?>">Edit Profile</a>
-                                            <form action="<?= htmlspecialchars($base) ?>/admin/pharmacists/delete" method="post" onsubmit="return confirm('Suspend this pharmacist?')">
+                                            <form class="dropdown-action-form" action="<?= htmlspecialchars($base) ?>/admin/pharmacists/delete" method="post" onsubmit="return confirm('Delete this pharmacist? This can be restored later.')">
                                                 <input type="hidden" name="id" value="<?= $ph['id'] ?>">
-                                                <button type="submit" class="danger">Suspend Account</button>
+                                                <button type="submit" class="danger">Delete</button>
                                             </form>
                                         </div>
                                     </div>

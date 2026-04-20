@@ -56,7 +56,7 @@
 
         <section class="card panel-card">
             <h3>Assign Pharmacist</h3>
-            <form method="post" class="admin-grid admin-grid-4">
+            <form method="post" class="admin-grid">
                 <input type="hidden" name="action" value="assign">
                 <select name="pharmacy_id" required>
                     <option value="">Select pharmacy</option>
@@ -70,10 +70,6 @@
                         <option value="<?= (int)$p['id'] ?>"><?= htmlspecialchars((string)$p['name']) ?> (<?= htmlspecialchars((string)$p['email']) ?>)</option>
                     <?php endforeach; ?>
                 </select>
-                <select name="is_primary">
-                    <option value="1">Primary</option>
-                    <option value="0">Secondary</option>
-                </select>
                 <button class="btn btn-primary" type="submit">Save Assignment</button>
             </form>
         </section>
@@ -81,20 +77,18 @@
         <section class="card panel-card">
             <h3>Existing Assignments</h3>
             <table class="data-table">
-                <thead><tr><th>Pharmacist</th><th>Pharmacy</th><th>Role</th><th>Primary</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>Pharmacist</th><th>Pharmacy</th><th>Role</th><th>Action</th></tr></thead>
                 <tbody>
                 <?php foreach ($assignments as $a): ?>
                     <tr>
                         <td><?= htmlspecialchars((string)($a['pharmacist_name'] ?? '')) ?></td>
                         <td><?= htmlspecialchars((string)($a['pharmacy_name'] ?? '')) ?></td>
                         <td><?= htmlspecialchars((string)($a['role'] ?? 'pharmacist')) ?></td>
-                        <td><?= ((int)($a['is_primary'] ?? 0) === 1) ? 'Yes' : 'No' ?></td>
-                        <td><?= htmlspecialchars((string)($a['status'] ?? 'active')) ?></td>
                         <td>
                             <form method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="deactivate">
                                 <input type="hidden" name="id" value="<?= (int)$a['id'] ?>">
-                                <button class="btn btn-primary btn-small" type="submit">Deactivate</button>
+                                <button class="btn btn-danger btn-small" type="submit" onclick="return confirm('Remove this pharmacist from this pharmacy?');">Deactivate</button>
                             </form>
                         </td>
                     </tr>
