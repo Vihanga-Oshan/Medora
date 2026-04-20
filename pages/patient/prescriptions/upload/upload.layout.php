@@ -105,7 +105,7 @@ $showSuccessModal = (($_GET['msg'] ?? '') === 'uploaded');
                         <span>Order medicine</span>
                     </label>
                     <label class="option-check">
-                        <input type="checkbox" name="wants_schedule" value="1">
+                        <input type="checkbox" name="wants_schedule" value="1" checked>
                         <span>Schedule medicine too</span>
                     </label>
                 </div>

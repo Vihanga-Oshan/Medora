@@ -82,35 +82,63 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
                     </div>
                 </div>
                 <div class="cart-summary">
-                    <div class="card">
-                        <h3 style="margin-top:0;">Order Summary</h3>
-                        <div class="cart-summary-row">
-                            <span class="text-muted">Subtotal</span>
-                            <span>Rs. <?= number_format($cartTotal, 2) ?></span>
+                    <div class="card cart-summary-card">
+                        <div class="cart-summary-header">
+                            <div>
+                                <span class="cart-summary-kicker">Checkout</span>
+                                <h3>Order Summary</h3>
+                            </div>
+                            <div class="cart-summary-chip">Pickup</div>
                         </div>
-                        <div class="cart-summary-row">
-                            <span class="text-muted">Delivery</span>
-                            <span>Rs. 0.00</span>
+                        <div class="cart-summary-metrics">
+                            <div class="cart-summary-row">
+                                <span class="text-muted">Subtotal</span>
+                                <span>Rs. <?= number_format($cartTotal, 2) ?></span>
+                            </div>
+                            <div class="cart-summary-row">
+                                <span class="text-muted">Delivery</span>
+                                <span>Rs. 0.00</span>
+                            </div>
                         </div>
                         <div class="cart-summary-total">
                             <span>Total</span>
                             <span>Rs. <?= number_format($cartTotal, 2) ?></span>
                         </div>
-                        <form method="post" style="margin-top:14px;" id="checkoutForm">
-                            <div style="display:grid; gap:12px;">
-                                <input type="text" name="billing_name" placeholder="Billing name" required>
-                                <input type="text" name="billing_phone" placeholder="Phone number" required>
-                                <input type="email" name="billing_email" placeholder="Email" required>
-                                <select name="delivery_method" id="cartDeliveryMethod">
-                                    <option value="PICKUP">Pick up from pharmacy</option>
-                                </select>
-                                <textarea name="billing_address" id="cartBillingAddress" rows="3"
-                                    placeholder="Delivery address"></textarea>
-                                <input type="text" name="billing_city" placeholder="City">
-                                <textarea name="billing_notes" rows="3" placeholder="Notes for the pharmacy"></textarea>
+                        <form method="post" class="checkout-form" id="checkoutForm">
+                            <div class="checkout-form-grid">
+                                <label class="checkout-field">
+                                    <span>Billing name</span>
+                                    <input type="text" name="billing_name" placeholder="Enter full name" required>
+                                </label>
+                                <label class="checkout-field">
+                                    <span>Phone number</span>
+                                    <input type="text" name="billing_phone" placeholder="Enter contact number" required>
+                                </label>
+                                <label class="checkout-field">
+                                    <span>Email</span>
+                                    <input type="email" name="billing_email" placeholder="Enter email address" required>
+                                </label>
+                                <label class="checkout-field">
+                                    <span>Collection method</span>
+                                    <select name="delivery_method" id="cartDeliveryMethod">
+                                        <option value="PICKUP">Pick up from pharmacy</option>
+                                    </select>
+                                </label>
+                                <label class="checkout-field checkout-field-wide" id="cartBillingAddressGroup">
+                                    <span>Delivery address</span>
+                                    <textarea name="billing_address" id="cartBillingAddress" rows="3"
+                                        placeholder="Enter delivery address"></textarea>
+                                </label>
+                                <label class="checkout-field">
+                                    <span>City</span>
+                                    <input type="text" name="billing_city" placeholder="Enter city">
+                                </label>
+                                <label class="checkout-field checkout-field-wide">
+                                    <span>Notes for the pharmacy</span>
+                                    <textarea name="billing_notes" rows="3" placeholder="Add special instructions"></textarea>
+                                </label>
                             </div>
-                            <button type="submit" class="btn btn-primary"
-                                style="width:100%; box-sizing:border-box; margin-top:14px;">Place Order</button>
+                            <button type="submit" class="btn btn-primary checkout-submit">Place Order</button>
                         </form>
                     </div>
                 </div>
@@ -121,11 +149,12 @@ $toImageUrl = static function (string $rawPath) use ($base): string {
         (function () {
             const method = document.getElementById('cartDeliveryMethod');
             const address = document.getElementById('cartBillingAddress');
-            if (!method || !address) return;
+            const addressGroup = document.getElementById('cartBillingAddressGroup');
+            if (!method || !address || !addressGroup) return;
 
             function syncAddress() {
                 const delivery = method.value === 'DELIVERY';
-                address.style.display = delivery ? 'block' : 'none';
+                addressGroup.style.display = delivery ? 'flex' : 'none';
                 address.required = delivery;
             }
 

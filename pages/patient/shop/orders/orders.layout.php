@@ -39,25 +39,90 @@ $formatStatus = static function (string $status): string {
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/shop-redesign.css?v=<?= $cssVer ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($base) ?>/assets/css/patient/footer.css?v=<?= $cssVer ?>">
     <style>
+        .orders-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 22px;
+            background: linear-gradient(135deg, #0f4c81 0%, #1677c6 58%, #62b4f6 100%);
+            color: #fff;
+            box-shadow: 0 20px 45px rgba(22, 119, 198, 0.22);
+        }
+
+        .orders-hero::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -70px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .orders-hero-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .orders-hero h1 {
+            margin: 0 0 8px;
+            font-size: clamp(2rem, 4vw, 2.6rem);
+            color: #fff;
+        }
+
+        .orders-hero p {
+            margin: 0;
+            max-width: 620px;
+            color: rgba(255, 255, 255, 0.86);
+        }
+
+        .orders-hero-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+        }
+
+        .orders-hero-link:hover {
+            background: rgba(255, 255, 255, 0.24);
+        }
+
         .orders-shell {
-            background: #ffffff;
-            border: 1px solid #e4e9f0;
-            border-radius: 14px;
-            padding: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #dce7f2;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 18px 36px rgba(15, 76, 129, 0.08);
         }
 
         .orders-summary {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 18px;
+            gap: 14px;
+            margin-bottom: 22px;
         }
 
         .orders-summary .summary-card {
-            border: 1px solid #e4e9f0;
-            border-radius: 12px;
-            background: #f8fbff;
-            padding: 14px;
+            border: 1px solid #d9e7f5;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #fefefe 0%, #eef6ff 100%);
+            padding: 18px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
         }
 
         .orders-summary .summary-label {
@@ -78,36 +143,45 @@ $formatStatus = static function (string $status): string {
         .orders-list {
             display: grid;
             grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
-            gap: 14px;
+            gap: 18px;
         }
 
         .orders-list-panel {
-            border: 1px solid #e4e9f0;
-            border-radius: 12px;
+            border: 1px solid #dce7f2;
+            border-radius: 16px;
             background: #ffffff;
-            padding: 10px;
+            padding: 12px;
             max-height: 560px;
             overflow-y: auto;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
         }
 
         .orders-list-item {
             width: 100%;
             text-align: left;
-            border: 1px solid #e4e9f0;
-            border-radius: 10px;
-            background: #ffffff;
-            padding: 10px;
+            border: 1px solid #dde7f2;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+            padding: 14px;
             cursor: pointer;
             margin-bottom: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .orders-list-item:last-child {
             margin-bottom: 0;
         }
 
+        .orders-list-item:hover {
+            transform: translateY(-1px);
+            border-color: #c8dafc;
+            box-shadow: 0 10px 18px rgba(15, 76, 129, 0.08);
+        }
+
         .orders-list-item.is-active {
             border-color: #c8dafc;
-            background: #f4f8ff;
+            background: linear-gradient(180deg, #f7fbff 0%, #edf5ff 100%);
+            box-shadow: 0 12px 22px rgba(22, 119, 198, 0.12);
         }
 
         .orders-list-item-title {
@@ -124,10 +198,11 @@ $formatStatus = static function (string $status): string {
         }
 
         .orders-details-panel {
-            border: 1px solid #e4e9f0;
-            border-radius: 12px;
-            padding: 14px;
-            background: #ffffff;
+            border: 1px solid #dce7f2;
+            border-radius: 18px;
+            padding: 18px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+            box-shadow: 0 14px 28px rgba(15, 76, 129, 0.08);
         }
 
         .orders-item-head {
@@ -197,10 +272,10 @@ $formatStatus = static function (string $status): string {
         }
 
         .orders-kv {
-            background: #f8fbff;
-            border: 1px solid #e4e9f0;
-            border-radius: 10px;
-            padding: 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+            border: 1px solid #dde7f2;
+            border-radius: 14px;
+            padding: 12px;
         }
 
         .orders-kv-label {
@@ -232,7 +307,16 @@ $formatStatus = static function (string $status): string {
             margin-top: 14px;
         }
 
+        .orders-actions a {
+            color: #165d97;
+            font-weight: 700;
+        }
+
         @media (max-width: 840px) {
+            .orders-hero {
+                padding: 22px;
+            }
+
             .orders-list {
                 grid-template-columns: 1fr;
             }
@@ -252,8 +336,15 @@ $formatStatus = static function (string $status): string {
     <?php require_once __DIR__ . '/../../common/patient.navbar.php'; ?>
 
     <main class="container">
-        <h1 class="section-title">My Orders</h1>
-        <p class="section-subtitle">Track prescription and e-shop medicine requests in one place</p>
+        <section class="orders-hero">
+            <div class="orders-hero-content">
+                <div>
+                    <h1>My Orders</h1>
+                    <p>Track prescription requests and pharmacy purchases from one patient-friendly timeline.</p>
+                </div>
+                <a class="orders-hero-link" href="<?= htmlspecialchars($base) ?>/patient/shop">&larr; Back to e-shop</a>
+            </div>
+        </section>
 
         <div class="orders-shell">
             <div class="orders-summary">

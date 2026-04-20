@@ -59,7 +59,7 @@ $cssVer = time();
                         <span>Order medicine</span>
                     </label>
                     <label class="option-check">
-                        <input type="checkbox" name="wants_schedule" value="1">
+                        <input type="checkbox" name="wants_schedule" value="1" checked>
                         <span>Schedule medicine</span>
                     </label>
                 </div>
@@ -116,6 +116,7 @@ $cssVer = time();
                     <p>No prescriptions uploaded yet</p>
                 </div>
             <?php else: ?>
+                <div class="prescription-list-scroll">
                 <div class="prescription-list">
                     <?php foreach ($prescriptions as $p): ?>
                         <div class="prescription-tile">
@@ -149,6 +150,7 @@ $cssVer = time();
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
                 </div>
             <?php endif; ?>
         </div>
