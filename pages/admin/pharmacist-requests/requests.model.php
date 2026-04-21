@@ -26,12 +26,14 @@ class PharmacistRequestsModel
     public static function approve(int $requestId, int $adminId): bool
     {
         $requestId = (int) $requestId;
-        if ($requestId <= 0)
+        if ($requestId <= 0) {
             return false;
+        }
 
         $req = Database::fetchOne("SELECT * FROM pharmacist_requests WHERE id = ? AND status = 'pending' LIMIT 1", 'i', [$requestId]);
-        if (!$req)
+        if (!$req) {
             return false;
+        }
 
         $license = (string) ($req['license_no'] ?? '');
         $passwordHash = (string) ($req['password_hash'] ?? '');
@@ -48,7 +50,9 @@ class PharmacistRequestsModel
             'email' => (string) ($req['email'] ?? ''),
             'phone' => (string) ($req['phone'] ?? ''),
             'id' => $license,
+            'license_no' => $license,
             'password' => $passwordPlain,
+            'confirm_password' => $passwordPlain,
             'pharmacy_id' => $requestedPharmacyId,
         ]);
         if (!$ok) {

@@ -4,3 +4,6 @@
 [2026-04-19 22:50:03] [DEBUG] Pharmacist request created. {"request_id":2,"email":"pharamacist2@gmail.com","license":"1235"}
 [2026-04-19 22:53:34] [DEBUG] Pharmacist register request received. {"email":"pharamacist3@gmail.com","license":"1236","requested_pharmacy_id":1}
 [2026-04-19 22:53:34] [DEBUG] Pharmacist request created. {"request_id":3,"email":"pharamacist3@gmail.com","license":"1236"}
+[2026-04-21 08:34:10] [DEBUG] Pharmacist register request received. {"email":"pcmb@gamil.com","license":"1237","requested_pharmacy_id":1}
+[2026-04-21 08:34:26] [DEBUG] Pharmacist register request received. {"email":"pcmb@gamil.com","license":"1237","requested_pharmacy_id":1}
+[2026-04-21 08:34:27] [DEBUG] Pharmacist request created. {"request_id":4,"email":"pcmb@gamil.com","license":"1237"}

@@ -102,6 +102,7 @@ class PharmacistsModel
 
         $nameRaw = trim((string) ($data['name'] ?? ''));
         $emailRaw = trim((string) ($data['email'] ?? ''));
+        $phoneRaw = trim((string) ($data['phone'] ?? ''));
         $licenseIdRaw = $data['id'] ?? ($data['license_no'] ?? '');
         $pharmacyId = (int) ($data['pharmacy_id'] ?? 0);
         $passwordRaw = trim((string) ($data['password'] ?? ''));
@@ -146,10 +147,20 @@ class PharmacistsModel
         $valuesSql[] = '?';
         $types .= 's';
         $params[] = $emailRaw;
+        $columns[] = 'phone';
+        $valuesSql[] = '?';
+        $types .= 's';
+        $params[] = $phoneRaw !== '' ? $phoneRaw : null;
+        $columns[] = 'license_no';
+        $valuesSql[] = '?';
+        $types .= 's';
+        $params[] = (string) $licenseId;
         $columns[] = 'password';
         $valuesSql[] = '?';
         $types .= 's';
         $params[] = $passwordHash;
+        $columns[] = 'status';
+        $valuesSql[] = "'ACTIVE'";
         $columns[] = 'created_at';
         $valuesSql[] = 'NOW()';
 

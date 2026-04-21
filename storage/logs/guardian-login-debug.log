@@ -19,3 +19,11 @@
 [2026-04-20 14:24:02] [DEBUG] Guardian lookup result. {"table":"guardian","nic_suffix":"3745","normalized_nic_suffix":"3745","found":1,"has_password":1,"has_password_hash":0}
 [2026-04-20 14:24:02] [DEBUG] Password candidate checked. {"nic_suffix":"3745","strategy":"bcrypt","candidate_length":60,"matched":1}
 [2026-04-20 14:24:02] [DEBUG] Guardian login successful. {"nic_suffix":"3745","display_name":"Sandali"}
+[2026-04-21 08:41:40] [DEBUG] Guardian login request received. {"nic_suffix":"3777","password_length":13,"method":"POST"}
+[2026-04-21 08:41:40] [DEBUG] Guardian lookup result. {"table":"guardian","nic_suffix":"3777","normalized_nic_suffix":"3777","found":1,"has_password":1,"has_password_hash":0}
+[2026-04-21 08:41:40] [DEBUG] Password candidate checked. {"nic_suffix":"3777","strategy":"bcrypt","candidate_length":60,"matched":1}
+[2026-04-21 08:41:40] [DEBUG] Guardian login successful. {"nic_suffix":"3777","display_name":"Sandali"}
+[2026-04-21 09:19:09] [DEBUG] Guardian login request received. {"nic_suffix":"3777","password_length":13,"method":"POST"}
+[2026-04-21 09:19:09] [DEBUG] Guardian lookup result. {"table":"guardian","nic_suffix":"3777","normalized_nic_suffix":"3777","found":1,"has_password":1,"has_password_hash":0}
+[2026-04-21 09:19:09] [DEBUG] Password candidate checked. {"nic_suffix":"3777","strategy":"bcrypt","candidate_length":60,"matched":1}
+[2026-04-21 09:19:09] [DEBUG] Guardian login successful. {"nic_suffix":"3777","display_name":"Sandali"}

@@ -75,6 +75,11 @@ class InventoryModel
             return self::$pharmacyIdCache;
         }
 
+        if (isset($GLOBALS['currentPharmacyId']) && (int) $GLOBALS['currentPharmacyId'] > 0) {
+            self::$pharmacyIdCache = (int) $GLOBALS['currentPharmacyId'];
+            return self::$pharmacyIdCache;
+        }
+
         $auth = Auth::getUser();
         $fromToken = (int) ($auth['pharmacy_id'] ?? 0);
         if ($fromToken > 0) {
@@ -88,6 +93,10 @@ class InventoryModel
 
     private static function currentUserId(): int
     {
+        if (isset($GLOBALS['currentPharmacist']) && is_array($GLOBALS['currentPharmacist'])) {
+            return (int) ($GLOBALS['currentPharmacist']['id'] ?? 0);
+        }
+
         $auth = Auth::getUser();
         return (int) ($auth['id'] ?? 0);
     }

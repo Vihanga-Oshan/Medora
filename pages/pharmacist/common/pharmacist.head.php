@@ -43,3 +43,5 @@ if ($currentPharmacyId <= 0) {
 $currentPharmacy = PharmacyContext::pharmacyById($currentPharmacyId);
 
 $currentPharmacist = $user;
+$GLOBALS['currentPharmacyId'] = $currentPharmacyId;
+$GLOBALS['currentPharmacist'] = $currentPharmacist;
